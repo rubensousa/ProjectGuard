@@ -2,6 +2,16 @@
 
 Protect your project against undesired dependencies across different modules.
 
+![Dependency Guard](dependency_guard.png)
+
+## Why DependencyGuard?
+
+As projects grow, so does the complexity of their module graph. Without clear rules, you can accidentally introduce dependencies that violate your app's architecture:
+- A :domain module might depend on another :legacy module, making it hard to fully switch away from tech debt.
+- A :data module might improperly depend on a :ui module.
+- A third-party dependency your team agreed to migrate away from might be added by mistake to a new module
+
+DependencyGuard protects your project's architecture by enforcing dependency rules at build time.
 
 ## Setup
 
@@ -67,6 +77,23 @@ dependencyGuard {
 }
 ```
 
-3. Use the `dependencyGuardCheck` task to validate the project using the rules you configured
+3. Run `./gradlew dependencyGuardCheck` to validate the project using the rules you configured
 
-4. Use the `dependencyGuardHtmlReport` task to generate a HTML report with the violations affected by this project, including the ones that are ignored
+4. Run `./gradlew dependencyGuardHtmlReport` task to generate a HTML report with the violations affected by this project, including the ones that are ignored
+
+
+## License
+
+    Copyright 2026 Rúben Sousa
+    
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+    
+        http://www.apache.org/licenses/LICENSE-2.0
+    
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
