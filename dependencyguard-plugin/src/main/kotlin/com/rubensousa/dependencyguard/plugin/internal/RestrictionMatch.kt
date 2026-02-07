@@ -7,7 +7,8 @@ internal data class RestrictionMatch(
     val modulePath: String,
     val dependencyPath: String,
     val reason: String = "Unspecified",
-    val isExcluded: Boolean = false
+    val isSuppressed: Boolean = false,
+    val suppressionReason: String = "Unspecified"
 ) {
 
     fun asText(): String {

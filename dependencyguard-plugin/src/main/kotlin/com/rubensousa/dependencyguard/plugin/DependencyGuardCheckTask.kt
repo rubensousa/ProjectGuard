@@ -34,7 +34,7 @@ abstract class DependencyGuardCheckTask : DefaultTask() {
         dependencies.get().forEach { config ->
             config.projectPaths.forEach { dependencyPath ->
                 violations.addAll(
-                    restrictionChecker.findViolations(
+                    restrictionChecker.findMatches(
                         modulePath = currentModulePath,
                         dependencyPath = dependencyPath,
                         spec = spec,
@@ -43,7 +43,7 @@ abstract class DependencyGuardCheckTask : DefaultTask() {
             }
             config.externalLibraries.forEach { library ->
                 violations.addAll(
-                    restrictionChecker.findViolations(
+                    restrictionChecker.findMatches(
                         modulePath = currentModulePath,
                         dependencyPath = library,
                         spec = spec,
@@ -51,13 +51,13 @@ abstract class DependencyGuardCheckTask : DefaultTask() {
                 )
             }
         }
-        val excludedViolations = violations.filter { it.isExcluded }
-        val fatalViolations = violations.filter { !it.isExcluded }
-        if (excludedViolations.isNotEmpty()) {
-            logger.warn("Found ${excludedViolations.size} excluded violations")
+        val suppressedViolations = violations.filter { it.isSuppressed }
+        val fatalViolations = violations.filter { !it.isSuppressed }
+        if (suppressedViolations.isNotEmpty()) {
+            logger.warn("Found ${suppressedViolations.size} suppressed violation(s)")
         }
         if (fatalViolations.isNotEmpty()) {
-            logger.error("Found ${fatalViolations.size} fatal violations")
+            logger.error("Found ${fatalViolations.size} fatal violation(s)")
             throw GradleException(fatalViolations.joinToString("\n\n") { it.asText() })
         }
     }

@@ -13,14 +13,14 @@ class DependencyGuardModuleRestrictionTest {
     fun `module is restricted to concrete child but not its parent`() {
         // given
         val spec = dependencyGuard {
-            restrict(":domain") {
+            restrictModule(":domain") {
                 deny(":other:a")
             }
         }
 
         // then
         assertThat(
-            restrictionChecker.findViolations(
+            restrictionChecker.findMatches(
                 modulePath = ":domain:a",
                 dependencyPath = ":other:a",
                 spec = spec
@@ -29,11 +29,11 @@ class DependencyGuardModuleRestrictionTest {
             RestrictionMatch(
                 modulePath = ":domain:a",
                 dependencyPath = ":other:a",
-                isExcluded = false
+                isSuppressed = false
             )
         )
         assertThat(
-            restrictionChecker.findViolations(
+            restrictionChecker.findMatches(
                 modulePath = ":domain:a",
                 dependencyPath = ":other",
                 spec = spec
@@ -45,14 +45,14 @@ class DependencyGuardModuleRestrictionTest {
     fun `child module is restricted because its parent is also restricted`() {
         // given
         val spec = dependencyGuard {
-            restrict(":domain") {
+            restrictModule(":domain") {
                 deny(":other")
             }
         }
 
         // then
         assertThat(
-            restrictionChecker.findViolations(
+            restrictionChecker.findMatches(
                 modulePath = ":domain:a",
                 dependencyPath = ":other:a",
                 spec = spec
@@ -61,7 +61,7 @@ class DependencyGuardModuleRestrictionTest {
             RestrictionMatch(
                 modulePath = ":domain:a",
                 dependencyPath = ":other:a",
-                isExcluded = false
+                isSuppressed = false
             )
         )
     }
@@ -70,13 +70,13 @@ class DependencyGuardModuleRestrictionTest {
     fun `there is no restriction if input module is not the restricted one`() {
         // given
         val spec = dependencyGuard {
-            restrict(":domain") {
+            restrictModule(":domain") {
                 deny(":legacy")
             }
         }
 
         // when
-        val violations = restrictionChecker.findViolations(
+        val violations = restrictionChecker.findMatches(
             modulePath = ":another",
             dependencyPath = ":legacy",
             spec = spec
@@ -90,13 +90,13 @@ class DependencyGuardModuleRestrictionTest {
     fun `there is a restriction for a direct match`() {
         // given
         val spec = dependencyGuard {
-            restrict(":domain") {
+            restrictModule(":domain") {
                 deny(":legacy")
             }
         }
 
         // when
-        val violations = restrictionChecker.findViolations(
+        val violations = restrictionChecker.findMatches(
             modulePath = ":domain",
             dependencyPath = ":legacy",
             spec = spec
@@ -107,7 +107,7 @@ class DependencyGuardModuleRestrictionTest {
             RestrictionMatch(
                 modulePath = ":domain",
                 dependencyPath = ":legacy",
-                isExcluded = false
+                isSuppressed = false
             )
         )
     }
@@ -116,13 +116,13 @@ class DependencyGuardModuleRestrictionTest {
     fun `there is a restriction for a match of a child`() {
         // given
         val spec = dependencyGuard {
-            restrict(":domain") {
+            restrictModule(":domain") {
                 deny(":legacy")
             }
         }
 
         // when
-        val violations = restrictionChecker.findViolations(
+        val violations = restrictionChecker.findMatches(
             modulePath = ":domain:a",
             dependencyPath = ":legacy",
             spec = spec
@@ -133,7 +133,7 @@ class DependencyGuardModuleRestrictionTest {
             RestrictionMatch(
                 modulePath = ":domain:a",
                 dependencyPath = ":legacy",
-                isExcluded = false
+                isSuppressed = false
             )
         )
     }
@@ -144,7 +144,7 @@ class DependencyGuardModuleRestrictionTest {
         val spec = dependencyGuard {}
 
         // when
-        val violations = restrictionChecker.findViolations(
+        val violations = restrictionChecker.findMatches(
             modulePath = ":domain",
             dependencyPath = ":legacy",
             spec = spec
@@ -158,17 +158,17 @@ class DependencyGuardModuleRestrictionTest {
     fun `multiple restrictions are found`() {
         // given
         val spec = dependencyGuard {
-            restrict(":domain") {
+            restrictModule(":domain") {
                 deny(":legacy")
             }
-            restrict(":domain:a") {
+            restrictModule(":domain:a") {
                 deny(":deprecated")
             }
         }
 
         // then
         assertThat(
-            restrictionChecker.findViolations(
+            restrictionChecker.findMatches(
                 modulePath = ":domain:a",
                 dependencyPath = ":legacy",
                 spec = spec
@@ -177,11 +177,11 @@ class DependencyGuardModuleRestrictionTest {
             RestrictionMatch(
                 modulePath = ":domain:a",
                 dependencyPath = ":legacy",
-                isExcluded = false
+                isSuppressed = false
             )
         )
         assertThat(
-            restrictionChecker.findViolations(
+            restrictionChecker.findMatches(
                 modulePath = ":domain:a",
                 dependencyPath = ":deprecated",
                 spec = spec
@@ -190,7 +190,7 @@ class DependencyGuardModuleRestrictionTest {
             RestrictionMatch(
                 modulePath = ":domain:a",
                 dependencyPath = ":deprecated",
-                isExcluded = false
+                isSuppressed = false
             )
         )
     }

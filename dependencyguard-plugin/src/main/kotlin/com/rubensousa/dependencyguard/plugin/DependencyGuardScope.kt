@@ -4,89 +4,67 @@ import org.gradle.api.Action
 import org.gradle.api.artifacts.MinimalExternalModuleDependency
 import org.gradle.api.provider.Provider
 
-internal val defaultDenyScope = Action<DenyScope> { }
+private val defaultDependencyRestrictionScope = Action<DependencyRestrictionScope> {}
 
-/**
- * Examples:
- *
- * ```
- * restrict(":domain") {
- *      deny(":data")
- * }
- *
- * restrictAll {
- *      // No single module can depend on legacy
- *      deny(":legacy")
- * }
- *
- * ```
- */
 interface DependencyGuardScope {
 
-    fun restrict(modulePath: String, action: Action<ModuleRestrictionScope>)
-
     /**
-     * Usage:
+     * Example:
      *
      * ```
-
+     * restrictModule(":domain") {
+     *      // Domain modules should not depend on UI modules
+     *      deny(":ui")
+     * }
      * ```
      */
-    fun restrictAll(action: Action<ProjectRestrictionScope>)
-
-}
-
-interface ProjectRestrictionScope {
-
-    // Required for groovy compatibility
-    fun deny(
-        dependencyPath: String,
-    ) {
-        deny(dependencyPath, defaultDenyScope)
-    }
-
-    // Required for groovy compatibility
-    fun deny(
-        provider: Provider<MinimalExternalModuleDependency>,
-    ) {
-        deny(provider, defaultDenyScope)
-    }
-
-    fun deny(
-        dependencyPath: String,
-        action: Action<DenyScope>,
+    fun restrictModule(
+        modulePath: String,
+        action: Action<ModuleRestrictionScope>,
     )
 
-    fun deny(
-        provider: Provider<MinimalExternalModuleDependency>,
-        action: Action<DenyScope>
-    )
-}
-
-
-interface ModuleRestrictionScope {
-
-    // Required for groovy compatibility
-    fun deny(
+    /**
+     * Example:
+     *
+     * ```
+     * restrictDependency(":legacy") {
+     *      // Only legacy modules are allowed to depend on other legacy modules
+     *      allow(":legacy")
+     * }
+     * ```
+     */
+    fun restrictDependency(
         dependencyPath: String,
+        action: Action<DependencyRestrictionScope>,
+    )
+
+    /**
+     * Example:
+     *
+     * ```
+     * restrictDependency(libs.mockk) {
+     *      // Only legacy modules are allowed to use mockk for tests
+     *      allow(":legacy")
+     * }
+     * ```
+     */
+    fun restrictDependency(
+        provider: Provider<MinimalExternalModuleDependency>,
+        action: Action<DependencyRestrictionScope>,
+    )
+
+    // Just here for groovy support
+    fun restrictDependency(
+        dependencyPath: String
     ) {
-        deny(dependencyPath, defaultDenyScope)
+        restrictDependency(dependencyPath, defaultDependencyRestrictionScope)
     }
 
-    // Required for groovy compatibility
-    fun deny(
+    // Just here for groovy support
+    fun restrictDependency(
         provider: Provider<MinimalExternalModuleDependency>,
     ) {
-        deny(provider, defaultDenyScope)
+        restrictDependency(provider, defaultDependencyRestrictionScope)
     }
 
-    fun deny(
-        dependencyPath: String,
-        action: Action<DenyScope>
-    )
-
-    fun deny(
-        provider: Provider<MinimalExternalModuleDependency>,
-        action: Action<DenyScope>
-    )
 }

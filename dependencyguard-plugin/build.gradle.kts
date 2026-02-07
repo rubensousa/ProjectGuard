@@ -14,7 +14,7 @@ kotlin {
     jvmToolchain(17)
 }
 
-if (parent?.name == "DepGuard") {
+if (parent?.name == "DependencyGuard") {
     plugins.apply(libs.plugins.maven.publish.get().pluginId)
 }
 

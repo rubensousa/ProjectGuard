@@ -15,36 +15,37 @@ subprojects {
 }
 
 dependencyGuard {
-    restrict(":domain") {
+    restrictModule(":domain") {
         deny(":feature") {
             setReason("Dependency should be inverted. Feature depends on domain")
-            except(":domain:a", ":domain:b", ":domain:c")
         }
         deny(":data") {
             setReason("Dependency should be inverted. Data depends on domain")
         }
     }
-    restrict(":data") {
-        deny(":feature") {
-            setReason("Data layer should not depend on Feature layer")
-        }
-    }
-    restrict(":feature") {
+    restrictModule(":feature") {
         deny(":feature") {
             setReason("Features should not depend on other features directly")
-            except(":feature:a", ":feature:b")
         }
     }
-    restrictAll {
-        deny(":legacy") {
-            setReason("All modules should not depend on legacy code")
-            except(":legacy")
+    restrictDependency(":legacy") {
+        setReason("Legacy modules should no longer be used")
+        suppress(":domain") {
+            setReason("Legacy already exists in some domains")
         }
-        deny(libs.mockk) {
-            setReason("Fakes should be used instead")
-            except(":feature:z")
+        allow(":legacy") {
+            setReason("Only legacy modules can still depend on another legacy modules")
         }
     }
+   /* restrictDependency(libs.mockk) {
+        setReason("Fakes should be used instead")
+        allow(":feature:a") {
+            setReason("This feature requires mockk to test platform code")
+        }
+        suppress(":feature:z") {
+            setReason("Some tests in this feature still use mocks")
+        }
+    }*/
 }
 
 // apply(from = "scripts/generate_modules.gradle.kts")

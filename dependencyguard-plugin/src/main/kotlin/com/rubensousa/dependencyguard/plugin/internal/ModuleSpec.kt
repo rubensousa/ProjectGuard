@@ -2,8 +2,7 @@ package com.rubensousa.dependencyguard.plugin.internal
 
 import java.io.Serializable
 
-internal data class ProjectRestriction(
-    val dependencyPath: String,
+internal data class ModuleSpec(
+    val modulePath: String,
     val reason: String,
-    val exclusions: Set<String>,
 ): Serializable

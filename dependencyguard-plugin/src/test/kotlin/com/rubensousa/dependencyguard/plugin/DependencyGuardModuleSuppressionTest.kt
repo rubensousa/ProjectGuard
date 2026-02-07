@@ -5,23 +5,21 @@ import com.rubensousa.dependencyguard.plugin.internal.RestrictionChecker
 import com.rubensousa.dependencyguard.plugin.internal.RestrictionMatch
 import kotlin.test.Test
 
-class DependencyGuardModuleExclusionTest {
+class DependencyGuardModuleSuppressionTest {
 
     private val restrictionChecker = RestrictionChecker()
 
     @Test
-    fun `module included in exclusions should be flagged as excluded`() {
+    fun `module included in suppression should be flagged as suppressed`() {
         // given
         val spec = dependencyGuard {
-            restrict(":domain") {
-                deny(":other") {
-                    except(":other:b")
-                }
+            restrictModule(":domain") {
+                suppress(":other:b")
             }
         }
 
         // then
-        val violations = restrictionChecker.findViolations(
+        val violations = restrictionChecker.findMatches(
             modulePath = ":domain",
             dependencyPath = ":other:b",
             spec = spec
@@ -30,23 +28,21 @@ class DependencyGuardModuleExclusionTest {
             RestrictionMatch(
                 modulePath = ":domain",
                 dependencyPath = ":other:b",
-                isExcluded = true
+                isSuppressed = true
             )
         )
     }
 
     @Test
-    fun `module not included in exclusions should be restricted`() {
+    fun `module not included in suppressions should be restricted`() {
         // given
         val spec = dependencyGuard {
-            restrict(":domain") {
-                deny(":other") {
-                    except(":other:b")
-                }
+            restrictModule(":domain") {
+                deny(":other")
             }
         }
         // then
-        val violations = restrictionChecker.findViolations(
+        val violations = restrictionChecker.findMatches(
             modulePath = ":domain",
             dependencyPath = ":other:a",
             spec = spec
@@ -55,23 +51,23 @@ class DependencyGuardModuleExclusionTest {
             RestrictionMatch(
                 modulePath = ":domain",
                 dependencyPath = ":other:a",
-                isExcluded = false
+                isSuppressed = false
             )
         )
     }
 
     @Test
-    fun `child module of excluded module should be flagged as excluded`() {
+    fun `child module of suppressed module should be flagged as suppressed`() {
         // given
         val spec = dependencyGuard {
-            restrict(":domain") {
-                deny(":other") {
-                    except(":other:a")
+            restrictModule(":domain") {
+                suppress(":other:a") {
+                    setReason("Suppression reason")
                 }
             }
         }
         // then
-        val violations = restrictionChecker.findViolations(
+        val violations = restrictionChecker.findMatches(
             modulePath = ":domain",
             dependencyPath = ":other:a:c",
             spec = spec
@@ -80,24 +76,23 @@ class DependencyGuardModuleExclusionTest {
             RestrictionMatch(
                 modulePath = ":domain",
                 dependencyPath = ":other:a:c",
-                isExcluded = true
+                isSuppressed = true,
+                suppressionReason = "Suppression reason"
             )
         )
     }
 
     @Test
-    fun `multiple exclusions are respected`() {
+    fun `multiple suppressions are respected`() {
         // given
         val spec = dependencyGuard {
-            restrict(":domain") {
-                deny(":other") {
-                    except(":other:b")
-                    except(":other:c")
-                }
+            restrictModule(":domain") {
+                suppress(":other:b")
+                suppress(":other:c")
             }
         }
         assertThat(
-            restrictionChecker.findViolations(
+            restrictionChecker.findMatches(
                 modulePath = ":domain",
                 dependencyPath = ":other:c",
                 spec = spec
@@ -106,11 +101,11 @@ class DependencyGuardModuleExclusionTest {
             RestrictionMatch(
                 modulePath = ":domain",
                 dependencyPath = ":other:c",
-                isExcluded = true
+                isSuppressed = true
             )
         )
         assertThat(
-            restrictionChecker.findViolations(
+            restrictionChecker.findMatches(
                 modulePath = ":domain",
                 dependencyPath = ":other:b",
                 spec = spec
@@ -119,7 +114,7 @@ class DependencyGuardModuleExclusionTest {
             RestrictionMatch(
                 modulePath = ":domain",
                 dependencyPath = ":other:b",
-                isExcluded = true
+                isSuppressed = true
             )
         )
     }

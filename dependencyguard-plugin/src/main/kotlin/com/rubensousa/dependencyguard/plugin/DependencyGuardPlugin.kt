@@ -77,13 +77,13 @@ class DependencyGuardPlugin : Plugin<Project> {
                 projectPath.set(project.path)
                 specProperty.set(extension.getSpec())
                 dependencies.set(getDependencies(project))
-                violationsFile.set(
-                    project.layout.buildDirectory.file("reports/dependencyGuard/violations.json")
+                reportFile.set(
+                    project.layout.buildDirectory.file("reports/dependencyGuard/report.json")
                 )
             }
             // Add the output of the per-module task to the aggregate task's input
             jsonTask.configure {
-                violationFiles.from(moduleReportTask.flatMap { it.violationsFile })
+                reportFiles.from(moduleReportTask.flatMap { it.reportFile })
             }
         }
     }

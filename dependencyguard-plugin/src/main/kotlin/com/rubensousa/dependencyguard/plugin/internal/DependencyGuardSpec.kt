@@ -4,10 +4,10 @@ import java.io.Serializable
 
 internal data class DependencyGuardSpec(
     val moduleRestrictions: List<ModuleRestriction>,
-    val projectRestrictions: List<ProjectRestriction>,
+    val dependencyRestrictions: List<DependencyRestriction>,
 ): Serializable {
 
     fun isEmpty(): Boolean {
-        return moduleRestrictions.isEmpty() && projectRestrictions.isEmpty()
+        return moduleRestrictions.isEmpty() && dependencyRestrictions.isEmpty()
     }
 }

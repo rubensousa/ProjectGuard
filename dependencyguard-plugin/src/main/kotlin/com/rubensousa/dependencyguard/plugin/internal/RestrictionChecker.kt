@@ -2,76 +2,131 @@ package com.rubensousa.dependencyguard.plugin.internal
 
 internal class RestrictionChecker {
 
-    fun findViolations(
+    private val unspecifiedReason = "Unspecified"
+
+    fun findMatches(
         modulePath: String,
         dependencyPath: String,
         spec: DependencyGuardSpec,
     ): List<RestrictionMatch> {
         val matches = mutableListOf<RestrictionMatch>()
-        spec.moduleRestrictions.forEach { restriction ->
-            if (isModuleDependencyRestricted(
-                    modulePath = modulePath,
-                    dependencyPath = dependencyPath,
-                    restriction = restriction
-                )
-            ) {
-                matches.add(
-                    RestrictionMatch(
-                        modulePath = modulePath,
-                        dependencyPath = dependencyPath,
-                        reason = restriction.reason,
-                        isExcluded = isDependencyExcluded(dependencyPath, restriction.exclusions)
-                    )
-                )
-            }
-        }
-        spec.projectRestrictions.forEach { restriction ->
-            val isDependencyRestricted = hasDependencyMatch(
-                dependencyPath = dependencyPath,
-                referencePath = restriction.dependencyPath
-            )
-            if (isDependencyRestricted) {
-                matches.add(
-                    RestrictionMatch(
-                        modulePath = modulePath,
-                        dependencyPath = dependencyPath,
-                        reason = restriction.reason,
-                        isExcluded = isDependencyExcluded(modulePath, restriction.exclusions)
-                    )
-                )
-            }
-        }
+        fillModuleRestrictionMatches(
+            matches = matches,
+            modulePath = modulePath,
+            dependencyPath = dependencyPath,
+            spec = spec
+        )
+        fillDependencyRestrictionMatches(
+            matches = matches,
+            modulePath = modulePath,
+            dependencyPath = dependencyPath,
+            spec = spec
+        )
         return matches
     }
 
-    internal fun isModuleDependencyRestricted(
+    /**
+     * Module restrictions are allow-by-default
+     * Each module restriction specifies individual denials for dependencies
+     */
+    private fun fillModuleRestrictionMatches(
+        matches: MutableList<RestrictionMatch>,
         modulePath: String,
         dependencyPath: String,
-        restriction: ModuleRestriction,
-    ): Boolean {
-        if (modulePath != restriction.modulePath && !modulePath.startsWith(restriction.modulePath)) {
-            return false
+        spec: DependencyGuardSpec,
+    ) {
+        spec.moduleRestrictions.forEach { restriction ->
+            val matchesModule = hasModuleMatch(
+                modulePath = modulePath,
+                referencePath = restriction.modulePath
+            )
+            if (matchesModule) {
+                val denial = restriction.denied.find { spec ->
+                    hasModuleMatch(
+                        modulePath = dependencyPath,
+                        referencePath = spec.modulePath
+                    )
+                }
+                if (denial != null) {
+                    matches.add(
+                        RestrictionMatch(
+                            modulePath = modulePath,
+                            dependencyPath = dependencyPath,
+                            reason = denial.reason,
+                            isSuppressed = false,
+                            suppressionReason = unspecifiedReason
+                        )
+                    )
+                } else {
+                    val suppression = restriction.suppressed.find { suppressedModule ->
+                        hasModuleMatch(
+                            modulePath = dependencyPath,
+                            referencePath = suppressedModule.modulePath
+                        )
+                    }
+                    if (suppression != null) {
+                        matches.add(
+                            RestrictionMatch(
+                                modulePath = modulePath,
+                                dependencyPath = dependencyPath,
+                                reason = unspecifiedReason,
+                                isSuppressed = true,
+                                suppressionReason = suppression.reason
+                            )
+                        )
+                    }
+                }
+
+            }
         }
-        return hasDependencyMatch(
-            dependencyPath = dependencyPath,
-            referencePath = restriction.dependencyPath
-        )
     }
 
-    private fun isDependencyExcluded(
+    /**
+     * Dependency restrictions are deny-by-default.
+     * Each dependency restriction specifies individual allowances for dependencies
+     */
+    private fun fillDependencyRestrictionMatches(
+        matches: MutableList<RestrictionMatch>,
+        modulePath: String,
         dependencyPath: String,
-        exclusions: Set<String>,
-    ): Boolean {
-        return exclusions.any { exclusion ->
-            dependencyPath.startsWith(exclusion)
+        spec: DependencyGuardSpec,
+    ) {
+        spec.dependencyRestrictions.forEach { restriction ->
+            val isDependencyRestricted = hasModuleMatch(
+                modulePath = dependencyPath,
+                referencePath = restriction.dependencyPath
+            )
+            val isModuleAllowed = restriction.allowed.any { exclusion ->
+                hasModuleMatch(modulePath = modulePath, referencePath = exclusion.modulePath)
+            }
+            if (isDependencyRestricted && !isModuleAllowed) {
+                val suppression = restriction.suppressed.find { suppressedModule ->
+                    hasModuleMatch(
+                        modulePath = modulePath,
+                        referencePath = suppressedModule.modulePath
+                    )
+                }
+                matches.add(
+                    RestrictionMatch(
+                        modulePath = modulePath,
+                        dependencyPath = dependencyPath,
+                        reason = restriction.reason,
+                        isSuppressed = suppression != null,
+                        suppressionReason = suppression?.reason ?: unspecifiedReason
+                    )
+                )
+            }
         }
     }
 
-    private fun hasDependencyMatch(
-        dependencyPath: String,
+    private fun hasModuleMatch(
+        modulePath: String,
         referencePath: String,
     ): Boolean {
-        return dependencyPath.startsWith(referencePath) || dependencyPath == referencePath
+        if (modulePath == referencePath) {
+            return true
+        }
+        return modulePath.startsWith(referencePath)
     }
 
 }

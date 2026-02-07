@@ -2,8 +2,9 @@ package com.rubensousa.dependencyguard.plugin
 
 import com.rubensousa.dependencyguard.plugin.internal.RestrictionMatch
 import com.rubensousa.dependencyguard.plugin.internal.DependencyGuardReport
+import com.rubensousa.dependencyguard.plugin.internal.FatalMatch
 import com.rubensousa.dependencyguard.plugin.internal.ModuleReport
-import com.rubensousa.dependencyguard.plugin.internal.Match
+import com.rubensousa.dependencyguard.plugin.internal.SuppressedMatch
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import org.gradle.api.DefaultTask
@@ -18,16 +19,19 @@ import org.gradle.work.DisableCachingByDefault
 abstract class DependencyGuardAggregateReportTask : DefaultTask() {
 
     @get:InputFiles
-    abstract val violationFiles: ConfigurableFileCollection
+    abstract val reportFiles: ConfigurableFileCollection
 
     @get:OutputFile
     abstract val reportLocation: RegularFileProperty
 
-    private val json = Json { prettyPrint = true }
+    private val json = Json {
+        prettyPrint = true
+        prettyPrintIndent = "  "
+    }
 
     @TaskAction
     fun generateReport() {
-        val allViolations = violationFiles.files.flatMap { file ->
+        val restrictionMatches = reportFiles.files.flatMap { file ->
             if (file.exists()) {
                 Json.decodeFromString<List<RestrictionMatch>>(file.readText())
             } else {
@@ -36,15 +40,21 @@ abstract class DependencyGuardAggregateReportTask : DefaultTask() {
         }
 
         val report = DependencyGuardReport(
-            modules = allViolations.groupBy { it.modulePath }
+            modules = restrictionMatches.groupBy { it.modulePath }
                 .map { (modulePath, matches) ->
                     ModuleReport(
                         module = modulePath,
-                        fatalMatches = matches.filter { !it.isExcluded }.map { match ->
-                            mapMatch(match)
+                        fatal = matches.filter { !it.isSuppressed }.map { match ->
+                            FatalMatch(
+                                dependency = match.dependencyPath,
+                                reason = match.reason,
+                            )
                         },
-                        excludedMatches = matches.filter { it.isExcluded }.map { match ->
-                            mapMatch(match)
+                        suppressed = matches.filter { it.isSuppressed }.map { match ->
+                            SuppressedMatch(
+                                dependency = match.dependencyPath,
+                                suppressionReason = match.suppressionReason,
+                            )
                         }
                     )
                 }.sortedBy { it.module }
@@ -56,10 +66,4 @@ abstract class DependencyGuardAggregateReportTask : DefaultTask() {
         }
     }
 
-    private fun mapMatch(match: RestrictionMatch): Match {
-        return Match(
-            dependency = match.dependencyPath,
-            reason = match.reason,
-        )
-    }
 }

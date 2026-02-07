@@ -5,7 +5,7 @@ import com.rubensousa.dependencyguard.plugin.internal.RestrictionChecker
 import com.rubensousa.dependencyguard.plugin.internal.RestrictionMatch
 import kotlin.test.Test
 
-class DependencyGuardProjectRestrictionTest {
+class DependencyGuardDependencyRestrictionTest {
 
     private val restrictionChecker = RestrictionChecker()
 
@@ -13,13 +13,11 @@ class DependencyGuardProjectRestrictionTest {
     fun `there is a restriction for a direct match`() {
         // given
         val spec = dependencyGuard {
-            restrictAll {
-                deny(":legacy")
-            }
+            restrictDependency(":legacy")
         }
 
         // when
-        val violations = restrictionChecker.findViolations(
+        val violations = restrictionChecker.findMatches(
             modulePath = ":domain",
             dependencyPath = ":legacy",
             spec = spec
@@ -30,7 +28,7 @@ class DependencyGuardProjectRestrictionTest {
             RestrictionMatch(
                 modulePath = ":domain",
                 dependencyPath = ":legacy",
-                isExcluded = false
+                isSuppressed = false
             )
         )
     }
@@ -39,13 +37,11 @@ class DependencyGuardProjectRestrictionTest {
     fun `there is a restriction for a child of a restricted dependency`() {
         // given
         val spec = dependencyGuard {
-            restrictAll {
-                deny(":legacy")
-            }
+            restrictDependency(":legacy")
         }
 
         // when
-        val violations = restrictionChecker.findViolations(
+        val violations = restrictionChecker.findMatches(
             modulePath = ":domain:a",
             dependencyPath = ":legacy:a",
             spec = spec
@@ -56,7 +52,7 @@ class DependencyGuardProjectRestrictionTest {
             RestrictionMatch(
                 modulePath = ":domain:a",
                 dependencyPath = ":legacy:a",
-                isExcluded = false
+                isSuppressed = false
             )
         )
     }
@@ -65,17 +61,13 @@ class DependencyGuardProjectRestrictionTest {
     fun `multiple restrictions are found`() {
         // given
         val spec = dependencyGuard {
-            restrictAll {
-                deny(":legacy")
-            }
-            restrictAll {
-                deny(":deprecated")
-            }
+            restrictDependency(":legacy")
+            restrictDependency(":deprecated")
         }
 
         // then
         assertThat(
-            restrictionChecker.findViolations(
+            restrictionChecker.findMatches(
                 modulePath = ":domain",
                 dependencyPath = ":legacy",
                 spec = spec
@@ -84,11 +76,11 @@ class DependencyGuardProjectRestrictionTest {
             RestrictionMatch(
                 modulePath = ":domain",
                 dependencyPath = ":legacy",
-                isExcluded = false
+                isSuppressed = false
             )
         )
         assertThat(
-            restrictionChecker.findViolations(
+            restrictionChecker.findMatches(
                 modulePath = ":domain",
                 dependencyPath = ":deprecated",
                 spec = spec
@@ -97,7 +89,7 @@ class DependencyGuardProjectRestrictionTest {
             RestrictionMatch(
                 modulePath = ":domain",
                 dependencyPath = ":deprecated",
-                isExcluded = false
+                isSuppressed = false
             )
         )
     }

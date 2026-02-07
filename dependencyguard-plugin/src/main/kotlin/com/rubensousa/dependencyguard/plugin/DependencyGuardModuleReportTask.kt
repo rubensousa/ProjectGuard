@@ -28,21 +28,22 @@ abstract class DependencyGuardModuleReportTask : DefaultTask() {
     internal abstract val dependencies: ListProperty<TaskDependencies>
 
     @get:OutputFile
-    internal abstract val violationsFile: RegularFileProperty
+    internal abstract val reportFile: RegularFileProperty
 
     @TaskAction
     fun dependencyGuardReport() {
         val spec = specProperty.get()
+        reportFile.get().asFile.delete()
         if (spec.isEmpty()) {
             return
         }
         val currentModulePath = projectPath.get()
-        val violations = mutableListOf<RestrictionMatch>()
+        val matches = mutableListOf<RestrictionMatch>()
         val restrictionChecker = RestrictionChecker()
         dependencies.get().forEach { config ->
             config.projectPaths.forEach { dependencyPath ->
-                violations.addAll(
-                    restrictionChecker.findViolations(
+                matches.addAll(
+                    restrictionChecker.findMatches(
                         modulePath = currentModulePath,
                         dependencyPath = dependencyPath,
                         spec = spec,
@@ -50,8 +51,8 @@ abstract class DependencyGuardModuleReportTask : DefaultTask() {
                 )
             }
             config.externalLibraries.forEach { library ->
-                violations.addAll(
-                    restrictionChecker.findViolations(
+                matches.addAll(
+                    restrictionChecker.findMatches(
                         modulePath = currentModulePath,
                         dependencyPath = library,
                         spec = spec,
@@ -59,8 +60,10 @@ abstract class DependencyGuardModuleReportTask : DefaultTask() {
                 )
             }
         }
-        if (violations.isNotEmpty()) {
-            violationsFile.get().asFile.writeText(Json.encodeToString(violations))
+        if (matches.isNotEmpty()) {
+            reportFile.get().asFile.writeText(Json.encodeToString(matches))
+        } else {
+            reportFile.get().asFile.delete()
         }
     }
 }

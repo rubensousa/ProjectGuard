@@ -42,7 +42,7 @@ dependencyGuard {
 
 ## Features
 
-1. Restrict dependencies between different projects:
+1. Define dependencies that can't be used for some modules
 
 
 ```kotlin
@@ -51,28 +51,25 @@ dependencyGuard {
      * This matches all modules within the domain directory.
      * E.g (":domain:a", ":domain:b", ":domain:c")
      */
-    restrict(":domain") {
+    restrictModule(":domain") {
         /**
          * This matches all modules within the legacy directory.
          * E.g (":legacy:a", ":legacy:b", ":legacy:c")
          */
         deny(":legacy")
     }
-    restrict(":domain:a") {
-        deny(":domain:b")
-    }
 }
 ```
 
-2. Restrict external dependencies:
+2. Forbid external third-party dependencies depending on the use case
 
 ```kotlin
 dependencyGuard {
-    restrictAll {
-        /**
-         * Prevent all modules from using mockk for tests
-         */
-        deny(libs.mockk)
+    restrictDependency(libs.mockk) {
+        setReason("Mocks should not be used unless really needed")
+        allow(":platform") {
+            setReason("Platform modules require mockk for some cases")
+        }
     }
 }
 ```
