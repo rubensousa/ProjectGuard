@@ -19,6 +19,23 @@ internal class DependencyGraph(
         return nodes[module] ?: emptySet()
     }
 
+    fun getAllDependencies(module: String): Set<String> {
+        val visitedDependencies = mutableSetOf<String>()
+        val stack = ArrayDeque<String>()
+        stack.addAll(getDependencies(module))
+        while (stack.isNotEmpty()) {
+            val currentModule = stack.removeFirst()
+            if (visitedDependencies.contains(currentModule)) {
+                continue
+            }
+            visitedDependencies.add(currentModule)
+            getDependencies(currentModule).forEach { dependency ->
+                stack.addFirst(dependency)
+            }
+        }
+        return visitedDependencies
+    }
+
     override fun toString(): String {
         return "DependencyGraph(configurationId='$configurationId', nodes=$nodes)"
     }

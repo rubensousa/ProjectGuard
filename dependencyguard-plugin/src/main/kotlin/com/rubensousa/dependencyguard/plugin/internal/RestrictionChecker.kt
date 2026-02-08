@@ -4,6 +4,16 @@ internal class RestrictionChecker {
 
     private val unspecifiedReason = "Unspecified"
 
+    fun findRestrictions(
+        moduleId: String,
+        dependencyGraph: DependencyGraph,
+        spec: DependencyGuardSpec,
+    ): List<RestrictionMatch> {
+        val matches = mutableListOf<RestrictionMatch>()
+
+        return matches
+    }
+
     fun findMatches(
         modulePath: String,
         dependencyPath: String,
