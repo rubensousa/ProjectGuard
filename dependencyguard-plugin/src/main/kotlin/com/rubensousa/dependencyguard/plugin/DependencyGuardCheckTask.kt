@@ -3,6 +3,7 @@ package com.rubensousa.dependencyguard.plugin
 import com.rubensousa.dependencyguard.plugin.internal.DependencyGuardSpec
 import com.rubensousa.dependencyguard.plugin.internal.RestrictionChecker
 import com.rubensousa.dependencyguard.plugin.internal.RestrictionMatch
+import com.rubensousa.dependencyguard.plugin.internal.RestrictionMatchProcessor
 import com.rubensousa.dependencyguard.plugin.internal.TaskDependencies
 import org.gradle.api.DefaultTask
 import org.gradle.api.GradleException
@@ -29,11 +30,11 @@ abstract class DependencyGuardCheckTask : DefaultTask() {
             return
         }
         val currentModulePath = projectPath.get()
-        val violations = mutableListOf<RestrictionMatch>()
+        val matches = mutableListOf<RestrictionMatch>()
         val restrictionChecker = RestrictionChecker()
         dependencies.get().forEach { config ->
             config.projectPaths.forEach { dependencyPath ->
-                violations.addAll(
+                matches.addAll(
                     restrictionChecker.findMatches(
                         modulePath = currentModulePath,
                         dependencyPath = dependencyPath,
@@ -42,7 +43,7 @@ abstract class DependencyGuardCheckTask : DefaultTask() {
                 )
             }
             config.externalLibraries.forEach { library ->
-                violations.addAll(
+                matches.addAll(
                     restrictionChecker.findMatches(
                         modulePath = currentModulePath,
                         dependencyPath = library,
@@ -51,8 +52,10 @@ abstract class DependencyGuardCheckTask : DefaultTask() {
                 )
             }
         }
-        val suppressedViolations = violations.filter { it.isSuppressed }
-        val fatalViolations = violations.filter { !it.isSuppressed }
+        val processor = RestrictionMatchProcessor()
+        val processedMatches = processor.process(matches)
+        val suppressedViolations = processedMatches.filter { it.isSuppressed }
+        val fatalViolations = processedMatches.filter { !it.isSuppressed }
         if (suppressedViolations.isNotEmpty()) {
             logger.warn("Found ${suppressedViolations.size} suppressed violation(s)")
         }
