@@ -19,7 +19,5 @@ android {
 
 dependencies {
     testImplementation(libs.junit)
-    androidTestImplementation(libs.runner)
-    androidTestImplementation(libs.espresso.core)
     androidTestImplementation(project(":legacy:a"))
 }
