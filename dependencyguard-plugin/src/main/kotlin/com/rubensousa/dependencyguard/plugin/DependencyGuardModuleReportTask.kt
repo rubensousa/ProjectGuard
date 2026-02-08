@@ -3,6 +3,7 @@ package com.rubensousa.dependencyguard.plugin
 import com.rubensousa.dependencyguard.plugin.internal.DependencyGuardSpec
 import com.rubensousa.dependencyguard.plugin.internal.RestrictionChecker
 import com.rubensousa.dependencyguard.plugin.internal.RestrictionMatch
+import com.rubensousa.dependencyguard.plugin.internal.RestrictionMatchProcessor
 import com.rubensousa.dependencyguard.plugin.internal.TaskDependencies
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
@@ -40,6 +41,7 @@ abstract class DependencyGuardModuleReportTask : DefaultTask() {
         val currentModulePath = projectPath.get()
         val matches = mutableListOf<RestrictionMatch>()
         val restrictionChecker = RestrictionChecker()
+        val processor = RestrictionMatchProcessor()
         dependencies.get().forEach { config ->
             config.projectPaths.forEach { dependencyPath ->
                 matches.addAll(
@@ -60,8 +62,9 @@ abstract class DependencyGuardModuleReportTask : DefaultTask() {
                 )
             }
         }
-        if (matches.isNotEmpty()) {
-            reportFile.get().asFile.writeText(Json.encodeToString(matches))
+        val processedMatches = processor.process(matches)
+        if (processedMatches.isNotEmpty()) {
+            reportFile.get().asFile.writeText(Json.encodeToString(processedMatches))
         } else {
             reportFile.get().asFile.delete()
         }
