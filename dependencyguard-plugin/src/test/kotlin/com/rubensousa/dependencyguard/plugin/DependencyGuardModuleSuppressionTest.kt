@@ -17,11 +17,14 @@ class DependencyGuardModuleSuppressionTest {
                 suppress(":other:b")
             }
         }
+        val graph = buildDependencyGraph {
+            addDependency(":domain", ":other:b")
+        }
 
         // then
         val violations = restrictionChecker.findMatches(
             modulePath = ":domain",
-            dependencyPath = ":other:b",
+            dependencyGraph = graph,
             spec = spec
         )
         assertThat(violations).containsExactly(
@@ -41,10 +44,14 @@ class DependencyGuardModuleSuppressionTest {
                 deny(":other")
             }
         }
+        val graph = buildDependencyGraph {
+            addDependency(":domain", ":other:a")
+        }
+
         // then
         val violations = restrictionChecker.findMatches(
             modulePath = ":domain",
-            dependencyPath = ":other:a",
+            dependencyGraph = graph,
             spec = spec
         )
         assertThat(violations).containsExactly(
@@ -66,10 +73,14 @@ class DependencyGuardModuleSuppressionTest {
                 }
             }
         }
+        val graph = buildDependencyGraph {
+            addDependency(":domain", ":other:a:c")
+        }
+
         // then
         val violations = restrictionChecker.findMatches(
             modulePath = ":domain",
-            dependencyPath = ":other:a:c",
+            dependencyGraph = graph,
             spec = spec
         )
         assertThat(violations).containsExactly(
@@ -91,10 +102,14 @@ class DependencyGuardModuleSuppressionTest {
                 suppress(":other:c")
             }
         }
+        val graph = buildDependencyGraph {
+            addDependency(":domain", ":other:b")
+            addDependency(":domain", ":other:c")
+        }
         assertThat(
             restrictionChecker.findMatches(
                 modulePath = ":domain",
-                dependencyPath = ":other:c",
+                dependencyGraph = graph,
                 spec = spec
             )
         ).containsExactly(
@@ -102,15 +117,7 @@ class DependencyGuardModuleSuppressionTest {
                 modulePath = ":domain",
                 dependencyPath = ":other:c",
                 isSuppressed = true
-            )
-        )
-        assertThat(
-            restrictionChecker.findMatches(
-                modulePath = ":domain",
-                dependencyPath = ":other:b",
-                spec = spec
-            )
-        ).containsExactly(
+            ),
             RestrictionMatch(
                 modulePath = ":domain",
                 dependencyPath = ":other:b",

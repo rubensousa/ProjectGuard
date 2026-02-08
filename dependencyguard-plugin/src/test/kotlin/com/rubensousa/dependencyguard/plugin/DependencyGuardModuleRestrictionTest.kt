@@ -17,12 +17,16 @@ class DependencyGuardModuleRestrictionTest {
                 deny(":other:a")
             }
         }
+        val graph = buildDependencyGraph {
+            addDependency(":domain:a", ":other:a")
+            addDependency(":domain:a", ":other")
+        }
 
         // then
         assertThat(
             restrictionChecker.findMatches(
                 modulePath = ":domain:a",
-                dependencyPath = ":other:a",
+                dependencyGraph = graph,
                 spec = spec
             )
         ).containsExactly(
@@ -32,13 +36,6 @@ class DependencyGuardModuleRestrictionTest {
                 isSuppressed = false
             )
         )
-        assertThat(
-            restrictionChecker.findMatches(
-                modulePath = ":domain:a",
-                dependencyPath = ":other",
-                spec = spec
-            )
-        ).isEmpty()
     }
 
     @Test
@@ -49,12 +46,15 @@ class DependencyGuardModuleRestrictionTest {
                 deny(":other")
             }
         }
-
+        val graph = buildDependencyGraph {
+            addDependency(":domain:a", ":other:a")
+        }
+        
         // then
         assertThat(
             restrictionChecker.findMatches(
                 modulePath = ":domain:a",
-                dependencyPath = ":other:a",
+                dependencyGraph = graph,
                 spec = spec
             )
         ).containsExactly(
@@ -74,16 +74,20 @@ class DependencyGuardModuleRestrictionTest {
                 deny(":legacy")
             }
         }
-
+        val graph = buildDependencyGraph {
+            addDependency(":domain", ":legacy")
+            addDependency(":another", ":legacy")
+        }
+        
         // when
-        val violations = restrictionChecker.findMatches(
+        val matches = restrictionChecker.findMatches(
             modulePath = ":another",
-            dependencyPath = ":legacy",
+            dependencyGraph = graph,
             spec = spec
         )
 
         // then
-        assertThat(violations).isEmpty()
+        assertThat(matches).isEmpty()
     }
 
     @Test
@@ -94,16 +98,19 @@ class DependencyGuardModuleRestrictionTest {
                 deny(":legacy")
             }
         }
+        val graph = buildDependencyGraph {
+            addDependency(":domain", ":legacy")
+        }
 
         // when
-        val violations = restrictionChecker.findMatches(
+        val matches = restrictionChecker.findMatches(
             modulePath = ":domain",
-            dependencyPath = ":legacy",
+            dependencyGraph = graph,
             spec = spec
         )
 
         // then
-        assertThat(violations).containsExactly(
+        assertThat(matches).containsExactly(
             RestrictionMatch(
                 modulePath = ":domain",
                 dependencyPath = ":legacy",
@@ -120,16 +127,19 @@ class DependencyGuardModuleRestrictionTest {
                 deny(":legacy")
             }
         }
+        val graph = buildDependencyGraph {
+            addDependency(":domain:a", ":legacy")
+        }
 
         // when
-        val violations = restrictionChecker.findMatches(
+        val matches = restrictionChecker.findMatches(
             modulePath = ":domain:a",
-            dependencyPath = ":legacy",
+            dependencyGraph = graph,
             spec = spec
         )
 
         // then
-        assertThat(violations).containsExactly(
+        assertThat(matches).containsExactly(
             RestrictionMatch(
                 modulePath = ":domain:a",
                 dependencyPath = ":legacy",
@@ -144,14 +154,16 @@ class DependencyGuardModuleRestrictionTest {
         val spec = dependencyGuard {}
 
         // when
-        val violations = restrictionChecker.findMatches(
+        val matches = restrictionChecker.findMatches(
             modulePath = ":domain",
-            dependencyPath = ":legacy",
+            dependencyGraph = buildDependencyGraph {
+                addDependency(":domain", ":legacy")
+            },
             spec = spec
         )
 
         // then
-        assertThat(violations).isEmpty()
+        assertThat(matches).isEmpty()
     }
 
     @Test
@@ -165,12 +177,16 @@ class DependencyGuardModuleRestrictionTest {
                 deny(":deprecated")
             }
         }
+        val graph = buildDependencyGraph {
+            addDependency(":domain:a", ":legacy")
+            addDependency(":domain:a", ":deprecated")
+        }
 
         // then
         assertThat(
             restrictionChecker.findMatches(
                 modulePath = ":domain:a",
-                dependencyPath = ":legacy",
+                dependencyGraph = graph,
                 spec = spec
             )
         ).containsExactly(
@@ -178,15 +194,7 @@ class DependencyGuardModuleRestrictionTest {
                 modulePath = ":domain:a",
                 dependencyPath = ":legacy",
                 isSuppressed = false
-            )
-        )
-        assertThat(
-            restrictionChecker.findMatches(
-                modulePath = ":domain:a",
-                dependencyPath = ":deprecated",
-                spec = spec
-            )
-        ).containsExactly(
+            ),
             RestrictionMatch(
                 modulePath = ":domain:a",
                 dependencyPath = ":deprecated",

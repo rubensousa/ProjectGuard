@@ -1,6 +1,5 @@
 package com.rubensousa.dependencyguard.plugin
 
-import com.rubensousa.dependencyguard.plugin.internal.DependencyGraph
 import com.rubensousa.dependencyguard.plugin.internal.DependencyGraphAggregateReport
 import com.rubensousa.dependencyguard.plugin.internal.DependencyGraphBuilder
 import com.rubensousa.dependencyguard.plugin.internal.DependencyGuardSpec
@@ -11,7 +10,6 @@ import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import org.gradle.api.DefaultTask
 import org.gradle.api.file.RegularFileProperty
-import org.gradle.api.provider.ListProperty
 import org.gradle.api.provider.Property
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.InputFile
@@ -52,7 +50,7 @@ abstract class DependencyGuardModuleReportTask : DefaultTask() {
         val processor = RestrictionMatchProcessor()
         graphs.forEach { graph ->
             matches.addAll(
-                restrictionChecker.findRestrictions(
+                restrictionChecker.findMatches(
                     modulePath = currentModulePath,
                     dependencyGraph = graph,
                     spec = spec

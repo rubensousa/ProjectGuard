@@ -4,7 +4,7 @@ internal class RestrictionChecker {
 
     private val unspecifiedReason = "Unspecified"
 
-    fun findRestrictions(
+    fun findMatches(
         modulePath: String,
         dependencyGraph: DependencyGraph,
         spec: DependencyGuardSpec,
@@ -12,7 +12,7 @@ internal class RestrictionChecker {
         val matches = mutableListOf<RestrictionMatch>()
         dependencyGraph.getAllDependencies(modulePath).forEach { dependency ->
             matches.addAll(
-                findMatches(
+                findDependencyMatches(
                     modulePath = modulePath,
                     dependencyPath = dependency,
                     spec = spec
@@ -22,7 +22,7 @@ internal class RestrictionChecker {
         return matches
     }
 
-    fun findMatches(
+    private fun findDependencyMatches(
         modulePath: String,
         dependencyPath: String,
         spec: DependencyGuardSpec,

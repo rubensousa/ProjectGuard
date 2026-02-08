@@ -42,7 +42,7 @@ abstract class DependencyGuardCheckTask : DefaultTask() {
         val restrictionChecker = RestrictionChecker()
         graphs.forEach { graph ->
             matches.addAll(
-                restrictionChecker.findRestrictions(
+                restrictionChecker.findMatches(
                     modulePath = currentModulePath,
                     dependencyGraph = graph,
                     spec = spec

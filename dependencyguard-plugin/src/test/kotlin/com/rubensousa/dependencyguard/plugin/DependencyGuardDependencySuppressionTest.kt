@@ -17,11 +17,14 @@ class DependencyGuardDependencySuppressionTest {
                 suppress(":domain")
             }
         }
+        val graph = buildDependencyGraph {
+            addDependency(":domain", ":other:b")
+        }
 
         // then
         val violations = restrictionChecker.findMatches(
             modulePath = ":domain",
-            dependencyPath = ":other:b",
+            dependencyGraph = graph,
             spec = spec
         )
         assertThat(violations).containsExactly(
@@ -41,10 +44,14 @@ class DependencyGuardDependencySuppressionTest {
                 suppress(":other:b")
             }
         }
+        val graph = buildDependencyGraph {
+            addDependency(":domain", ":other:a")
+        }
+
         // then
         val violations = restrictionChecker.findMatches(
             modulePath = ":domain",
-            dependencyPath = ":other:a",
+            dependencyGraph = graph,
             spec = spec
         )
         assertThat(violations).containsExactly(
@@ -64,10 +71,14 @@ class DependencyGuardDependencySuppressionTest {
                 suppress(":domain:a")
             }
         }
+        val graph = buildDependencyGraph {
+            addDependency(":domain:a:c", ":other")
+        }
+
         // then
         val violations = restrictionChecker.findMatches(
             modulePath = ":domain:a:c",
-            dependencyPath = ":other",
+            dependencyGraph = graph,
             spec = spec
         )
         assertThat(violations).containsExactly(

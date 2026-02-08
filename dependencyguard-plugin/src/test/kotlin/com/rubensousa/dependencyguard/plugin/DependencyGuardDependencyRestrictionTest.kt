@@ -15,11 +15,14 @@ class DependencyGuardDependencyRestrictionTest {
         val spec = dependencyGuard {
             restrictDependency(":legacy")
         }
+        val graph = buildDependencyGraph {
+            addDependency(":domain", ":legacy")
+        }
 
         // when
         val violations = restrictionChecker.findMatches(
             modulePath = ":domain",
-            dependencyPath = ":legacy",
+            dependencyGraph = graph,
             spec = spec
         )
 
@@ -39,11 +42,14 @@ class DependencyGuardDependencyRestrictionTest {
         val spec = dependencyGuard {
             restrictDependency(":legacy")
         }
+        val graph = buildDependencyGraph {
+            addDependency(":domain:a", ":legacy:a")
+        }
 
         // when
         val violations = restrictionChecker.findMatches(
             modulePath = ":domain:a",
-            dependencyPath = ":legacy:a",
+            dependencyGraph = graph,
             spec = spec
         )
 
@@ -64,12 +70,16 @@ class DependencyGuardDependencyRestrictionTest {
             restrictDependency(":legacy")
             restrictDependency(":deprecated")
         }
+        val graph = buildDependencyGraph {
+            addDependency(":domain", ":legacy")
+            addDependency(":domain", ":deprecated")
+        }
 
         // then
         assertThat(
             restrictionChecker.findMatches(
                 modulePath = ":domain",
-                dependencyPath = ":legacy",
+                dependencyGraph = graph,
                 spec = spec
             )
         ).containsExactly(
@@ -77,15 +87,7 @@ class DependencyGuardDependencyRestrictionTest {
                 modulePath = ":domain",
                 dependencyPath = ":legacy",
                 isSuppressed = false
-            )
-        )
-        assertThat(
-            restrictionChecker.findMatches(
-                modulePath = ":domain",
-                dependencyPath = ":deprecated",
-                spec = spec
-            )
-        ).containsExactly(
+            ),
             RestrictionMatch(
                 modulePath = ":domain",
                 dependencyPath = ":deprecated",
@@ -93,5 +95,6 @@ class DependencyGuardDependencyRestrictionTest {
             )
         )
     }
+
 
 }
