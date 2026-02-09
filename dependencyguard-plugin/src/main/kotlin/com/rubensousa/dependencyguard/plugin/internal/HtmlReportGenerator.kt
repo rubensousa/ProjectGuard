@@ -200,7 +200,7 @@ internal class HtmlReportGenerator {
             val reason = match.reason
             """
             <tr>
-                <td><code>${match.dependency}</code></td>
+                <td><code>${match.pathToDependency}</code></td>
                 <td>${reason}</td>
             </tr>
             """.trimIndent()
@@ -231,7 +231,7 @@ internal class HtmlReportGenerator {
             val reason =match.suppressionReason
             """
             <tr>
-                <td><code>${match.dependency}</code></td>
+                <td><code>${match.pathToDependency}</code></td>
                 <td>${reason}</td>
             </tr>
             """.trimIndent()

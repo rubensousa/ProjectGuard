@@ -9,8 +9,8 @@ internal class RestrictionMatchProcessor {
         val visitedLinks = mutableSetOf<DependencyLink>()
         matches.forEach { match ->
             val link = DependencyLink(
-                module = match.modulePath,
-                dependency = match.dependencyPath
+                module = match.module,
+                dependency = match.dependency
             )
             if (!visitedLinks.contains(link)) {
                 visitedLinks.add(link)

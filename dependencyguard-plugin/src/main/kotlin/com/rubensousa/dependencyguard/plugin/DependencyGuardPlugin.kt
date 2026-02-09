@@ -1,10 +1,8 @@
 package com.rubensousa.dependencyguard.plugin
 
-import com.rubensousa.dependencyguard.plugin.internal.TaskDependencies
+import com.rubensousa.dependencyguard.plugin.internal.DependencyGraphBuilder
 import org.gradle.api.Plugin
 import org.gradle.api.Project
-import org.gradle.api.artifacts.ExternalModuleDependency
-import org.gradle.api.artifacts.ProjectDependency
 
 class DependencyGuardPlugin : Plugin<Project> {
 
@@ -15,25 +13,22 @@ class DependencyGuardPlugin : Plugin<Project> {
                 "dependencyGuard",
                 DependencyGuardExtension::class.java
             )
-
-        // Register the check task for the current project
-        target.tasks.register("dependencyGuardCheck", DependencyGuardCheckTask::class.java) {
-            group = "verification"
-            description = "Checks for unauthorized cross-module dependencies."
-            projectPath.set(target.path)
-            specProperty.set(extension.getSpec())
-            dependencies.set(getDependencies(target))
-        }
+        val graphBuilder = DependencyGraphBuilder()
 
         // Apply the reporting plugin logic only once on the root project
         if (target == rootProject) {
-            applyReportPlugin(rootProject, extension)
+            applyReportPlugin(
+                rootProject = rootProject,
+                extension = extension,
+                graphBuilder = graphBuilder
+            )
         }
     }
 
     private fun applyReportPlugin(
         rootProject: Project,
         extension: DependencyGuardExtension,
+        graphBuilder: DependencyGraphBuilder,
     ) {
         val jsonTask = rootProject.tasks.register(
             "dependencyGuardJsonReport",
@@ -43,6 +38,17 @@ class DependencyGuardPlugin : Plugin<Project> {
             description = "Generates an aggregate JSON report of all dependency violations."
             reportLocation.set(
                 rootProject.layout.buildDirectory.file("reports/dependencyGuard/report.json")
+            )
+        }
+
+        val dependencyAggregateTask = rootProject.tasks.register(
+            "dependencyGuardDependencyReport",
+            DependencyGuardDependencyReportTask::class.java
+        ) {
+            group = "reporting"
+            description = "Generates an aggregate JSON report of all dependencies of this project."
+            output.set(
+                rootProject.layout.buildDirectory.file("reports/dependencyGuard/dependencies.json")
             )
         }
 
@@ -68,6 +74,21 @@ class DependencyGuardPlugin : Plugin<Project> {
 
         // For all projects, create a worker report task that feeds into the aggregate JSON task
         rootProject.subprojects.forEach { project ->
+            val checkTask = project.tasks.register(
+                "dependencyGuardCheck",
+                DependencyGuardCheckTask::class.java
+            ) {
+                group = "verification"
+                description = "Checks for unauthorized cross-module dependencies."
+                projectPath.set(project.path)
+                specProperty.set(extension.getSpec())
+            }
+
+            // Check task must take the aggregate dependencies as input
+            checkTask.configure {
+                dependencyFile.set(dependencyAggregateTask.flatMap { it.output })
+            }
+
             val moduleReportTask = project.tasks.register(
                 "dependencyGuardModuleReport",
                 DependencyGuardModuleReportTask::class.java
@@ -76,29 +97,34 @@ class DependencyGuardPlugin : Plugin<Project> {
                 description = "Generates a JSON report of all dependency violations."
                 projectPath.set(project.path)
                 specProperty.set(extension.getSpec())
-                dependencies.set(getDependencies(project))
                 reportFile.set(
                     project.layout.buildDirectory.file("reports/dependencyGuard/report.json")
                 )
+            }
+            moduleReportTask.configure {
+                dependencyFile.set(dependencyAggregateTask.flatMap { it.output })
             }
             // Add the output of the per-module task to the aggregate task's input
             jsonTask.configure {
                 reportFiles.from(moduleReportTask.flatMap { it.reportFile })
             }
-        }
-    }
 
-    private fun getDependencies(project: Project): List<TaskDependencies> {
-        return project.configurations.map { config ->
-            TaskDependencies(
-                name = config.name,
-                projectPaths = config.dependencies
-                    .withType(ProjectDependency::class.java)
-                    .map { it.path },
-                externalLibraries = config.dependencies
-                    .withType(ExternalModuleDependency::class.java)
-                    .map { "${it.group}:${it.name}" }
-            )
+            val dependencyDumpTask = project.tasks.register(
+                "dependencyGuardDependencyDump",
+                DependencyGuardDependencyDumpTask::class.java
+            ) {
+                group = "reporting"
+                description = "Generates a JSON containing the dependencies of this module."
+                projectPath.set(project.path)
+                dependencies.set(graphBuilder.buildFrom(project))
+                dependenciesFile.set(
+                    project.layout.buildDirectory.file("reports/dependencyGuard/dependencies.json")
+                )
+            }
+            // Link the aggregation task to the individual contributions
+            dependencyAggregateTask.configure {
+                dependencyFiles.from(dependencyDumpTask.flatMap { it.dependenciesFile })
+            }
         }
     }
 }

@@ -1,11 +1,11 @@
 package com.rubensousa.dependencyguard.plugin
 
-import com.rubensousa.dependencyguard.plugin.internal.RestrictionMatch
 import com.rubensousa.dependencyguard.plugin.internal.DependencyGuardReport
 import com.rubensousa.dependencyguard.plugin.internal.FatalMatch
+import com.rubensousa.dependencyguard.plugin.internal.JsonFileWriter
 import com.rubensousa.dependencyguard.plugin.internal.ModuleReport
+import com.rubensousa.dependencyguard.plugin.internal.RestrictionMatch
 import com.rubensousa.dependencyguard.plugin.internal.SuppressedMatch
-import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import org.gradle.api.DefaultTask
 import org.gradle.api.file.ConfigurableFileCollection
@@ -24,10 +24,7 @@ abstract class DependencyGuardAggregateReportTask : DefaultTask() {
     @get:OutputFile
     abstract val reportLocation: RegularFileProperty
 
-    private val json = Json {
-        prettyPrint = true
-        prettyPrintIndent = "  "
-    }
+    private val jsonWriter = JsonFileWriter()
 
     @TaskAction
     fun generateReport() {
@@ -40,30 +37,28 @@ abstract class DependencyGuardAggregateReportTask : DefaultTask() {
         }
 
         val report = DependencyGuardReport(
-            modules = restrictionMatches.groupBy { it.modulePath }
+            modules = restrictionMatches.groupBy { it.module }
                 .map { (modulePath, matches) ->
                     ModuleReport(
                         module = modulePath,
                         fatal = matches.filter { !it.isSuppressed }.map { match ->
                             FatalMatch(
-                                dependency = match.dependencyPath,
+                                dependency = match.dependency,
+                                pathToDependency = match.pathToDependency,
                                 reason = match.reason,
                             )
                         },
                         suppressed = matches.filter { it.isSuppressed }.map { match ->
                             SuppressedMatch(
-                                dependency = match.dependencyPath,
+                                dependency = match.dependency,
+                                pathToDependency = match.pathToDependency,
                                 suppressionReason = match.suppressionReason,
                             )
                         }
                     )
                 }.sortedBy { it.module }
         )
-        val jsonReport = json.encodeToString(report)
-        reportLocation.get().asFile.apply {
-            parentFile.mkdirs()
-            writeText(jsonReport)
-        }
+        jsonWriter.writeToFile(report, reportLocation.get().asFile)
     }
 
 }

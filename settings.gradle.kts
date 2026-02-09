@@ -21,6 +21,7 @@ dependencyResolutionManagement {
 }
 
 rootProject.name = "DependencyGuard"
+include(":dependencyguard-plugin")
 include(":data:a")
 include(":data:b")
 include(":data:c")
@@ -47,7 +48,6 @@ include(":data:w")
 include(":data:x")
 include(":data:y")
 include(":data:z")
-include(":dependencyguard-plugin")
 include(":domain:a")
 include(":domain:b")
 include(":domain:c")

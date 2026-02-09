@@ -38,7 +38,7 @@ dependencyGuard {
             setReason("Only legacy modules can still depend on another legacy modules")
         }
     }
-   /* restrictDependency(libs.mockk) {
+    restrictDependency(libs.mockk) {
         setReason("Fakes should be used instead")
         allow(":feature:a") {
             setReason("This feature requires mockk to test platform code")
@@ -46,7 +46,7 @@ dependencyGuard {
         suppress(":feature:z") {
             setReason("Some tests in this feature still use mocks")
         }
-    }*/
+    }
 }
 
 // apply(from = "scripts/generate_modules.gradle.kts")
