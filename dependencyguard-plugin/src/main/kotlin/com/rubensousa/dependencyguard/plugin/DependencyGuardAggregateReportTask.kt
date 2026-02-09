@@ -37,19 +37,21 @@ abstract class DependencyGuardAggregateReportTask : DefaultTask() {
         }
 
         val report = DependencyGuardReport(
-            modules = restrictionMatches.groupBy { it.modulePath }
+            modules = restrictionMatches.groupBy { it.module }
                 .map { (modulePath, matches) ->
                     ModuleReport(
                         module = modulePath,
                         fatal = matches.filter { !it.isSuppressed }.map { match ->
                             FatalMatch(
-                                dependency = match.dependencyPath,
+                                dependency = match.dependency,
+                                pathToDependency = match.pathToDependency,
                                 reason = match.reason,
                             )
                         },
                         suppressed = matches.filter { it.isSuppressed }.map { match ->
                             SuppressedMatch(
-                                dependency = match.dependencyPath,
+                                dependency = match.dependency,
+                                pathToDependency = match.pathToDependency,
                                 suppressionReason = match.suppressionReason,
                             )
                         }

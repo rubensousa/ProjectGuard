@@ -29,8 +29,8 @@ class DependencyGuardDependencyRestrictionTest {
         // then
         assertThat(violations).containsExactly(
             RestrictionMatch(
-                modulePath = ":domain",
-                dependencyPath = ":legacy",
+                module = ":domain",
+                dependency = ":legacy",
                 isSuppressed = false
             )
         )
@@ -56,8 +56,8 @@ class DependencyGuardDependencyRestrictionTest {
         // then
         assertThat(violations).containsExactly(
             RestrictionMatch(
-                modulePath = ":domain:a",
-                dependencyPath = ":legacy:a",
+                module = ":domain:a",
+                dependency = ":legacy:a",
                 isSuppressed = false
             )
         )
@@ -84,13 +84,13 @@ class DependencyGuardDependencyRestrictionTest {
             )
         ).containsExactly(
             RestrictionMatch(
-                modulePath = ":domain",
-                dependencyPath = ":legacy",
+                module = ":domain",
+                dependency = ":legacy",
                 isSuppressed = false
             ),
             RestrictionMatch(
-                modulePath = ":domain",
-                dependencyPath = ":deprecated",
+                module = ":domain",
+                dependency = ":deprecated",
                 isSuppressed = false
             )
         )

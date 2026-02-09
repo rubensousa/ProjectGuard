@@ -31,8 +31,8 @@ class DependencyGuardModuleRestrictionTest {
             )
         ).containsExactly(
             RestrictionMatch(
-                modulePath = ":domain:a",
-                dependencyPath = ":other:a",
+                module = ":domain:a",
+                dependency = ":other:a",
                 isSuppressed = false
             )
         )
@@ -59,8 +59,8 @@ class DependencyGuardModuleRestrictionTest {
             )
         ).containsExactly(
             RestrictionMatch(
-                modulePath = ":domain:a",
-                dependencyPath = ":other:a",
+                module = ":domain:a",
+                dependency = ":other:a",
                 isSuppressed = false
             )
         )
@@ -112,8 +112,8 @@ class DependencyGuardModuleRestrictionTest {
         // then
         assertThat(matches).containsExactly(
             RestrictionMatch(
-                modulePath = ":domain",
-                dependencyPath = ":legacy",
+                module = ":domain",
+                dependency = ":legacy",
                 isSuppressed = false
             )
         )
@@ -141,8 +141,8 @@ class DependencyGuardModuleRestrictionTest {
         // then
         assertThat(matches).containsExactly(
             RestrictionMatch(
-                modulePath = ":domain:a",
-                dependencyPath = ":legacy",
+                module = ":domain:a",
+                dependency = ":legacy",
                 isSuppressed = false
             )
         )
@@ -191,13 +191,13 @@ class DependencyGuardModuleRestrictionTest {
             )
         ).containsExactly(
             RestrictionMatch(
-                modulePath = ":domain:a",
-                dependencyPath = ":legacy",
+                module = ":domain:a",
+                dependency = ":legacy",
                 isSuppressed = false
             ),
             RestrictionMatch(
-                modulePath = ":domain:a",
-                dependencyPath = ":deprecated",
+                module = ":domain:a",
+                dependency = ":deprecated",
                 isSuppressed = false
             )
         )

@@ -10,11 +10,12 @@ internal class RestrictionChecker {
         spec: DependencyGuardSpec,
     ): List<RestrictionMatch> {
         val matches = mutableListOf<RestrictionMatch>()
-        dependencyGraph.getAllDependencies(modulePath).forEach { dependency ->
+        dependencyGraph.getDependencyMatches(modulePath).forEach { dependencyMatch ->
             matches.addAll(
                 findDependencyMatches(
-                    modulePath = modulePath,
-                    dependencyPath = dependency,
+                    moduleId = modulePath,
+                    dependencyId = dependencyMatch.dependencyId,
+                    pathToDependency = dependencyMatch.path,
                     spec = spec
                 )
             )
@@ -23,21 +24,24 @@ internal class RestrictionChecker {
     }
 
     private fun findDependencyMatches(
-        modulePath: String,
-        dependencyPath: String,
+        moduleId: String,
+        dependencyId: String,
+        pathToDependency: List<String>,
         spec: DependencyGuardSpec,
     ): List<RestrictionMatch> {
         val matches = mutableListOf<RestrictionMatch>()
         fillModuleRestrictionMatches(
             matches = matches,
-            modulePath = modulePath,
-            dependencyPath = dependencyPath,
+            moduleId = moduleId,
+            dependencyId = dependencyId,
+            pathToDependency = pathToDependency,
             spec = spec
         )
         fillDependencyRestrictionMatches(
             matches = matches,
-            modulePath = modulePath,
-            dependencyPath = dependencyPath,
+            moduleId = moduleId,
+            dependencyId = dependencyId,
+            pathToDependency = pathToDependency,
             spec = spec
         )
         return matches
@@ -49,27 +53,29 @@ internal class RestrictionChecker {
      */
     private fun fillModuleRestrictionMatches(
         matches: MutableList<RestrictionMatch>,
-        modulePath: String,
-        dependencyPath: String,
+        moduleId: String,
+        dependencyId: String,
+        pathToDependency: List<String>,
         spec: DependencyGuardSpec,
     ) {
         spec.moduleRestrictions.forEach { restriction ->
             val matchesModule = hasModuleMatch(
-                modulePath = modulePath,
+                modulePath = moduleId,
                 referencePath = restriction.modulePath
             )
             if (matchesModule) {
                 val denial = restriction.denied.find { spec ->
                     hasModuleMatch(
-                        modulePath = dependencyPath,
+                        modulePath = dependencyId,
                         referencePath = spec.modulePath
                     )
                 }
                 if (denial != null) {
                     matches.add(
                         RestrictionMatch(
-                            modulePath = modulePath,
-                            dependencyPath = dependencyPath,
+                            module = moduleId,
+                            dependency = dependencyId,
+                            pathToDependency = buildDependencyPath(dependencyId, pathToDependency),
                             reason = denial.reason,
                             isSuppressed = false,
                             suppressionReason = unspecifiedReason
@@ -78,15 +84,16 @@ internal class RestrictionChecker {
                 } else {
                     val suppression = restriction.suppressed.find { suppressedModule ->
                         hasModuleMatch(
-                            modulePath = dependencyPath,
+                            modulePath = dependencyId,
                             referencePath = suppressedModule.modulePath
                         )
                     }
                     if (suppression != null) {
                         matches.add(
                             RestrictionMatch(
-                                modulePath = modulePath,
-                                dependencyPath = dependencyPath,
+                                module = moduleId,
+                                dependency = dependencyId,
+                                pathToDependency = buildDependencyPath(dependencyId, pathToDependency),
                                 reason = unspecifiedReason,
                                 isSuppressed = true,
                                 suppressionReason = suppression.reason
@@ -105,29 +112,31 @@ internal class RestrictionChecker {
      */
     private fun fillDependencyRestrictionMatches(
         matches: MutableList<RestrictionMatch>,
-        modulePath: String,
-        dependencyPath: String,
+        moduleId: String,
+        dependencyId: String,
+        pathToDependency: List<String>,
         spec: DependencyGuardSpec,
     ) {
         spec.dependencyRestrictions.forEach { restriction ->
             val isDependencyRestricted = hasModuleMatch(
-                modulePath = dependencyPath,
+                modulePath = dependencyId,
                 referencePath = restriction.dependencyPath
             )
             val isModuleAllowed = restriction.allowed.any { exclusion ->
-                hasModuleMatch(modulePath = modulePath, referencePath = exclusion.modulePath)
+                hasModuleMatch(modulePath = moduleId, referencePath = exclusion.modulePath)
             }
             if (isDependencyRestricted && !isModuleAllowed) {
                 val suppression = restriction.suppressed.find { suppressedModule ->
                     hasModuleMatch(
-                        modulePath = modulePath,
+                        modulePath = moduleId,
                         referencePath = suppressedModule.modulePath
                     )
                 }
                 matches.add(
                     RestrictionMatch(
-                        modulePath = modulePath,
-                        dependencyPath = dependencyPath,
+                        module = moduleId,
+                        dependency = dependencyId,
+                        pathToDependency = buildDependencyPath(dependencyId, pathToDependency),
                         reason = restriction.reason,
                         isSuppressed = suppression != null,
                         suppressionReason = suppression?.reason ?: unspecifiedReason
@@ -135,6 +144,16 @@ internal class RestrictionChecker {
                 )
             }
         }
+    }
+
+    private fun buildDependencyPath(
+        dependencyId: String,
+        pathToDependency: List<String>,
+    ): String {
+        if (pathToDependency.isEmpty()) {
+            return dependencyId
+        }
+        return pathToDependency.joinToString(separator = " -> ") { it }
     }
 
     private fun hasModuleMatch(

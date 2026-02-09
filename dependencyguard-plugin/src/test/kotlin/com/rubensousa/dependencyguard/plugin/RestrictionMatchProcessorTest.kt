@@ -13,8 +13,8 @@ class RestrictionMatchProcessorTest {
     fun `duplicate matches are excluded`() {
         // given
         val firstMatch = RestrictionMatch(
-            modulePath = "module:a",
-            dependencyPath = "module:b",
+            module = "module:a",
+            dependency = "module:b",
         )
         val secondMatch = firstMatch.copy(
             reason = "Another reason"
@@ -31,12 +31,12 @@ class RestrictionMatchProcessorTest {
     fun `different matches are included`() {
         // given
         val firstMatch = RestrictionMatch(
-            modulePath = "module:a",
-            dependencyPath = "module:b",
+            module = "module:a",
+            dependency = "module:b",
         )
         val secondMatch = RestrictionMatch(
-            modulePath = "module:a",
-            dependencyPath = "module:c",
+            module = "module:a",
+            dependency = "module:c",
         )
 
         // when

@@ -21,7 +21,7 @@ dependencyResolutionManagement {
 }
 
 rootProject.name = "DependencyGuard"
-include(":dependencyguard-plugin")
+// include(":dependencyguard-plugin")
 include(":data:a")
 include(":data:b")
 include(":data:c")

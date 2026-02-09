@@ -17,12 +17,14 @@ internal data class ModuleReport(
 @Serializable
 internal data class FatalMatch(
     val dependency: String,
+    val pathToDependency: String?,
     val reason: String,
 )
 
 @Serializable
 internal data class SuppressedMatch(
     val dependency: String,
+    val pathToDependency: String?,
     val suppressionReason: String
 )
 

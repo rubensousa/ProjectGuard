@@ -4,19 +4,20 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 internal data class RestrictionMatch(
-    val modulePath: String,
-    val dependencyPath: String,
+    val module: String,
+    val dependency: String,
+    val pathToDependency: String = dependency,
     val reason: String = "Unspecified",
     val isSuppressed: Boolean = false,
-    val suppressionReason: String = "Unspecified"
+    val suppressionReason: String = "Unspecified",
 ) {
 
     fun asText(): String {
         return """
                 | Dependency restriction violation!
-                | Module -> $modulePath
-                | Violation -> $dependencyPath
-                | Module(s) in '${modulePath}' cannot depend on module(s) '${dependencyPath}'
+                | Module -> $module
+                | Violation -> $pathToDependency
+                | Module(s) in '${module}' cannot depend on module(s) '${dependency}'
                 | Reason: $reason
                 """.trimMargin()
     }

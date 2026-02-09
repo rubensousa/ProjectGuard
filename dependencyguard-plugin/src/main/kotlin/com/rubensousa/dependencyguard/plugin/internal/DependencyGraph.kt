@@ -19,25 +19,56 @@ internal class DependencyGraph(
         return nodes[module] ?: emptySet()
     }
 
-    fun getAllDependencies(module: String): Set<String> {
-        val visitedDependencies = mutableSetOf<String>()
-        val stack = ArrayDeque<String>()
-        stack.addAll(getDependencies(module))
-        while (stack.isNotEmpty()) {
-            val currentModule = stack.removeFirst()
-            if (visitedDependencies.contains(currentModule)) {
-                continue
-            }
-            visitedDependencies.add(currentModule)
-            getDependencies(currentModule).forEach { dependency ->
-                stack.addFirst(dependency)
+    fun getDependencyMatches(module: String): List<DependencyMatch> {
+        /**
+         * Until https://github.com/rubensousa/DependencyGuard/issues/3 is resolved,
+         * exclude transitive dependency traversals for test configurations
+         */
+        if (configurationId.contains("test")) {
+            return getDependencies(module).map {
+                DependencyMatch(it, listOf(it))
             }
         }
-        return visitedDependencies
+        val visitedDependencies = mutableSetOf<String>()
+        val paths = mutableMapOf<String, DependencyMatch>()
+        val stack = ArrayDeque<TraversalState>()
+        stack.addAll(getDependencies(module).map { dependency ->
+            TraversalState(dependency, emptyList())
+        })
+        while (stack.isNotEmpty()) {
+            val currentModule = stack.removeFirst()
+            val currentDependency = currentModule.dependency
+            if (visitedDependencies.contains(currentDependency)) {
+                continue
+            }
+            paths[currentDependency] = DependencyMatch(
+                currentDependency, currentModule.path + currentDependency
+            )
+            visitedDependencies.add(currentDependency)
+            getDependencies(currentDependency).forEach { nextDependency ->
+                stack.addFirst(
+                    TraversalState(
+                        nextDependency,
+                        currentModule.path + currentDependency
+                    )
+                )
+            }
+        }
+        return paths.values.toList()
     }
 
     override fun toString(): String {
         return "DependencyGraph(configurationId='$configurationId', nodes=$nodes)"
     }
+
+    data class DependencyMatch(
+        val dependencyId: String,
+        val path: List<String>,
+    )
+
+    private data class TraversalState(
+        val dependency: String,
+        val path: List<String>,
+    )
 
 }

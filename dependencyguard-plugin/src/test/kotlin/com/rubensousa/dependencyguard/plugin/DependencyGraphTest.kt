@@ -30,7 +30,7 @@ class DependencyGraphTest {
         graph.addDependency(module = transitiveDependencyC, dependency = transitiveDependencyE)
 
         // when
-        val dependencies = graph.getAllDependencies(consumer)
+        val dependencies = graph.getDependencyMatches(consumer).map { it.dependencyId }
 
         // then
         assertThat(dependencies).containsExactly(
@@ -40,6 +40,56 @@ class DependencyGraphTest {
             transitiveDependencyD,
             transitiveDependencyE
         )
+    }
+
+    @Test
+    fun `path to transitive dependency is correct`() {
+        // given
+        val consumer = "consumer"
+        val directDependencyA = "dependencyA"
+        graph.addDependency(module = consumer, dependency = directDependencyA)
+        // A -> B
+        val transitiveDependencyB = "dependencyB"
+        graph.addDependency(module = directDependencyA, dependency = transitiveDependencyB)
+        // B -> C
+        val transitiveDependencyC = "dependencyC"
+        graph.addDependency(module = transitiveDependencyB, dependency = transitiveDependencyC)
+        // C -> D
+        val transitiveDependencyD = "dependencyD"
+        graph.addDependency(module = transitiveDependencyC, dependency = transitiveDependencyD)
+
+        // when
+        val dependencies = graph.getDependencyMatches(consumer)
+
+        // then
+        assertThat(dependencies.find { it.dependencyId == transitiveDependencyB }!!.path)
+            .isEqualTo(listOf(directDependencyA, transitiveDependencyB))
+    }
+
+    @Test
+    fun `shortest path to transitive dependency is returned`() {
+        // given
+        val consumer = "consumer"
+        val directDependencyA = "dependencyA"
+        graph.addDependency(module = consumer, dependency = directDependencyA)
+        // A -> B
+        val transitiveDependencyB = "dependencyB"
+        graph.addDependency(module = directDependencyA, dependency = transitiveDependencyB)
+        // B -> C
+        val transitiveDependencyC = "dependencyC"
+        graph.addDependency(module = transitiveDependencyB, dependency = transitiveDependencyC)
+        // C -> D
+        val transitiveDependencyD = "dependencyD"
+        graph.addDependency(module = transitiveDependencyC, dependency = transitiveDependencyD)
+        // A -> D
+        graph.addDependency(module = directDependencyA, dependency = transitiveDependencyD)
+
+        // when
+        val dependencies = graph.getDependencyMatches(consumer)
+
+        // then
+        assertThat(dependencies.find { it.dependencyId == transitiveDependencyD }!!.path)
+            .isEqualTo(listOf(directDependencyA, transitiveDependencyD))
     }
 
 }

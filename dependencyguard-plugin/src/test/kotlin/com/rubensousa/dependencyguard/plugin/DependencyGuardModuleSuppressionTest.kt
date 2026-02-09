@@ -29,8 +29,8 @@ class DependencyGuardModuleSuppressionTest {
         )
         assertThat(violations).containsExactly(
             RestrictionMatch(
-                modulePath = ":domain",
-                dependencyPath = ":other:b",
+                module = ":domain",
+                dependency = ":other:b",
                 isSuppressed = true
             )
         )
@@ -56,8 +56,8 @@ class DependencyGuardModuleSuppressionTest {
         )
         assertThat(violations).containsExactly(
             RestrictionMatch(
-                modulePath = ":domain",
-                dependencyPath = ":other:a",
+                module = ":domain",
+                dependency = ":other:a",
                 isSuppressed = false
             )
         )
@@ -85,8 +85,8 @@ class DependencyGuardModuleSuppressionTest {
         )
         assertThat(violations).containsExactly(
             RestrictionMatch(
-                modulePath = ":domain",
-                dependencyPath = ":other:a:c",
+                module = ":domain",
+                dependency = ":other:a:c",
                 isSuppressed = true,
                 suppressionReason = "Suppression reason"
             )
@@ -114,13 +114,13 @@ class DependencyGuardModuleSuppressionTest {
             )
         ).containsExactly(
             RestrictionMatch(
-                modulePath = ":domain",
-                dependencyPath = ":other:c",
+                module = ":domain",
+                dependency = ":other:c",
                 isSuppressed = true
             ),
             RestrictionMatch(
-                modulePath = ":domain",
-                dependencyPath = ":other:b",
+                module = ":domain",
+                dependency = ":other:b",
                 isSuppressed = true
             )
         )
