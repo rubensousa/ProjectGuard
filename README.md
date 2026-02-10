@@ -6,12 +6,12 @@ Protect your project against undesired dependencies across different modules.
 
 ## Why DependencyGuard?
 
-As projects grow, so does the complexity of their module graph. Without clear rules, you can accidentally introduce dependencies that violate your app's architecture:
-- A :domain module might depend on another :legacy module, making it hard to fully switch away from tech debt.
-- A :data module might improperly depend on a :ui module.
+As projects grow, so does the complexity of their module graph. Without clear rules, you can accidentally introduce dependencies that violate your app's architecture or agreed conventions:
+- A `:domain` module might depend on another `:legacy` module, making it hard to fully switch away from tech debt.
+- A `:impl` module might depend on another `:impl` module, instead of an `:api` or `:domain` one.
 - A third-party dependency your team agreed to migrate away from might be added by mistake to a new module
 
-DependencyGuard protects your project's architecture by enforcing dependency rules at build time.
+DependencyGuard protects your project's architecture by enforcing dependency rules that can be checked automatically in your CI/CD setup
 
 ## Setup
 
@@ -40,7 +40,7 @@ dependencyGuard {
 }
 ```
 
-Or for groovy files `build.gradle`:
+Or if you're still using groovy:
 
 ```groovy
 plugins {

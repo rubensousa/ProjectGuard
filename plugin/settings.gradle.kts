@@ -3,7 +3,6 @@ dependencyResolutionManagement {
         gradlePluginPortal()
         google()
         mavenCentral()
-        mavenLocal()
     }
     versionCatalogs {
         create("libs") {
@@ -12,6 +11,6 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "build-logic"
-include(":dependencyguard-plugin")
-project(":dependencyguard-plugin").projectDir = File("../dependencyguard-plugin")
+rootProject.name = "plugin"
+include(":dependencyguard")
+project(":dependencyguard").projectDir = File("../dependencyguard")
