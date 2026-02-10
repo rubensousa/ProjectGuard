@@ -14,12 +14,11 @@
  * limitations under the License.
  */
 
-package com.rubensousa.dependencyguard.plugin
+package com.rubensousa.dependencyguard.plugin.internal
 
 import com.google.common.truth.Truth.assertThat
-import com.rubensousa.dependencyguard.plugin.internal.RestrictionChecker
-import com.rubensousa.dependencyguard.plugin.internal.RestrictionMatch
-import com.rubensousa.dependencyguard.plugin.internal.SuppressionMap
+import com.rubensousa.dependencyguard.plugin.buildDependencyGraph
+import com.rubensousa.dependencyguard.plugin.dependencyGuard
 import kotlin.test.Test
 
 class DependencyGuardModuleRestrictionTest {

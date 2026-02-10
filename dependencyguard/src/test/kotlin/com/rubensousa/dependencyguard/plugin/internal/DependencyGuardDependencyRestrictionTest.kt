@@ -14,94 +14,104 @@
  * limitations under the License.
  */
 
-package com.rubensousa.dependencyguard.plugin
+package com.rubensousa.dependencyguard.plugin.internal
 
 import com.google.common.truth.Truth.assertThat
-import com.rubensousa.dependencyguard.plugin.internal.RestrictionChecker
-import com.rubensousa.dependencyguard.plugin.internal.RestrictionMatch
-import com.rubensousa.dependencyguard.plugin.internal.SuppressionMap
+import com.rubensousa.dependencyguard.plugin.buildDependencyGraph
+import com.rubensousa.dependencyguard.plugin.dependencyGuard
 import kotlin.test.Test
 
-class DependencyGuardDependencySuppressionTest {
+class DependencyGuardDependencyRestrictionTest {
 
     private val suppressionMap = SuppressionMap()
     private val restrictionChecker = RestrictionChecker(suppressionMap)
 
     @Test
-    fun `module included in suppressions should be flagged as suppressed`() {
+    fun `there is a restriction for a direct match`() {
         // given
         val spec = dependencyGuard {
-            restrictDependency(":other")
+            restrictDependency(":legacy")
         }
-        suppressionMap.add(":domain", ":other:b")
         val graph = buildDependencyGraph {
-            addDependency(":domain", ":other:b")
+            addDependency(":domain", ":legacy")
         }
 
-        // then
+        // when
         val matches = restrictionChecker.findMatches(
             modulePath = ":domain",
             dependencyGraph = graph,
             spec = spec
         )
-        assertThat(matches).containsExactly(
-            RestrictionMatch(
-                module = ":domain",
-                dependency = ":other:b",
-                isSuppressed = true
-            )
-        )
-    }
-
-    @Test
-    fun `module not included in suppressions should be restricted`() {
-        // given
-        val spec = dependencyGuard {
-            restrictDependency(":other")
-        }
-        suppressionMap.add(":domain", ":other:b")
-        val graph = buildDependencyGraph {
-            addDependency(":domain", ":other:a")
-        }
 
         // then
-        val matches = restrictionChecker.findMatches(
-            modulePath = ":domain",
-            dependencyGraph = graph,
-            spec = spec
-        )
         assertThat(matches).containsExactly(
             RestrictionMatch(
                 module = ":domain",
-                dependency = ":other:a",
+                dependency = ":legacy",
                 isSuppressed = false
             )
         )
     }
 
     @Test
-    fun `child module of suppressed module should be flagged as suppressed`() {
+    fun `there is a restriction for a child of a restricted dependency`() {
         // given
         val spec = dependencyGuard {
-            restrictDependency(":other")
+            restrictDependency(":legacy")
         }
-        suppressionMap.add(":domain:a:c", ":other")
         val graph = buildDependencyGraph {
-            addDependency(":domain:a:c", ":other")
+            addDependency(":domain:a", ":legacy:a")
         }
 
-        // then
+        // when
         val matches = restrictionChecker.findMatches(
-            modulePath = ":domain:a:c",
+            modulePath = ":domain:a",
             dependencyGraph = graph,
             spec = spec
         )
+
+        // then
         assertThat(matches).containsExactly(
             RestrictionMatch(
-                module = ":domain:a:c",
-                dependency = ":other",
-                isSuppressed = true,
+                module = ":domain:a",
+                dependency = ":legacy:a",
+                isSuppressed = false
             )
         )
     }
+
+    @Test
+    fun `multiple restrictions are found`() {
+        // given
+        val spec = dependencyGuard {
+            restrictDependency(":legacy")
+            restrictDependency(":deprecated")
+        }
+        val graph = buildDependencyGraph {
+            addDependency(":domain", ":legacy")
+            addDependency(":domain", ":deprecated")
+        }
+
+        // then
+        assertThat(
+            restrictionChecker.findMatches(
+                modulePath = ":domain",
+                dependencyGraph = graph,
+                spec = spec
+            )
+        ).containsExactly(
+            RestrictionMatch(
+                module = ":domain",
+                dependency = ":legacy",
+                isSuppressed = false
+            ),
+            RestrictionMatch(
+                module = ":domain",
+                dependency = ":deprecated",
+                isSuppressed = false
+            )
+        )
+    }
+
+
 }
