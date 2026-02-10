@@ -14,16 +14,17 @@
  * limitations under the License.
  */
 
-package com.rubensousa.dependencyguard.plugin
+package com.rubensousa.dependencyguard.plugin.internal
 
 import com.google.common.truth.Truth.assertThat
-import com.rubensousa.dependencyguard.plugin.internal.RestrictionChecker
-import com.rubensousa.dependencyguard.plugin.internal.RestrictionMatch
+import com.rubensousa.dependencyguard.plugin.buildDependencyGraph
+import com.rubensousa.dependencyguard.plugin.dependencyGuard
 import kotlin.test.Test
 
 class DependencyGuardModuleRestrictionTest {
 
-    private val restrictionChecker = RestrictionChecker()
+    private val suppressionMap = SuppressionMap()
+    private val restrictionChecker = RestrictionChecker(suppressionMap)
 
     @Test
     fun `module is restricted to concrete child but not its parent`() {

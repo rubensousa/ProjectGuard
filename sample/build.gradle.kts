@@ -31,9 +31,6 @@ dependencyGuard {
     }
     restrictDependency(":legacy") {
         setReason("Legacy modules should no longer be used")
-        suppress(":domain") {
-            setReason("Legacy already exists in some domains")
-        }
         allow(":legacy") {
             setReason("Only legacy modules can still depend on another legacy modules")
         }
@@ -42,9 +39,6 @@ dependencyGuard {
         setReason("Fakes should be used instead")
         allow(":feature:a") {
             setReason("This feature requires mockk to test platform code")
-        }
-        suppress(":feature:z") {
-            setReason("Some tests in this feature still use mocks")
         }
     }
 }

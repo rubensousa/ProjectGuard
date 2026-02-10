@@ -14,10 +14,9 @@
  * limitations under the License.
  */
 
-package com.rubensousa.dependencyguard.plugin
+package com.rubensousa.dependencyguard.plugin.internal
 
 import com.google.common.truth.Truth.assertThat
-import com.rubensousa.dependencyguard.plugin.internal.DependencyGraph
 import kotlin.test.Test
 
 class DependencyGraphTest {

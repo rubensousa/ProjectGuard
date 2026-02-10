@@ -24,7 +24,6 @@ import org.gradle.api.Action
 internal class DependencyRestrictionScopeImpl : DependencyRestrictionScope {
 
     private val allowed = mutableListOf<ModuleSpec>()
-    private val suppressed = mutableListOf<ModuleSpec>()
     private var restrictionReason = "Unspecified"
 
     override fun setReason(reason: String) {
@@ -45,20 +44,7 @@ internal class DependencyRestrictionScopeImpl : DependencyRestrictionScope {
         )
     }
 
-    override fun suppress(modulePath: String, action: Action<SuppressScope>) {
-        val scope = SuppressScopeImpl()
-        action.execute(scope)
-        suppressed.add(
-            ModuleSpec(
-                modulePath = modulePath,
-                reason = scope.getReason()
-            )
-        )
-    }
-
     fun getAllowedModules() = allowed.toList()
-
-    fun getSuppressedModules() = suppressed.toList()
 
     fun getReason() = restrictionReason
 

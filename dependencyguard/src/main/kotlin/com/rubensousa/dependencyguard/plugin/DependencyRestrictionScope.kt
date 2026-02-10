@@ -22,7 +22,6 @@ import org.gradle.api.provider.Provider
 
 
 internal val defaultAllowScope = Action<AllowScope> { }
-internal val defaultSuppressScope = Action<SuppressScope> { }
 
 interface DependencyRestrictionScope {
 
@@ -38,18 +37,6 @@ interface DependencyRestrictionScope {
     fun allow(
         modulePath: String,
         action: Action<AllowScope>,
-    )
-
-    // Required for groovy compatibility
-    fun suppress(
-        modulePath: String,
-    ) {
-        suppress(modulePath, defaultSuppressScope)
-    }
-
-    fun suppress(
-        modulePath: String,
-        action: Action<SuppressScope>,
     )
 
 }

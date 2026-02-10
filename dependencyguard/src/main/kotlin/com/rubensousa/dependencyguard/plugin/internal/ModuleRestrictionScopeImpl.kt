@@ -26,7 +26,6 @@ import org.gradle.api.provider.Provider
 internal class ModuleRestrictionScopeImpl : ModuleRestrictionScope {
 
     private val denied = mutableListOf<ModuleSpec>()
-    private val suppressed = mutableListOf<ModuleSpec>()
 
     override fun deny(
         dependencyPath: String,
@@ -42,17 +41,6 @@ internal class ModuleRestrictionScopeImpl : ModuleRestrictionScope {
         )
     }
 
-    override fun suppress(dependencyPath: String, action: Action<SuppressScope>) {
-        val scope = SuppressScopeImpl()
-        action.execute(scope)
-        suppressed.add(
-            ModuleSpec(
-                modulePath = dependencyPath,
-                reason = scope.getReason(),
-            )
-        )
-    }
-
     override fun deny(
         provider: Provider<MinimalExternalModuleDependency>,
         action: Action<DenyScope>,
@@ -60,15 +48,6 @@ internal class ModuleRestrictionScopeImpl : ModuleRestrictionScope {
         deny(dependencyPath = provider.getDependencyPath(), action)
     }
 
-    override fun suppress(
-        provider: Provider<MinimalExternalModuleDependency>,
-        action: Action<SuppressScope>,
-    ) {
-        suppress(dependencyPath = provider.getDependencyPath())
-    }
-
     fun getDeniedDependencies() = denied.toList()
-
-    fun getSuppressedDependencies() = suppressed.toList()
 
 }

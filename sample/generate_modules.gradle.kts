@@ -26,13 +26,13 @@ for (group in moduleGroups) {
             }
             "feature" -> {
                 // Violates restrict(":feature") -> deny(":feature")
-                // Make 'c' depend on 'd', 'e' on 'f', etc. to create violations
+                // Make 'c' depend on 'd', 'e' on 'f', etc. to create matches
                 val nextSub = if (sub < 'z') sub + 1 else 'a'
                 dependencies.add("implementation(project(\":sample:feature:$nextSub\"))")
             }
         }
         
-        // Add a mockk violation for every 5th module
+        // Add a mockk match for every 5th module
         if (sub.code % 5 == 0) {
             dependencies.add("testImplementation(libs.mockk)")
         }

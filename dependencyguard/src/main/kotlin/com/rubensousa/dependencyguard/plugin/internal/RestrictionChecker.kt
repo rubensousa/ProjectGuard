@@ -16,7 +16,9 @@
 
 package com.rubensousa.dependencyguard.plugin.internal
 
-internal class RestrictionChecker {
+internal class RestrictionChecker(
+    private val suppressionMap: SuppressionMap,
+) {
 
     private val unspecifiedReason = "Unspecified"
 
@@ -87,35 +89,20 @@ internal class RestrictionChecker {
                     )
                 }
                 if (denial != null) {
+                    val suppression = suppressionMap.getSuppression(moduleId, dependencyId)
                     matches.add(
                         RestrictionMatch(
                             module = moduleId,
                             dependency = dependencyId,
-                            pathToDependency = buildDependencyPath(dependencyId, pathToDependency),
-                            reason = denial.reason,
-                            isSuppressed = false,
-                            suppressionReason = unspecifiedReason
+                            pathToDependency = buildDependencyPath(
+                                dependencyId,
+                                pathToDependency
+                            ),
+                            reason = unspecifiedReason,
+                            isSuppressed = suppression != null,
+                            suppressionReason = suppression?.reason ?: unspecifiedReason
                         )
                     )
-                } else {
-                    val suppression = restriction.suppressed.find { suppressedModule ->
-                        hasModuleMatch(
-                            modulePath = dependencyId,
-                            referencePath = suppressedModule.modulePath
-                        )
-                    }
-                    if (suppression != null) {
-                        matches.add(
-                            RestrictionMatch(
-                                module = moduleId,
-                                dependency = dependencyId,
-                                pathToDependency = buildDependencyPath(dependencyId, pathToDependency),
-                                reason = unspecifiedReason,
-                                isSuppressed = true,
-                                suppressionReason = suppression.reason
-                            )
-                        )
-                    }
                 }
 
             }
@@ -142,12 +129,7 @@ internal class RestrictionChecker {
                 hasModuleMatch(modulePath = moduleId, referencePath = exclusion.modulePath)
             }
             if (isDependencyRestricted && !isModuleAllowed) {
-                val suppression = restriction.suppressed.find { suppressedModule ->
-                    hasModuleMatch(
-                        modulePath = moduleId,
-                        referencePath = suppressedModule.modulePath
-                    )
-                }
+                val suppression = suppressionMap.getSuppression(moduleId, dependencyId)
                 matches.add(
                     RestrictionMatch(
                         module = moduleId,

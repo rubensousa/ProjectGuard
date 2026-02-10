@@ -16,9 +16,7 @@
 
 package com.rubensousa.dependencyguard.plugin.internal
 
-import java.io.Serializable
-
-internal data class ModuleRestriction(
-    val modulePath: String,
-    val denied: List<ModuleSpec>,
-): Serializable
+internal data class DependencySuppression(
+    val dependency: String,
+    val reason: String = "Unspecified"
+)

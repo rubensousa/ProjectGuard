@@ -109,7 +109,7 @@ class DependencyGuardIntegrationTest {
     }
 
     @Test
-    fun `check task succeeds when no violations are found`() {
+    fun `check task succeeds when no matches are found`() {
         // given
         createModule("consumer")
         createModule("library")

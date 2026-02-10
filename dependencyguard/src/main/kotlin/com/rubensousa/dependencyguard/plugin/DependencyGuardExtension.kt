@@ -43,7 +43,6 @@ abstract class DependencyGuardExtension @Inject constructor(
             ModuleRestriction(
                 modulePath = modulePath,
                 denied = scope.getDeniedDependencies(),
-                suppressed = scope.getSuppressedDependencies()
             )
         )
     }
@@ -59,7 +58,6 @@ abstract class DependencyGuardExtension @Inject constructor(
                 dependencyPath = dependencyPath,
                 reason = scope.getReason(),
                 allowed = scope.getAllowedModules(),
-                suppressed = scope.getSuppressedModules()
             )
         )
     }

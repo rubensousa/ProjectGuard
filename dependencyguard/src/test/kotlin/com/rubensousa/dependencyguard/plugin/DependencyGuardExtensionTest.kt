@@ -59,9 +59,6 @@ class DependencyGuardExtensionTest {
             allow(":legacy:a") {
                 setReason("Reason A")
             }
-            suppress(":legacy:b") {
-                setReason("Reason B")
-            }
         }
 
         // then
@@ -73,12 +70,6 @@ class DependencyGuardExtensionTest {
             ModuleSpec(
                 ":legacy:a",
                 "Reason A"
-            )
-        )
-        assertThat(restrictions.first().suppressed).containsExactly(
-            ModuleSpec(
-                ":legacy:b",
-                "Reason B"
             )
         )
     }

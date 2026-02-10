@@ -14,11 +14,9 @@
  * limitations under the License.
  */
 
-package com.rubensousa.dependencyguard.plugin
+package com.rubensousa.dependencyguard.plugin.internal
 
 import com.google.common.truth.Truth.assertThat
-import com.rubensousa.dependencyguard.plugin.internal.RestrictionMatch
-import com.rubensousa.dependencyguard.plugin.internal.RestrictionMatchProcessor
 import kotlin.test.Test
 
 class RestrictionMatchProcessorTest {

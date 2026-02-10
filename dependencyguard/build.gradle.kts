@@ -34,6 +34,8 @@ tasks.test {
 
 dependencies {
     implementation(libs.kotlin.serialization.json)
+    implementation(libs.jackson.yaml)
+    implementation(libs.jackson.kotlin)
     testImplementation(gradleTestKit())
     testImplementation(libs.kotlin.test)
     testImplementation(libs.truth)

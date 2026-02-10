@@ -14,16 +14,17 @@
  * limitations under the License.
  */
 
-package com.rubensousa.dependencyguard.plugin
+package com.rubensousa.dependencyguard.plugin.internal
 
 import com.google.common.truth.Truth.assertThat
-import com.rubensousa.dependencyguard.plugin.internal.RestrictionChecker
-import com.rubensousa.dependencyguard.plugin.internal.RestrictionMatch
+import com.rubensousa.dependencyguard.plugin.buildDependencyGraph
+import com.rubensousa.dependencyguard.plugin.dependencyGuard
 import kotlin.test.Test
 
 class DependencyGuardDependencyRestrictionTest {
 
-    private val restrictionChecker = RestrictionChecker()
+    private val suppressionMap = SuppressionMap()
+    private val restrictionChecker = RestrictionChecker(suppressionMap)
 
     @Test
     fun `there is a restriction for a direct match`() {
@@ -36,14 +37,14 @@ class DependencyGuardDependencyRestrictionTest {
         }
 
         // when
-        val violations = restrictionChecker.findMatches(
+        val matches = restrictionChecker.findMatches(
             modulePath = ":domain",
             dependencyGraph = graph,
             spec = spec
         )
 
         // then
-        assertThat(violations).containsExactly(
+        assertThat(matches).containsExactly(
             RestrictionMatch(
                 module = ":domain",
                 dependency = ":legacy",
@@ -63,14 +64,14 @@ class DependencyGuardDependencyRestrictionTest {
         }
 
         // when
-        val violations = restrictionChecker.findMatches(
+        val matches = restrictionChecker.findMatches(
             modulePath = ":domain:a",
             dependencyGraph = graph,
             spec = spec
         )
 
         // then
-        assertThat(violations).containsExactly(
+        assertThat(matches).containsExactly(
             RestrictionMatch(
                 module = ":domain:a",
                 dependency = ":legacy:a",

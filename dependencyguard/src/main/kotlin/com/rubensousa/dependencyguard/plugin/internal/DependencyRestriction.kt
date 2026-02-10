@@ -22,5 +22,4 @@ internal data class DependencyRestriction(
     val dependencyPath: String,
     val reason: String,
     val allowed: List<ModuleSpec>,
-    val suppressed: List<ModuleSpec>
 ): Serializable

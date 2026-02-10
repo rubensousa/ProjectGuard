@@ -22,6 +22,11 @@ import org.gradle.api.Project
 
 class DependencyGuardPlugin : Plugin<Project> {
 
+    private val baselineFilePath = "dependencyguard.yml"
+    private val jsonReportFilePath = "reports/dependencyGuard/report.json"
+    private val htmlReportFilePath = "reports/dependencyGuard/report.html"
+    private val dependenciesFilePath = "reports/dependencyGuard/dependencies.json"
+
     override fun apply(target: Project) {
         val rootProject = target.rootProject
         val extension = rootProject.extensions.findByType(DependencyGuardExtension::class.java)
@@ -51,9 +56,9 @@ class DependencyGuardPlugin : Plugin<Project> {
             DependencyGuardAggregateReportTask::class.java
         ) {
             group = "reporting"
-            description = "Generates an aggregate JSON report of all dependency violations."
+            description = "Generates an aggregate JSON report of all dependency matches."
             reportLocation.set(
-                rootProject.layout.buildDirectory.file("reports/dependencyGuard/report.json")
+                rootProject.layout.buildDirectory.file(jsonReportFilePath)
             )
         }
 
@@ -64,7 +69,7 @@ class DependencyGuardPlugin : Plugin<Project> {
             group = "reporting"
             description = "Generates an aggregate JSON report of all dependencies of this project."
             output.set(
-                rootProject.layout.buildDirectory.file("reports/dependencyGuard/dependencies.json")
+                rootProject.layout.buildDirectory.file(dependenciesFilePath)
             )
         }
 
@@ -73,17 +78,32 @@ class DependencyGuardPlugin : Plugin<Project> {
             DependencyGuardHtmlReportTask::class.java
         ) {
             group = "reporting"
-            description = "Generates an HTML report of all dependency violations."
+            description = "Generates an HTML report of all dependency matches."
             jsonReport.set(jsonTask.flatMap { it.reportLocation })
             htmlReport.set(
-                rootProject.layout.buildDirectory.file("reports/dependencyGuard/report.html")
+                rootProject.layout.buildDirectory.file(htmlReportFilePath)
             )
+        }
+
+        val baselineFile = rootProject.file(baselineFilePath)
+
+        val suppressTask = rootProject.tasks.register(
+            "dependencyGuardBaseline",
+            DependencyGuardBaselineTask::class.java
+        ) {
+            group = "verification"
+            description = "Generates a YAML file containing the baseline of suppressions for this project."
+            suppressionsReference.set(baselineFile)
+        }
+
+        suppressTask.configure {
+            jsonReport.set(jsonTask.flatMap { it.reportLocation })
         }
 
         // Create a lifecycle task to run both reports
         rootProject.tasks.register("dependencyGuardReport") {
             group = "reporting"
-            description = "Generates JSON and HTML reports of all dependency violations."
+            description = "Generates JSON and HTML reports of all dependency restrictions."
             dependsOn(jsonTask, htmlTask)
         }
 
@@ -95,9 +115,10 @@ class DependencyGuardPlugin : Plugin<Project> {
                 DependencyGuardCheckTask::class.java
             ) {
                 group = "verification"
-                description = "Checks for unauthorized cross-module dependencies."
+                description = "Verifies if there are any dependency restrictions being violated"
                 projectPath.set(project.path)
                 specProperty.set(extension.getSpec())
+                baselineFilePath.set(baselineFile.path)
             }
 
             // Check task must take the aggregate dependencies as input
@@ -110,11 +131,11 @@ class DependencyGuardPlugin : Plugin<Project> {
                 DependencyGuardModuleReportTask::class.java
             ) {
                 group = "reporting"
-                description = "Generates a JSON report of all dependency violations."
+                description = "Generates a JSON report of all dependency restrictions for this module."
                 projectPath.set(project.path)
                 specProperty.set(extension.getSpec())
                 reportFile.set(
-                    project.layout.buildDirectory.file("reports/dependencyGuard/report.json")
+                    project.layout.buildDirectory.file(jsonReportFilePath)
                 )
             }
             moduleReportTask.configure {
@@ -134,7 +155,7 @@ class DependencyGuardPlugin : Plugin<Project> {
                 projectPath.set(project.path)
                 dependencies.set(graphBuilder.buildFrom(project))
                 dependenciesFile.set(
-                    project.layout.buildDirectory.file("reports/dependencyGuard/dependencies.json")
+                    project.layout.buildDirectory.file(dependenciesFilePath)
                 )
             }
             // Link the aggregation task to the individual contributions

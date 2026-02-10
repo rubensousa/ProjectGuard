@@ -22,6 +22,9 @@ import com.rubensousa.dependencyguard.plugin.internal.DependencyGuardSpec
 import com.rubensousa.dependencyguard.plugin.internal.RestrictionChecker
 import com.rubensousa.dependencyguard.plugin.internal.RestrictionMatch
 import com.rubensousa.dependencyguard.plugin.internal.RestrictionMatchProcessor
+import com.rubensousa.dependencyguard.plugin.internal.SuppressionConfiguration
+import com.rubensousa.dependencyguard.plugin.internal.SuppressionMap
+import com.rubensousa.dependencyguard.plugin.internal.YamlProcessor
 import kotlinx.serialization.json.Json
 import org.gradle.api.DefaultTask
 import org.gradle.api.GradleException
@@ -30,7 +33,10 @@ import org.gradle.api.provider.Property
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.InputFile
 import org.gradle.api.tasks.TaskAction
+import org.gradle.work.DisableCachingByDefault
+import java.io.File
 
+@DisableCachingByDefault(because = "Suppression file might have changed")
 abstract class DependencyGuardCheckTask : DefaultTask() {
 
     @get:Input
@@ -41,6 +47,9 @@ abstract class DependencyGuardCheckTask : DefaultTask() {
 
     @get:InputFile
     internal abstract val dependencyFile: RegularFileProperty
+
+    @get:Input
+    internal abstract val baselineFilePath: Property<String>
 
     @TaskAction
     fun dependencyGuardCheck() {
@@ -55,7 +64,18 @@ abstract class DependencyGuardCheckTask : DefaultTask() {
         val graphs = graphBuilder.buildFromReport(aggregateReport)
         val currentModulePath = projectPath.get()
         val matches = mutableListOf<RestrictionMatch>()
-        val restrictionChecker = RestrictionChecker()
+        val suppressionMap = SuppressionMap()
+        val baselineFile = File(baselineFilePath.get())
+        if (baselineFile.exists()) {
+            val yamlProcessor = YamlProcessor()
+            suppressionMap.set(
+                yamlProcessor.parse(
+                    baselineFile,
+                    SuppressionConfiguration::class.java
+                )
+            )
+        }
+        val restrictionChecker = RestrictionChecker(suppressionMap)
         graphs.forEach { graph ->
             matches.addAll(
                 restrictionChecker.findMatches(
@@ -67,14 +87,14 @@ abstract class DependencyGuardCheckTask : DefaultTask() {
         }
         val processor = RestrictionMatchProcessor()
         val processedMatches = processor.process(matches)
-        val suppressedViolations = processedMatches.filter { it.isSuppressed }
-        val fatalViolations = processedMatches.filter { !it.isSuppressed }
-        if (suppressedViolations.isNotEmpty()) {
-            logger.warn("Found ${suppressedViolations.size} suppressed violation(s)")
+        val suppressedMatches = processedMatches.filter { it.isSuppressed }
+        val fatalMatches = processedMatches.filter { !it.isSuppressed }
+        if (suppressedMatches.isNotEmpty()) {
+            logger.warn("Found ${suppressedMatches.size} suppressed match(es)")
         }
-        if (fatalViolations.isNotEmpty()) {
-            logger.error("Found ${fatalViolations.size} fatal violation(s)")
-            throw GradleException(fatalViolations.joinToString("\n\n") { it.asText() })
+        if (fatalMatches.isNotEmpty()) {
+            logger.error("Found ${fatalMatches.size} fatal match(es)")
+            throw GradleException(fatalMatches.joinToString("\n\n") { it.asText() })
         }
     }
 

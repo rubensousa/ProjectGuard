@@ -34,16 +34,6 @@ interface ModuleRestrictionScope {
         action: Action<DenyScope>
     )
 
-    fun suppress(
-        dependencyPath: String,
-        action: Action<SuppressScope>,
-    )
-
-    fun suppress(
-        provider: Provider<MinimalExternalModuleDependency>,
-        action: Action<SuppressScope>
-    )
-
     // Required for groovy compatibility
     fun deny(
         dependencyPath: String,
@@ -58,17 +48,4 @@ interface ModuleRestrictionScope {
         deny(provider, defaultDenyScope)
     }
 
-    // Required for groovy compatibility
-    fun suppress(
-        dependencyPath: String,
-    ) {
-        suppress(dependencyPath, defaultSuppressScope)
-    }
-
-    // Required for groovy compatibility
-    fun suppress(
-        provider: Provider<MinimalExternalModuleDependency>,
-    ) {
-        suppress(provider, defaultSuppressScope)
-    }
 }

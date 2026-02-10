@@ -14,36 +14,38 @@
  * limitations under the License.
  */
 
-package com.rubensousa.dependencyguard.plugin
+package com.rubensousa.dependencyguard.plugin.internal
 
 import com.google.common.truth.Truth.assertThat
-import com.rubensousa.dependencyguard.plugin.internal.RestrictionChecker
-import com.rubensousa.dependencyguard.plugin.internal.RestrictionMatch
+import com.rubensousa.dependencyguard.plugin.buildDependencyGraph
+import com.rubensousa.dependencyguard.plugin.dependencyGuard
 import kotlin.test.Test
 
 class DependencyGuardModuleSuppressionTest {
 
-    private val restrictionChecker = RestrictionChecker()
+    private val suppressionMap = SuppressionMap()
+    private val restrictionChecker = RestrictionChecker(suppressionMap)
 
     @Test
     fun `module included in suppression should be flagged as suppressed`() {
         // given
         val spec = dependencyGuard {
             guard(":domain") {
-                suppress(":other:b")
+                deny(":other:b")
             }
         }
+        suppressionMap.add(":domain", ":other:b")
         val graph = buildDependencyGraph {
             addDependency(":domain", ":other:b")
         }
 
         // then
-        val violations = restrictionChecker.findMatches(
+        val matches = restrictionChecker.findMatches(
             modulePath = ":domain",
             dependencyGraph = graph,
             spec = spec
         )
-        assertThat(violations).containsExactly(
+        assertThat(matches).containsExactly(
             RestrictionMatch(
                 module = ":domain",
                 dependency = ":other:b",
@@ -65,12 +67,12 @@ class DependencyGuardModuleSuppressionTest {
         }
 
         // then
-        val violations = restrictionChecker.findMatches(
+        val matches = restrictionChecker.findMatches(
             modulePath = ":domain",
             dependencyGraph = graph,
             spec = spec
         )
-        assertThat(violations).containsExactly(
+        assertThat(matches).containsExactly(
             RestrictionMatch(
                 module = ":domain",
                 dependency = ":other:a",
@@ -84,22 +86,21 @@ class DependencyGuardModuleSuppressionTest {
         // given
         val spec = dependencyGuard {
             guard(":domain") {
-                suppress(":other:a") {
-                    setReason("Suppression reason")
-                }
+                deny(":other:a")
             }
         }
+        suppressionMap.add(":domain", ":other:a:c", "Suppression reason")
         val graph = buildDependencyGraph {
             addDependency(":domain", ":other:a:c")
         }
 
         // then
-        val violations = restrictionChecker.findMatches(
+        val matches = restrictionChecker.findMatches(
             modulePath = ":domain",
             dependencyGraph = graph,
             spec = spec
         )
-        assertThat(violations).containsExactly(
+        assertThat(matches).containsExactly(
             RestrictionMatch(
                 module = ":domain",
                 dependency = ":other:a:c",
@@ -114,10 +115,12 @@ class DependencyGuardModuleSuppressionTest {
         // given
         val spec = dependencyGuard {
             guard(":domain") {
-                suppress(":other:b")
-                suppress(":other:c")
+                deny(":other:b")
+                deny(":other:c")
             }
         }
+        suppressionMap.add(":domain", ":other:b")
+        suppressionMap.add(":domain", ":other:c")
         val graph = buildDependencyGraph {
             addDependency(":domain", ":other:b")
             addDependency(":domain", ":other:c")
