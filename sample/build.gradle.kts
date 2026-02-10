@@ -18,27 +18,27 @@ subprojects {
 dependencyGuard {
     guard(":domain") {
         deny(":feature") {
-            setReason("Dependency should be inverted. Feature depends on domain")
+            reason("Dependency should be inverted. Feature depends on domain")
         }
         deny(":data") {
-            setReason("Dependency should be inverted. Data depends on domain")
+            reason("Dependency should be inverted. Data depends on domain")
         }
     }
     guard(":feature") {
         deny(":feature") {
-            setReason("Features should not depend on other features directly")
+            reason("Features should not depend on other features directly")
         }
     }
     restrictDependency(":legacy") {
-        setReason("Legacy modules should no longer be used")
+        reason("Legacy modules should no longer be used")
         allow(":legacy") {
-            setReason("Only legacy modules can still depend on another legacy modules")
+            reason("Only legacy modules can still depend on another legacy modules")
         }
     }
     restrictDependency(libs.mockk) {
-        setReason("Fakes should be used instead")
+        reason("Fakes should be used instead")
         allow(":feature:a") {
-            setReason("This feature requires mockk to test platform code")
+            reason("This feature requires mockk to test platform code")
         }
     }
 }

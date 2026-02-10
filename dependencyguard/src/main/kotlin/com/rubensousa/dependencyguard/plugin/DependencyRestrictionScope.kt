@@ -22,7 +22,7 @@ internal val defaultAllowScope = Action<AllowScope> { }
 
 interface DependencyRestrictionScope {
 
-    fun setReason(reason: String)
+    fun reason(reason: String)
 
     // Required for groovy compatibility
     fun allow(

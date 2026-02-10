@@ -25,7 +25,7 @@ internal class DependencyRestrictionScopeImpl : DependencyRestrictionScope {
     private val allowed = mutableListOf<ModuleSpec>()
     private var restrictionReason = "Unspecified"
 
-    override fun setReason(reason: String) {
+    override fun reason(reason: String) {
         restrictionReason = reason
     }
 
