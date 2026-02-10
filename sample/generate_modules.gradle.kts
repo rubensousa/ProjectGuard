@@ -16,19 +16,19 @@ for (group in moduleGroups) {
         when (group) {
             "domain" -> {
                 // Violates restrict(":domain") -> deny(":feature")
-                dependencies.add("implementation(project(\":feature:$sub\"))")
+                dependencies.add("implementation(project(\":sample:feature:$sub\"))")
                 // Violates restrictAll -> deny(":legacy")
-                dependencies.add("implementation(project(\":legacy:$sub\"))")
+                dependencies.add("implementation(project(\":sample:legacy:$sub\"))")
             }
             "data" -> {
                 // Violates restrict(":data") -> deny(":feature")
-                dependencies.add("implementation(project(\":feature:$sub\"))")
+                dependencies.add("implementation(project(\":sample:feature:$sub\"))")
             }
             "feature" -> {
                 // Violates restrict(":feature") -> deny(":feature")
                 // Make 'c' depend on 'd', 'e' on 'f', etc. to create violations
                 val nextSub = if (sub < 'z') sub + 1 else 'a'
-                dependencies.add("implementation(project(\":feature:$nextSub\"))")
+                dependencies.add("implementation(project(\":sample:feature:$nextSub\"))")
             }
         }
         

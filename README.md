@@ -40,7 +40,7 @@ dependencyGuard {
 }
 ```
 
-Or for groovy files `build.gradle`:
+Or if you're still using groovy:
 
 ```groovy
 plugins {
