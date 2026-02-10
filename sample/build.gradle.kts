@@ -9,12 +9,6 @@ plugins {
 }
 val dependencyGuardPlugin = libs.plugins.dependencyguard.get().pluginId
 
-subprojects {
-    if (!this.path.contains("dependencyguard-plugin")) {
-        apply(plugin = dependencyGuardPlugin)
-    }
-}
-
 dependencyGuard {
     guard(":domain") {
         deny(":feature") {

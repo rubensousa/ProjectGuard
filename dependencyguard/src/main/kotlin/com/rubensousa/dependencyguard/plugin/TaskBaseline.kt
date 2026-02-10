@@ -34,7 +34,7 @@ abstract class TaskBaseline : DefaultTask() {
     internal abstract val jsonReport: RegularFileProperty
 
     @get:OutputFile
-    internal abstract val suppressionsReference: RegularFileProperty
+    internal abstract val baselineFileReference: RegularFileProperty
 
     @TaskAction
     fun dependencyGuardBaseline() {
@@ -45,7 +45,7 @@ abstract class TaskBaseline : DefaultTask() {
         val aggregatedReport = Json.decodeFromString<DependencyGuardReport>(
             jsonReportFile.readText()
         )
-        val file = suppressionsReference.asFile.get()
+        val file = baselineFileReference.asFile.get()
         val yamlProcessor = YamlProcessor()
         val suppressionMap = SuppressionMap()
         aggregatedReport.modules.forEach { report ->
