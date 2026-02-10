@@ -42,13 +42,13 @@ abstract class DependencyGuardBaselineTask : DefaultTask() {
         if (!jsonReportFile.exists()) {
             return
         }
-        val report = Json.decodeFromString<DependencyGuardReport>(
+        val aggregatedReport = Json.decodeFromString<DependencyGuardReport>(
             jsonReportFile.readText()
         )
         val file = suppressionsReference.asFile.get()
         val yamlProcessor = YamlProcessor()
         val suppressionMap = SuppressionMap()
-        report.modules.forEach { report ->
+        aggregatedReport.modules.forEach { report ->
             report.fatal.forEach { fatalMatch ->
                 suppressionMap.add(
                     module = report.module,

@@ -17,7 +17,6 @@
 package com.rubensousa.dependencyguard.plugin.internal
 
 import org.gradle.api.Project
-import org.gradle.api.artifacts.Configuration
 import org.gradle.api.artifacts.ExternalModuleDependency
 import org.gradle.api.artifacts.ProjectDependency
 
@@ -33,9 +32,9 @@ internal class DependencyGraphBuilder {
         "AndroidTestCompileClasspath" // Tests would include
     )
 
-    fun buildFromReport(report: DependencyGraphAggregateReport): List<DependencyGraph> {
+    fun buildFromReport(aggregateReport: DependencyGraphAggregateReport): List<DependencyGraph> {
         val graphs = mutableMapOf<String, DependencyGraph>()
-        report.moduleReports.forEach { report ->
+        aggregateReport.moduleReports.forEach { report ->
             report.configurations.forEach { configuration ->
                 if (isConfigurationSupported(configuration.id)) {
                     val graph = graphs.getOrPut(configuration.id) {
@@ -51,7 +50,7 @@ internal class DependencyGraphBuilder {
         return graphs.values.toList()
     }
 
-    fun buildFrom(project: Project): List<DependencyGraph> {
+    fun buildFromProject(project: Project): List<DependencyGraph> {
         return project.configurations
             .filter { config -> config.isCanBeResolved && isConfigurationSupported(config.name) }
             .map { config ->

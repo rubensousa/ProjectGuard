@@ -53,7 +53,7 @@ class DependencyGraphBuilderTest {
         val legacyProjectB = consumerProject.addLegacyDependency("b")
 
         // when
-        val graphs = graphBuilder.buildFrom(consumerProject)
+        val graphs = graphBuilder.buildFromProject(consumerProject)
 
         // then
         val compileGraph = graphs.findCompilationGraph()!!
@@ -69,7 +69,7 @@ class DependencyGraphBuilderTest {
         val legacyProjectC = consumerProject.addLegacyTestDependency("c")
 
         // when
-        val graphs = graphBuilder.buildFrom(consumerProject)
+        val graphs = graphBuilder.buildFromProject(consumerProject)
 
         // then
         val testGraph = graphs.findTestGraph()!!

@@ -22,18 +22,19 @@ internal class RestrictionMatchProcessor {
         matches: List<RestrictionMatch>,
     ): List<RestrictionMatch> {
         val output = mutableListOf<RestrictionMatch>()
-        val visitedLinks = mutableSetOf<DependencyLink>()
+        val visitedMatches = mutableSetOf<String>()
         matches.forEach { match ->
-            val link = DependencyLink(
-                module = match.module,
-                dependency = match.dependency
-            )
-            if (!visitedLinks.contains(link)) {
-                visitedLinks.add(link)
+            val matchId = getMatchId(match)
+            if (!visitedMatches.contains(matchId)) {
+                visitedMatches.add(matchId)
                 output.add(match)
             }
         }
         return output
+    }
+
+    private fun getMatchId(match: RestrictionMatch): String {
+        return "module:${match.module}|dependency:${match.dependency}"
     }
 
 }

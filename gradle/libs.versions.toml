@@ -22,4 +22,5 @@ jetbrains-kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin"
 maven-publish = { id = "com.vanniktech.maven.publish", version = "0.36.0" }
 dependencyguard = { id = "com.rubensousa.dependencyguard", version = "unspecified" }
 kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
+kover = { id = "org.jetbrains.kotlinx.kover", version = "0.9.7" }
 android-library = { id = "com.android.library", version.ref = "agp" }

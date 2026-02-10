@@ -153,7 +153,7 @@ class DependencyGuardPlugin : Plugin<Project> {
                 group = "reporting"
                 description = "Generates a JSON containing the dependencies of this module."
                 projectPath.set(project.path)
-                dependencies.set(graphBuilder.buildFrom(project))
+                dependencies.set(graphBuilder.buildFromProject(project))
                 dependenciesFile.set(
                     project.layout.buildDirectory.file(dependenciesFilePath)
                 )
