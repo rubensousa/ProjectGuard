@@ -30,10 +30,10 @@ internal data class RestrictionMatch(
 
     fun asText(): String {
         return """
-                | Dependency restriction violation!
+                | Dependency restriction found!
                 | Module -> $module
-                | Violation -> $pathToDependency
-                | Module(s) in '${module}' cannot depend on module(s) '${dependency}'
+                | Match -> $pathToDependency
+                | Module(s) in '${module}' cannot depend on '${dependency}'
                 | Reason: $reason
                 """.trimMargin()
     }

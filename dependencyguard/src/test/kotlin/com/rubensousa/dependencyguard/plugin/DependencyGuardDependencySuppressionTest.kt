@@ -39,12 +39,12 @@ class DependencyGuardDependencySuppressionTest {
         }
 
         // then
-        val violations = restrictionChecker.findMatches(
+        val matches = restrictionChecker.findMatches(
             modulePath = ":domain",
             dependencyGraph = graph,
             spec = spec
         )
-        assertThat(violations).containsExactly(
+        assertThat(matches).containsExactly(
             RestrictionMatch(
                 module = ":domain",
                 dependency = ":other:b",
@@ -65,12 +65,12 @@ class DependencyGuardDependencySuppressionTest {
         }
 
         // then
-        val violations = restrictionChecker.findMatches(
+        val matches = restrictionChecker.findMatches(
             modulePath = ":domain",
             dependencyGraph = graph,
             spec = spec
         )
-        assertThat(violations).containsExactly(
+        assertThat(matches).containsExactly(
             RestrictionMatch(
                 module = ":domain",
                 dependency = ":other:a",
@@ -91,12 +91,12 @@ class DependencyGuardDependencySuppressionTest {
         }
 
         // then
-        val violations = restrictionChecker.findMatches(
+        val matches = restrictionChecker.findMatches(
             modulePath = ":domain:a:c",
             dependencyGraph = graph,
             spec = spec
         )
-        assertThat(violations).containsExactly(
+        assertThat(matches).containsExactly(
             RestrictionMatch(
                 module = ":domain:a:c",
                 dependency = ":other",

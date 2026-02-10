@@ -20,6 +20,17 @@ internal class SuppressionMap {
 
     private val suppressions = mutableMapOf<String, MutableMap<String, DependencySuppression>>()
 
+    fun set(configuration: SuppressionConfiguration) {
+        suppressions.clear()
+        configuration.suppressions.forEach { entry ->
+            val moduleId = entry.key
+            val suppressions = entry.value
+            suppressions.forEach { suppression ->
+                add(moduleId, suppression)
+            }
+        }
+    }
+
     fun add(module: String, dependency: String, reason: String = "Unspecified") {
         add(module, DependencySuppression(dependency, reason))
     }
