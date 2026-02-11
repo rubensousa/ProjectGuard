@@ -24,10 +24,13 @@ import java.io.File
 
 class DependencyGuardPlugin : Plugin<Project> {
 
-    private val baselineFilePath = "dependencyguard.yml"
-    private val jsonReportFilePath = "reports/dependencyGuard/report.json"
-    private val htmlReportFilePath = "reports/dependencyGuard/report.html"
-    private val dependenciesFilePath = "reports/dependencyGuard/dependencies.json"
+    private val pluginId = "dependencyguard"
+    private val baselineFilePath = "$pluginId.yml"
+    private val jsonAggregateReportFilePath = "reports/$pluginId/project-report.json"
+    private val htmlAggregateReportFilePath = "reports/$pluginId/project-report.html"
+    private val dependenciesFilePath = "reports/$pluginId/dependencies.json"
+    private val jsonReportFilePath = "reports/$pluginId/report.json"
+    private val htmlReportFilePath = "reports/$pluginId/report.html"
     private val graphBuilder = DependencyGraphBuilder()
 
     override fun apply(target: Project) {
@@ -49,11 +52,16 @@ class DependencyGuardPlugin : Plugin<Project> {
             jsonReport.set(aggregationTasks.report.flatMap { task -> task.reportLocation })
         }
 
+        aggregationTasks.check.configure {
+            reportFile.set(aggregationTasks.report.flatMap { task -> task.reportLocation })
+            // Run the html report after the check task
+            finalizedBy(aggregationTasks.htmlReport)
+        }
+
         rootProject.subprojects.forEach { targetProject ->
             val moduleTasks = createModuleTasks(
                 targetProject = targetProject,
                 extension = extension,
-                aggregationTasks = aggregationTasks,
             )
             connectTasks(
                 aggregationTasks = aggregationTasks,
@@ -87,14 +95,22 @@ class DependencyGuardPlugin : Plugin<Project> {
             dependencyFiles.from(moduleTasks.dependencyDump.flatMap { task -> task.dependenciesFile })
         }
 
-        // Check task must take the aggregate dependencies as input
-        moduleTasks.check.configure {
-            dependencyFile.set(aggregationTasks.dependencyDump.flatMap { task -> task.output })
-        }
-
         // Report task must take the aggregate dependencies as input
         moduleTasks.report.configure {
             dependencyFile.set(aggregationTasks.dependencyDump.flatMap { task -> task.output })
+            baselineFilePath.set(aggregationTasks.baselineFile.path)
+        }
+
+        // HTML report task takes the individual module report
+        moduleTasks.htmlReport.configure {
+            jsonReport.set(moduleTasks.report.flatMap { task -> task.reportFile })
+        }
+
+        // Check task must take the report as input
+        moduleTasks.check.configure {
+            reportFile.set(moduleTasks.report.flatMap { task -> task.reportFile })
+            // Run the html report after the check task
+            finalizedBy(moduleTasks.htmlReport)
         }
     }
 
@@ -108,6 +124,7 @@ class DependencyGuardPlugin : Plugin<Project> {
             report = createAggregateReportTask(rootProject),
             htmlReport = createAggregateHtmlReportTask(rootProject),
             baseline = createBaselineTask(baselineFile, rootProject),
+            check = createAggregateCheckTask(rootProject)
         )
     }
 
@@ -136,23 +153,35 @@ class DependencyGuardPlugin : Plugin<Project> {
             group = "reporting"
             description = "Generates an aggregate JSON report of all dependency matches."
             reportLocation.set(
-                rootProject.layout.buildDirectory.file(jsonReportFilePath)
+                rootProject.layout.buildDirectory.file(jsonAggregateReportFilePath)
             )
         }
     }
 
     private fun createAggregateHtmlReportTask(
         rootProject: Project,
-    ): TaskProvider<TaskReportHtml> {
+    ): TaskProvider<TaskAggregateHtmlReport> {
         return rootProject.tasks.register(
-            "dependencyGuardHtmlReport",
-            TaskReportHtml::class.java
+            "dependencyGuardAggregateHtmlReport",
+            TaskAggregateHtmlReport::class.java
         ) {
             group = "reporting"
             description = "Generates an HTML report of all dependency matches."
             htmlReport.set(
-                rootProject.layout.buildDirectory.file(htmlReportFilePath)
+                rootProject.layout.buildDirectory.file(htmlAggregateReportFilePath)
             )
+        }
+    }
+
+    private fun createAggregateCheckTask(
+        rootProject: Project,
+    ): TaskProvider<TaskAggregateCheck> {
+        return rootProject.tasks.register(
+            "dependencyGuardCheck",
+            TaskAggregateCheck::class.java
+        ) {
+            group = "verification"
+            description = "Verifies if there are any dependency restrictions being violated"
         }
     }
 
@@ -173,19 +202,17 @@ class DependencyGuardPlugin : Plugin<Project> {
     private fun createModuleTasks(
         targetProject: Project,
         extension: DependencyGuardExtension,
-        aggregationTasks: AggregationTasks,
     ): ModuleTasks {
         return ModuleTasks(
-            check = createCheckTask(targetProject, extension, aggregationTasks.baselineFile),
+            check = createCheckTask(targetProject),
             report = createModuleReportTask(targetProject, extension),
+            htmlReport = createModuleHtmlReportTask(targetProject),
             dependencyDump = createDependencyDumpTask(targetProject)
         )
     }
 
     private fun createCheckTask(
         targetProject: Project,
-        extension: DependencyGuardExtension,
-        baselineFile: File,
     ): TaskProvider<TaskCheck> {
         return targetProject.tasks.register(
             "dependencyGuardCheck",
@@ -194,8 +221,6 @@ class DependencyGuardPlugin : Plugin<Project> {
             group = "verification"
             description = "Verifies if there are any dependency restrictions being violated"
             projectPath.set(project.path)
-            specProperty.set(extension.getSpec())
-            baselineFilePath.set(baselineFile.path)
         }
     }
 
@@ -213,6 +238,21 @@ class DependencyGuardPlugin : Plugin<Project> {
             specProperty.set(extension.getSpec())
             reportFile.set(
                 project.layout.buildDirectory.file(jsonReportFilePath)
+            )
+        }
+    }
+
+    private fun createModuleHtmlReportTask(
+        targetProject: Project,
+    ): TaskProvider<TaskReportHtml> {
+        return targetProject.tasks.register(
+            "dependencyGuardHtmlReport",
+            TaskReportHtml::class.java
+        ) {
+            group = "reporting"
+            description = "Generates an HTML report of all dependency matches."
+            htmlReport.set(
+                targetProject.layout.buildDirectory.file(htmlReportFilePath)
             )
         }
     }
@@ -237,6 +277,7 @@ class DependencyGuardPlugin : Plugin<Project> {
     private data class ModuleTasks(
         val dependencyDump: TaskProvider<TaskDependencyDump>,
         val report: TaskProvider<TaskReport>,
+        val htmlReport: TaskProvider<TaskReportHtml>,
         val check: TaskProvider<TaskCheck>,
     )
 
@@ -244,7 +285,8 @@ class DependencyGuardPlugin : Plugin<Project> {
         val baselineFile: File,
         val baseline: TaskProvider<TaskBaseline>,
         val report: TaskProvider<TaskAggregateReport>,
-        val htmlReport: TaskProvider<TaskReportHtml>,
+        val check: TaskProvider<TaskAggregateCheck>,
+        val htmlReport: TaskProvider<TaskAggregateHtmlReport>,
         val dependencyDump: TaskProvider<TaskAggregateDependencyDump>,
     )
 

@@ -22,7 +22,9 @@ import com.rubensousa.dependencyguard.plugin.internal.DependencyGuardSpec
 import com.rubensousa.dependencyguard.plugin.internal.RestrictionChecker
 import com.rubensousa.dependencyguard.plugin.internal.RestrictionMatch
 import com.rubensousa.dependencyguard.plugin.internal.RestrictionMatchProcessor
+import com.rubensousa.dependencyguard.plugin.internal.SuppressionConfiguration
 import com.rubensousa.dependencyguard.plugin.internal.SuppressionMap
+import com.rubensousa.dependencyguard.plugin.internal.YamlProcessor
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import org.gradle.api.DefaultTask
@@ -33,6 +35,7 @@ import org.gradle.api.tasks.InputFile
 import org.gradle.api.tasks.OutputFile
 import org.gradle.api.tasks.TaskAction
 import org.gradle.work.DisableCachingByDefault
+import java.io.File
 
 @DisableCachingByDefault(because = "Report should always be generated")
 abstract class TaskReport : DefaultTask() {
@@ -49,13 +52,13 @@ abstract class TaskReport : DefaultTask() {
     @get:OutputFile
     internal abstract val reportFile: RegularFileProperty
 
+    @get:Input
+    internal abstract val baselineFilePath: Property<String>
+
     @TaskAction
     fun dependencyGuardReport() {
         val spec = specProperty.get()
         reportFile.get().asFile.delete()
-        if (spec.isEmpty()) {
-            return
-        }
         val currentModulePath = projectPath.get()
         val aggregateReport = Json.decodeFromString<DependencyGraphAggregateReport>(
             dependencyFile.get().asFile.readText()
@@ -64,6 +67,16 @@ abstract class TaskReport : DefaultTask() {
         val graphs = graphBuilder.buildFromReport(aggregateReport)
         val matches = mutableListOf<RestrictionMatch>()
         val suppressionMap = SuppressionMap()
+        val baselineFile = File(baselineFilePath.get())
+        if (baselineFile.exists()) {
+            val yamlProcessor = YamlProcessor()
+            suppressionMap.set(
+                yamlProcessor.parse(
+                    baselineFile,
+                    SuppressionConfiguration::class.java
+                )
+            )
+        }
         val restrictionChecker = RestrictionChecker(suppressionMap)
         val processor = RestrictionMatchProcessor()
         graphs.forEach { graph ->
@@ -76,10 +89,6 @@ abstract class TaskReport : DefaultTask() {
             )
         }
         val processedMatches = processor.process(matches)
-        if (processedMatches.isNotEmpty()) {
-            reportFile.get().asFile.writeText(Json.encodeToString(processedMatches))
-        } else {
-            reportFile.get().asFile.delete()
-        }
+        reportFile.get().asFile.writeText(Json.encodeToString(processedMatches))
     }
 }

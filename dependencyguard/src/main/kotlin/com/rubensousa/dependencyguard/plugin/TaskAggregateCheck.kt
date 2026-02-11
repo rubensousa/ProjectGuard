@@ -16,31 +16,40 @@
 
 package com.rubensousa.dependencyguard.plugin
 
+import com.rubensousa.dependencyguard.plugin.internal.DependencyGuardReport
 import com.rubensousa.dependencyguard.plugin.internal.RestrictionMatch
 import kotlinx.serialization.json.Json
 import org.gradle.api.DefaultTask
 import org.gradle.api.GradleException
 import org.gradle.api.file.RegularFileProperty
-import org.gradle.api.provider.Property
-import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.InputFile
 import org.gradle.api.tasks.TaskAction
 import org.gradle.work.DisableCachingByDefault
 
-@DisableCachingByDefault(because = "Suppression file might have changed")
-abstract class TaskCheck : DefaultTask() {
-
-    @get:Input
-    internal abstract val projectPath: Property<String>
+@DisableCachingByDefault
+abstract class TaskAggregateCheck : DefaultTask() {
 
     @get:InputFile
     internal abstract val reportFile: RegularFileProperty
 
     @TaskAction
     fun dependencyGuardCheck() {
-        val matches = Json.decodeFromString<List<RestrictionMatch>>(reportFile.get().asFile.readText())
-        val suppressedMatches = matches.count { it.isSuppressed }
-        val fatalMatches = matches.filter { !it.isSuppressed }
+        val report = Json.decodeFromString<DependencyGuardReport>(reportFile.get().asFile.readText())
+        var suppressedMatches = 0
+        val fatalMatches = mutableListOf<RestrictionMatch>()
+        report.modules.forEach { moduleReport ->
+            suppressedMatches += moduleReport.suppressed.size
+            moduleReport.fatal.forEach { fatalMatch ->
+                fatalMatches.add(
+                    RestrictionMatch(
+                        module = moduleReport.module,
+                        dependency = fatalMatch.dependency,
+                        pathToDependency = fatalMatch.pathToDependency,
+                        reason = fatalMatch.reason
+                    )
+                )
+            }
+        }
         if (suppressedMatches > 0) {
             logger.warn("Found $suppressedMatches suppressed match(es)")
         }

@@ -16,9 +16,8 @@
 
 package com.rubensousa.dependencyguard.plugin
 
-import com.rubensousa.dependencyguard.plugin.internal.DependencyGuardReportBuilder
+import com.rubensousa.dependencyguard.plugin.internal.DependencyGuardReport
 import com.rubensousa.dependencyguard.plugin.internal.HtmlReportGenerator
-import com.rubensousa.dependencyguard.plugin.internal.RestrictionMatch
 import kotlinx.serialization.json.Json
 import org.gradle.api.DefaultTask
 import org.gradle.api.file.RegularFileProperty
@@ -28,7 +27,7 @@ import org.gradle.api.tasks.TaskAction
 import org.gradle.work.DisableCachingByDefault
 
 @DisableCachingByDefault(because = "HTML report should always be regenerated")
-abstract class TaskReportHtml : DefaultTask() {
+abstract class TaskAggregateHtmlReport : DefaultTask() {
 
     @get:InputFile
     abstract val jsonReport: RegularFileProperty
@@ -37,10 +36,9 @@ abstract class TaskReportHtml : DefaultTask() {
     abstract val htmlReport: RegularFileProperty
 
     @TaskAction
-    fun dependencyGuardHtmlReport() {
+    fun dependencyGuardAggregateHtmlReport() {
         val htmlGenerator = HtmlReportGenerator()
-        val matches = Json.decodeFromString<List<RestrictionMatch>>(jsonReport.get().asFile.readText())
-        val report = DependencyGuardReportBuilder().build(matches)
+        val report = Json.decodeFromString<DependencyGuardReport>(jsonReport.get().asFile.readText())
         val html = htmlGenerator.generate(report)
         htmlReport.get().asFile.writeText(html)
     }
