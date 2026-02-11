@@ -424,9 +424,7 @@ internal class HtmlReportGenerator {
         .badge.fatal { background-color: var(--color-fatal); }
         .badge.suppressed { background-color: var(--color-suppressed); }
         .badge.fatal-light {
-            background-color: #fce8e6;
             color: var(--color-fatal);
-            border: 1px solid var(--color-fatal);
         }
         .badge.suppressed-light {
             background-color: #e8eaed;
