@@ -7,7 +7,6 @@ plugins {
     alias(libs.plugins.android.library) apply false
     alias(libs.plugins.dependencyguard) apply true
 }
-val dependencyGuardPlugin = libs.plugins.dependencyguard.get().pluginId
 
 dependencyGuard {
     guard(":domain") {
@@ -36,5 +35,3 @@ dependencyGuard {
         }
     }
 }
-
-// apply(from = "scripts/generate_modules.gradle.kts")

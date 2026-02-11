@@ -29,12 +29,6 @@ plugins {
     alias(libs.plugins.dependencyguard) apply true
 }
 
-val dependencyGuardPlugin = libs.plugins.dependencyguard.get().pluginId
-
-subprojects {
-    apply(plugin = dependencyGuardPlugin)
-}
-
 dependencyGuard {
     // Global configuration. See below for examples
 }
@@ -45,10 +39,6 @@ Or if you're still using groovy:
 ```groovy
 plugins {
     alias libs.plugins.dependencyguard apply true
-}
-
-subprojects {
-    plugins.apply(libs.plugins.dependencyguard.get().getPluginId())
 }
 
 dependencyGuard {
@@ -90,17 +80,7 @@ dependencyGuard {
 }
 ```
 
-3. Suppress rules temporarily until you migrate
-
-```kotlin
-dependencyGuard {
-    restrictDependency(":legacy:a") {
-        suppress(":domain:a") {
-            setReason("Domain A still depends on legacy")
-        }
-    }
-}
-```
+3. Suppress rules temporarily with `./gradlew dependencyGuardBaseline`. This will create a `dependencyguard.yml` that contains the existing violations
 
 4. Run `./gradlew dependencyGuardCheck` to validate the project using the rules you configured
 
