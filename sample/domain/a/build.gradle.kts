@@ -4,7 +4,6 @@ plugins {
 }
 
 dependencies {
-    implementation(project(":feature:a"))
-    implementation(project(":legacy:a"))
+    implementation(project(":data:a"))
     testFixturesImplementation(project(":feature:a"))
 }

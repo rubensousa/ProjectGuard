@@ -20,17 +20,16 @@ import com.rubensousa.dependencyguard.plugin.internal.DependencyGraphBuilder
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.tasks.TaskProvider
-import java.io.File
 
 class DependencyGuardPlugin : Plugin<Project> {
 
     private val pluginId = "dependencyguard"
     private val baselineFilePath = "$pluginId.yml"
     private val jsonAggregateReportFilePath = "reports/$pluginId/project-report.json"
-    private val htmlAggregateReportFilePath = "reports/$pluginId/project-report.html"
+    private val htmlAggregateReportFilePath = "reports/$pluginId"
     private val dependenciesFilePath = "reports/$pluginId/dependencies.json"
     private val jsonReportFilePath = "reports/$pluginId/report.json"
-    private val htmlReportFilePath = "reports/$pluginId/report.html"
+    private val htmlReportFilePath = "reports/$pluginId"
     private val graphBuilder = DependencyGraphBuilder()
 
     override fun apply(target: Project) {
@@ -42,9 +41,15 @@ class DependencyGuardPlugin : Plugin<Project> {
         val extension = getExtension(rootProject)
         val aggregationTasks = createAggregationTasks(rootProject)
 
+        // Ensure that the baseline file always exists
+        aggregationTasks.baselineCreate.configure {
+            baselineFileReference.set(rootProject.file(baselineFilePath))
+        }
+
         // Baseline task needs to take the aggregate report of all matches
-        aggregationTasks.baseline.configure {
+        aggregationTasks.baselineDump.configure {
             jsonReport.set(aggregationTasks.report.flatMap { task -> task.reportLocation })
+            baselineFileReference.set(aggregationTasks.baselineCreate.flatMap { task -> task.baselineFileReference })
         }
 
         // Aggregate html report takes the aggregate json and prettifies it
@@ -98,12 +103,13 @@ class DependencyGuardPlugin : Plugin<Project> {
         // Report task must take the aggregate dependencies as input
         moduleTasks.report.configure {
             dependencyFile.set(aggregationTasks.dependencyDump.flatMap { task -> task.output })
-            baselineFilePath.set(aggregationTasks.baselineFile.path)
+            baselineFileReference.set(aggregationTasks.baselineCreate.flatMap { task -> task.baselineFileReference })
         }
 
         // HTML report task takes the individual module report
         moduleTasks.htmlReport.configure {
             jsonReport.set(moduleTasks.report.flatMap { task -> task.reportFile })
+            mustRunAfter(aggregationTasks.report)
         }
 
         // Check task must take the report as input
@@ -117,13 +123,12 @@ class DependencyGuardPlugin : Plugin<Project> {
     private fun createAggregationTasks(
         rootProject: Project,
     ): AggregationTasks {
-        val baselineFile = rootProject.file(baselineFilePath)
         return AggregationTasks(
-            baselineFile = baselineFile,
             dependencyDump = createAggregateDependencyDumpTask(rootProject),
             report = createAggregateReportTask(rootProject),
             htmlReport = createAggregateHtmlReportTask(rootProject),
-            baseline = createBaselineTask(baselineFile, rootProject),
+            baselineDump = createBaselineTask(rootProject),
+            baselineCreate = createBaselineReferenceTask(rootProject),
             check = createAggregateCheckTask(rootProject)
         )
     }
@@ -168,7 +173,7 @@ class DependencyGuardPlugin : Plugin<Project> {
             group = "reporting"
             description = "Generates an HTML report of all dependency matches."
             htmlReport.set(
-                rootProject.layout.buildDirectory.file(htmlAggregateReportFilePath)
+                rootProject.layout.buildDirectory.dir(htmlAggregateReportFilePath)
             )
         }
     }
@@ -186,7 +191,6 @@ class DependencyGuardPlugin : Plugin<Project> {
     }
 
     private fun createBaselineTask(
-        baselineFile: File,
         rootProject: Project,
     ): TaskProvider<TaskBaseline> {
         return rootProject.tasks.register(
@@ -195,7 +199,18 @@ class DependencyGuardPlugin : Plugin<Project> {
         ) {
             group = "verification"
             description = "Generates a YAML file containing the baseline of suppressions for this project."
-            baselineFileReference.set(baselineFile)
+        }
+    }
+
+    private fun createBaselineReferenceTask(
+        rootProject: Project,
+    ): TaskProvider<TaskCreateBaselineFile> {
+        return rootProject.tasks.register(
+            "dependencyGuardCreateBaselineFile",
+            TaskCreateBaselineFile::class.java
+        ) {
+            group = "other"
+            description = "Ensures that the baseline file exists"
         }
     }
 
@@ -252,7 +267,7 @@ class DependencyGuardPlugin : Plugin<Project> {
             group = "reporting"
             description = "Generates an HTML report of all dependency matches."
             htmlReport.set(
-                targetProject.layout.buildDirectory.file(htmlReportFilePath)
+                targetProject.layout.buildDirectory.dir(htmlReportFilePath)
             )
         }
     }
@@ -282,8 +297,8 @@ class DependencyGuardPlugin : Plugin<Project> {
     )
 
     private data class AggregationTasks(
-        val baselineFile: File,
-        val baseline: TaskProvider<TaskBaseline>,
+        val baselineCreate: TaskProvider<TaskCreateBaselineFile>,
+        val baselineDump: TaskProvider<TaskBaseline>,
         val report: TaskProvider<TaskAggregateReport>,
         val check: TaskProvider<TaskAggregateCheck>,
         val htmlReport: TaskProvider<TaskAggregateHtmlReport>,

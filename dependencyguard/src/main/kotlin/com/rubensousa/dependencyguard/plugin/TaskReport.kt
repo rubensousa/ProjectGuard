@@ -35,7 +35,6 @@ import org.gradle.api.tasks.InputFile
 import org.gradle.api.tasks.OutputFile
 import org.gradle.api.tasks.TaskAction
 import org.gradle.work.DisableCachingByDefault
-import java.io.File
 
 @DisableCachingByDefault(because = "Report should always be generated")
 abstract class TaskReport : DefaultTask() {
@@ -49,11 +48,11 @@ abstract class TaskReport : DefaultTask() {
     @get:InputFile
     internal abstract val dependencyFile: RegularFileProperty
 
+    @get:InputFile
+    internal abstract val baselineFileReference: RegularFileProperty
+
     @get:OutputFile
     internal abstract val reportFile: RegularFileProperty
-
-    @get:Input
-    internal abstract val baselineFilePath: Property<String>
 
     @TaskAction
     fun dependencyGuardReport() {
@@ -67,15 +66,19 @@ abstract class TaskReport : DefaultTask() {
         val graphs = graphBuilder.buildFromReport(aggregateReport)
         val matches = mutableListOf<RestrictionMatch>()
         val suppressionMap = SuppressionMap()
-        val baselineFile = File(baselineFilePath.get())
+        val baselineFile = baselineFileReference.get().asFile
         if (baselineFile.exists()) {
             val yamlProcessor = YamlProcessor()
-            suppressionMap.set(
+            runCatching {
                 yamlProcessor.parse(
                     baselineFile,
                     SuppressionConfiguration::class.java
                 )
-            )
+            }.onSuccess { configuration ->
+                suppressionMap.set(configuration)
+            }.onFailure {
+                logger.warn("Could not read baseline file: ${baselineFile.path}")
+            }
         }
         val restrictionChecker = RestrictionChecker(suppressionMap)
         val processor = RestrictionMatchProcessor()

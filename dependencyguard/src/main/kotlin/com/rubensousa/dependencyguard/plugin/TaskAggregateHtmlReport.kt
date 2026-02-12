@@ -20,9 +20,10 @@ import com.rubensousa.dependencyguard.plugin.internal.DependencyGuardReport
 import com.rubensousa.dependencyguard.plugin.internal.HtmlReportGenerator
 import kotlinx.serialization.json.Json
 import org.gradle.api.DefaultTask
+import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.file.RegularFileProperty
 import org.gradle.api.tasks.InputFile
-import org.gradle.api.tasks.OutputFile
+import org.gradle.api.tasks.OutputDirectory
 import org.gradle.api.tasks.TaskAction
 import org.gradle.work.DisableCachingByDefault
 
@@ -32,15 +33,14 @@ abstract class TaskAggregateHtmlReport : DefaultTask() {
     @get:InputFile
     abstract val jsonReport: RegularFileProperty
 
-    @get:OutputFile
-    abstract val htmlReport: RegularFileProperty
+    @get:OutputDirectory
+    abstract val htmlReport: DirectoryProperty
 
     @TaskAction
     fun dependencyGuardAggregateHtmlReport() {
         val htmlGenerator = HtmlReportGenerator()
         val report = Json.decodeFromString<DependencyGuardReport>(jsonReport.get().asFile.readText())
-        val html = htmlGenerator.generate(report)
-        htmlReport.get().asFile.writeText(html)
+        htmlGenerator.generate(report, htmlReport.get().asFile)
     }
 
 }

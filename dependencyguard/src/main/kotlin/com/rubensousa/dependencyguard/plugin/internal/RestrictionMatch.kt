@@ -33,7 +33,7 @@ internal data class RestrictionMatch(
                 | Dependency restriction found!
                 | Module -> $module
                 | Match -> $pathToDependency
-                | Module(s) in '${module}' cannot depend on '${dependency}'
+                | Module '$module' cannot depend on '$dependency'
                 | Reason: $reason
                 """.trimMargin()
     }

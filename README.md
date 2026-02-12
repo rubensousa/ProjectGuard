@@ -2,7 +2,7 @@
 
 Protect your project against undesired dependencies across different modules.
 
-![Dependency Guard](dependency_guard.png)
+![Dependency Guard](example_report.png)
 
 ## Why DependencyGuard?
 

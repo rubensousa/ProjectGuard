@@ -10,9 +10,6 @@ plugins {
 
 dependencyGuard {
     guard(":domain") {
-        deny(":feature") {
-            reason("Dependency should be inverted. Feature depends on domain")
-        }
         deny(":data") {
             reason("Dependency should be inverted. Data depends on domain")
         }

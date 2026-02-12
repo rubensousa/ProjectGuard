@@ -220,4 +220,36 @@ class DependencyGuardModuleRestrictionTest {
         )
     }
 
+    @Test
+    fun `restriction contains reason that was set`() {
+        // given
+        val reason = "Legacy should not be used"
+        val spec = dependencyGuard {
+            guard(":domain") {
+                deny(":legacy") {
+                    reason(reason)
+                }
+            }
+        }
+        val graph = buildDependencyGraph {
+            addDependency(":domain:a", ":legacy:a")
+        }
+
+        // then
+        assertThat(
+            restrictionChecker.findMatches(
+                modulePath = ":domain:a",
+                dependencyGraph = graph,
+                spec = spec
+            )
+        ).containsExactly(
+            RestrictionMatch(
+                module = ":domain:a",
+                dependency = ":legacy:a",
+                reason = reason,
+                isSuppressed = false
+            ),
+        )
+    }
+
 }

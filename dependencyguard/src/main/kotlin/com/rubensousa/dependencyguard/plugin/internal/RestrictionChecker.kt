@@ -82,13 +82,12 @@ internal class RestrictionChecker(
                 referencePath = restriction.modulePath
             )
             if (matchesModule) {
-                val denial = restriction.denied.find { spec ->
+                restriction.denied.find { spec ->
                     hasModuleMatch(
                         modulePath = dependencyId,
                         referencePath = spec.modulePath
                     )
-                }
-                if (denial != null) {
+                }?.let { specDenied ->
                     val suppression = suppressionMap.getSuppression(moduleId, dependencyId)
                     matches.add(
                         RestrictionMatch(
@@ -98,13 +97,12 @@ internal class RestrictionChecker(
                                 dependencyId,
                                 pathToDependency
                             ),
-                            reason = unspecifiedReason,
+                            reason = specDenied.reason,
                             isSuppressed = suppression != null,
                             suppressionReason = suppression?.reason ?: unspecifiedReason
                         )
                     )
                 }
-
             }
         }
     }
