@@ -351,6 +351,7 @@ function createRestrictionCard(icon, title, id, subtitle, fatal, suppressed, mat
 function createMatchesTable(matches, isFatal, isFirstInSection, matchType) {
     const dependencyClass = isFatal ? 'fatal-dependency' : 'suppressed-dependency';
     const title = isFatal ? `Fatal ${matchType}` : `Suppressed ${matchType}`;
+    const header = isFatal ? 'Reason for restriction' : 'Reason for suppression';
     const sectionClass = isFirstInSection ? '' : ' extra-margin-top';
 
     return `
@@ -360,7 +361,7 @@ function createMatchesTable(matches, isFatal, isFirstInSection, matchType) {
                 <thead>
                     <tr>
                         <th>Dependency</th>
-                        <th>Reason for restriction</th>
+                        <th>${header}</th>
                     </tr>
                 </thead>
                 <tbody>
