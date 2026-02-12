@@ -19,7 +19,7 @@ DependencyGuard protects your project's architecture by enforcing dependency rul
 
 ```
 [plugins]
-dependencyguard = { id = "com.rubensousa.dependencyguard", version = "1.0.0-alpha01" }
+dependencyguard = { id = "com.rubensousa.dependencyguard", version = "1.0.0-alpha02" }
 ```
 
 2. Apply the plugin in your root `build.gradle.kts` and all of the subprojects:
@@ -72,9 +72,9 @@ dependencyGuard {
 ```kotlin
 dependencyGuard {
     restrictDependency(libs.mockk) {
-        setReason("Mocks should not be used unless really needed")
+        reason("Mocks should not be used unless really needed")
         allow(":platform") {
-            setReason("Platform modules require mockk for some cases")
+            reason("Platform modules require mockk for some cases")
         }
     }
 }
@@ -82,9 +82,9 @@ dependencyGuard {
 
 3. Suppress rules temporarily with `./gradlew dependencyGuardBaseline`. This will create a `dependencyguard.yml` that contains the existing violations
 
-4. Run `./gradlew dependencyGuardCheck` to validate the project using the rules you configured
+4. Run `./gradlew dependencyGuardCheck` to validate the project using the rules you configured. There will be a report in `build/reports/dependencyguard`  
 
-5. Run `./gradlew dependencyGuardHtmlReport` task to generate a HTML report with the violations affected by this project, including the ones that are ignored
+5. Run `./gradlew module:dependencyGuardCheck` to validate a single module. There will be a report in `build/reports/`
 
 
 ## License
