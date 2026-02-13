@@ -14,23 +14,24 @@
  * limitations under the License.
  */
 
-package com.rubensousa.dependencyguard.plugin.internal
+package com.rubensousa.dependencyguard.plugin.internal.report
 
 import kotlinx.serialization.Serializable
 
 @Serializable
-internal data class DependencyGraphReport(
+internal data class RestrictionDump(
+    val modules: List<RestrictionModuleReport>
+)
+
+@Serializable
+internal data class RestrictionModuleReport(
     val module: String,
-    val configurations: List<DependencyGraphConfiguration>,
+    val restrictions: List<RestrictionDependencyReport>
 )
 
 @Serializable
-internal data class DependencyGraphAggregateReport(
-    val moduleReports: List<DependencyGraphReport>
-)
-
-@Serializable
-internal data class DependencyGraphConfiguration(
-    val id: String,
-    val dependencies: List<String>,
+internal data class RestrictionDependencyReport(
+    val dependency: String,
+    val pathToDependency: String?, // Null -> direct dependency
+    val reason: String,
 )

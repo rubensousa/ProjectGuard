@@ -14,8 +14,9 @@
  * limitations under the License.
  */
 
-package com.rubensousa.dependencyguard.plugin.internal
+package com.rubensousa.dependencyguard.plugin.internal.report
 
+import com.rubensousa.dependencyguard.plugin.internal.DependencyGraph
 import org.gradle.api.Project
 import org.gradle.api.artifacts.ExternalModuleDependency
 import org.gradle.api.artifacts.ProjectDependency
@@ -29,12 +30,13 @@ internal class DependencyGraphBuilder {
     )
     private val androidConfigurationPatterns = mutableSetOf(
         "androidTestUtil", // To exclude test orchestrator in some modules
-        "AndroidTestCompileClasspath" // Tests would include
+        "AndroidTestCompileClasspath", // Tests would include this configuration pattern for build types and flavors
+        "UnitTestCompileClasspath" // Tests would include this configuration pattern for build types and flavors
     )
 
-    fun buildFromReport(aggregateReport: DependencyGraphAggregateReport): List<DependencyGraph> {
+    fun buildFromDump(projectDump: DependencyGraphDump): List<DependencyGraph> {
         val graphs = mutableMapOf<String, DependencyGraph>()
-        aggregateReport.moduleReports.forEach { report ->
+        projectDump.modules.forEach { report ->
             report.configurations.forEach { configuration ->
                 if (isConfigurationSupported(configuration.id)) {
                     val graph = graphs.getOrPut(configuration.id) {
@@ -44,7 +46,6 @@ internal class DependencyGraphBuilder {
                         graph.addDependency(report.module, dependency)
                     }
                 }
-
             }
         }
         return graphs.values.toList()

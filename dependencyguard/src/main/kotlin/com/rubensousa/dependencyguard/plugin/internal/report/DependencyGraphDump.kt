@@ -14,33 +14,23 @@
  * limitations under the License.
  */
 
-package com.rubensousa.dependencyguard.plugin.internal
+package com.rubensousa.dependencyguard.plugin.internal.report
 
 import kotlinx.serialization.Serializable
 
 @Serializable
-internal data class DependencyGuardReport(
-    val modules: List<ModuleReport>
+internal data class DependencyGraphDump(
+    val modules: List<DependencyGraphModuleDump>
 )
 
 @Serializable
-internal data class ModuleReport(
+internal data class DependencyGraphModuleDump(
     val module: String,
-    val fatal: List<FatalMatch>,
-    val suppressed: List<SuppressedMatch>
+    val configurations: List<ConfigurationDependencies>,
 )
 
 @Serializable
-internal data class FatalMatch(
-    val dependency: String,
-    val pathToDependency: String,
-    val reason: String,
+internal data class ConfigurationDependencies(
+    val id: String,
+    val dependencies: List<String>,
 )
-
-@Serializable
-internal data class SuppressedMatch(
-    val dependency: String,
-    val pathToDependency: String,
-    val suppressionReason: String
-)
-

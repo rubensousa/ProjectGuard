@@ -17,9 +17,10 @@
 package com.rubensousa.dependencyguard.plugin
 
 import com.rubensousa.dependencyguard.plugin.internal.DependencyGraph
-import com.rubensousa.dependencyguard.plugin.internal.DependencyGraphConfiguration
-import com.rubensousa.dependencyguard.plugin.internal.DependencyGraphReport
-import com.rubensousa.dependencyguard.plugin.internal.JsonFileWriter
+import com.rubensousa.dependencyguard.plugin.internal.report.ConfigurationDependencies
+import com.rubensousa.dependencyguard.plugin.internal.report.DependencyGraphDump
+import com.rubensousa.dependencyguard.plugin.internal.report.DependencyGraphModuleDump
+import com.rubensousa.dependencyguard.plugin.internal.report.JsonFileWriter
 import org.gradle.api.DefaultTask
 import org.gradle.api.file.RegularFileProperty
 import org.gradle.api.provider.ListProperty
@@ -28,6 +29,7 @@ import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.OutputFile
 import org.gradle.api.tasks.TaskAction
 import org.gradle.work.DisableCachingByDefault
+import java.io.File
 
 @DisableCachingByDefault
 abstract class TaskDependencyDump : DefaultTask() {
@@ -39,27 +41,44 @@ abstract class TaskDependencyDump : DefaultTask() {
     internal abstract val dependencies: ListProperty<DependencyGraph>
 
     @get:OutputFile
-    internal abstract val dependenciesFile: RegularFileProperty
-
-    private val jsonWriter = JsonFileWriter()
+    internal abstract val outputFile: RegularFileProperty
 
     @TaskAction
     fun dependencyGuardDependencyDump() {
-        val module = projectPath.get()
-        val file = dependenciesFile.get().asFile
-        file.delete()
-        val graphReport = DependencyGraphReport(
-            module = module,
-            configurations = dependencies.get().map { graph ->
-                DependencyGraphConfiguration(
-                    id = graph.configurationId,
-                    dependencies = graph.getDependencies(module).toList()
-                )
-            }
+        val executor = DependencyDumpExecutor(
+            moduleId = projectPath.get(),
+            outputFile = outputFile.get().asFile,
+            dependencyGraphs = dependencies.get()
         )
-        if (graphReport.configurations.isNotEmpty()) {
-            jsonWriter.writeToFile(graphReport, file)
-        }
+        executor.execute()
     }
 
 }
+
+internal class DependencyDumpExecutor(
+    private val moduleId: String,
+    private val outputFile: File,
+    private val dependencyGraphs: List<DependencyGraph>,
+) {
+
+    private val jsonWriter = JsonFileWriter()
+
+    fun execute() {
+        val dependencyDump = DependencyGraphDump(
+            modules = listOf(
+                DependencyGraphModuleDump(
+                    module = moduleId,
+                    configurations = dependencyGraphs.map { graph ->
+                        ConfigurationDependencies(
+                            id = graph.configurationId,
+                            dependencies = graph.getDependencies(moduleId).toList()
+                        )
+                    }
+                )
+            ),
+        )
+        jsonWriter.writeToFile(dependencyDump, outputFile)
+    }
+
+}
+

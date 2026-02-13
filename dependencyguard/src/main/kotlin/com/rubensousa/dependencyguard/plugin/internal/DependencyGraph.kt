@@ -35,18 +35,18 @@ internal class DependencyGraph(
         return nodes[module] ?: emptySet()
     }
 
-    fun getDependencyMatches(module: String): List<DependencyMatch> {
+    fun getAllDependencies(module: String): List<Dependency> {
         /**
          * Until https://github.com/rubensousa/DependencyGuard/issues/3 is resolved,
          * exclude transitive dependency traversals for test configurations
          */
         if (configurationId.contains("test")) {
             return getDependencies(module).map {
-                DependencyMatch(it, listOf(it))
+                DirectDependency(it)
             }
         }
         val visitedDependencies = mutableSetOf<String>()
-        val paths = mutableMapOf<String, DependencyMatch>()
+        val paths = mutableMapOf<String, Dependency>()
         val stack = ArrayDeque<TraversalState>()
         stack.addAll(getDependencies(module).map { dependency ->
             TraversalState(dependency, emptyList())
@@ -57,9 +57,11 @@ internal class DependencyGraph(
             if (visitedDependencies.contains(currentDependency)) {
                 continue
             }
-            paths[currentDependency] = DependencyMatch(
-                currentDependency, currentModule.path + currentDependency
-            )
+            paths[currentDependency] = if (currentModule.path.isEmpty()) {
+                DirectDependency(currentDependency)
+            } else {
+                TransitiveDependency(currentDependency, currentModule.path + currentDependency)
+            }
             visitedDependencies.add(currentDependency)
             getDependencies(currentDependency).forEach { nextDependency ->
                 stack.addFirst(
@@ -76,11 +78,6 @@ internal class DependencyGraph(
     override fun toString(): String {
         return "DependencyGraph(configurationId='$configurationId', nodes=$nodes)"
     }
-
-    data class DependencyMatch(
-        val dependencyId: String,
-        val path: List<String>,
-    )
 
     private data class TraversalState(
         val dependency: String,

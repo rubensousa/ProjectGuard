@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.rubensousa.dependencyguard.plugin.internal
+package com.rubensousa.dependencyguard.plugin.internal.report
 
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
@@ -28,18 +28,18 @@ internal class JsonFileWriter {
     }
 
     // See: https://github.com/gradle/gradle/issues/25412
-    fun writeToFile(content: DependencyGuardReport, file: File) {
-        file.parentFile.mkdirs()
+    fun writeToFile(content: VerificationReport, file: File) {
+        file.parentFile?.mkdirs()
         file.writeText(json.encodeToString(content))
     }
 
-    fun writeToFile(content: DependencyGraphAggregateReport, file: File) {
-        file.parentFile.mkdirs()
+    fun writeToFile(content: DependencyGraphDump, file: File) {
+        file.parentFile?.mkdirs()
         file.writeText(json.encodeToString(content))
     }
 
-    fun writeToFile(content: DependencyGraphReport, file: File) {
-        file.parentFile.mkdirs()
+    fun writeToFile(content: RestrictionDump, file: File) {
+        file.parentFile?.mkdirs()
         file.writeText(json.encodeToString(content))
     }
 

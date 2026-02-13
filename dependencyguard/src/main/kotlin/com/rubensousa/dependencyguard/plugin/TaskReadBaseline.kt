@@ -26,14 +26,14 @@ import org.gradle.work.DisableCachingByDefault
  * This task is just here to that all other tasks can create the reference file if it does no longer exist.
  */
 @DisableCachingByDefault
-abstract class TaskCreateBaselineFile : DefaultTask() {
+abstract class TaskReadBaseline : DefaultTask() {
 
     @get:OutputFile
-    internal abstract val baselineFile: RegularFileProperty
+    internal abstract val baselineFileReference: RegularFileProperty
 
     @TaskAction
     fun dependencyGuardReferenceBaselineFile() {
-        baselineFile.asFile.get().createNewFile()
+        baselineFileReference.asFile.get().createNewFile()
     }
 
 }

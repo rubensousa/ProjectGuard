@@ -17,6 +17,7 @@
 package com.rubensousa.dependencyguard.plugin.internal
 
 import com.google.common.truth.Truth.assertThat
+import com.rubensousa.dependencyguard.plugin.internal.report.DependencyGraphBuilder
 import org.gradle.api.Project
 import org.gradle.testfixtures.ProjectBuilder
 import org.junit.Before

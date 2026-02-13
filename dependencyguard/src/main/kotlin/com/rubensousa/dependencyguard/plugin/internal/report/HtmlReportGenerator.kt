@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.rubensousa.dependencyguard.plugin.internal
+package com.rubensousa.dependencyguard.plugin.internal.report
 
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
@@ -22,14 +22,12 @@ import java.io.File
 
 internal class HtmlReportGenerator {
 
-    fun generate(report: DependencyGuardReport, outputDirectory: File) {
+    fun generate(report: VerificationReport, outputDirectory: File) {
         if (!outputDirectory.exists()) {
             outputDirectory.mkdirs()
         }
 
-        val json = Json { prettyPrint = true }
-        val jsonReport = json.encodeToString(report)
-
+        val jsonReport = Json.encodeToString(report)
         val htmlTemplate = readResource("report/index.html")
 
         // Inject the JSON data into a script tag

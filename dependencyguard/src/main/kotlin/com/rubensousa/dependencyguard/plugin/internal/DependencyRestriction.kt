@@ -16,10 +16,72 @@
 
 package com.rubensousa.dependencyguard.plugin.internal
 
-import java.io.Serializable
+internal const val UNSPECIFIED_REASON = "Unspecified"
 
-internal data class DependencyRestriction(
-    val dependencyPath: String,
-    val reason: String,
-    val allowed: List<ModuleSpec>,
-): Serializable
+internal sealed interface DependencyRestriction {
+    val dependencyId: String
+    val reason: String
+
+    fun getId(moduleId: String): String {
+        return "module:$moduleId|dependency:${dependencyId}"
+    }
+
+    fun getText(moduleId: String): String
+
+    companion object {
+
+        fun from(dependency: Dependency, reason: String): DependencyRestriction {
+            return when (dependency) {
+                is DirectDependency -> DirectDependencyRestriction(
+                    dependencyId = dependency.id,
+                    reason = reason,
+                )
+
+                is TransitiveDependency -> TransitiveDependencyRestriction(
+                    dependencyId = dependency.id,
+                    pathToDependency = dependency.path,
+                    reason = reason,
+                )
+            }
+        }
+    }
+}
+
+internal data class DirectDependencyRestriction(
+    override val dependencyId: String,
+    override val reason: String = UNSPECIFIED_REASON,
+) : DependencyRestriction {
+
+    override fun getText(moduleId: String): String {
+        return """
+                | Dependency restriction found!
+                | Module -> $moduleId
+                | Match -> $dependencyId
+                | Module '$moduleId' cannot depend on '$dependencyId'
+                | Reason: $reason
+                """.trimMargin()
+    }
+
+}
+
+internal data class TransitiveDependencyRestriction(
+    override val dependencyId: String,
+    val pathToDependency: List<String>,
+    override val reason: String = UNSPECIFIED_REASON,
+) : DependencyRestriction {
+
+    override fun getText(moduleId: String): String {
+        return """
+                | Transitive dependency restriction found!
+                | Module -> $moduleId
+                | Match -> $dependencyId from ${getPathToDependencyText()}
+                | Module '$moduleId' cannot depend on '$dependencyId'
+                | Reason: $reason
+                """.trimMargin()
+    }
+
+    fun getPathToDependencyText(): String {
+        return pathToDependency.joinToString(separator = " -> ") { it }
+    }
+
+}

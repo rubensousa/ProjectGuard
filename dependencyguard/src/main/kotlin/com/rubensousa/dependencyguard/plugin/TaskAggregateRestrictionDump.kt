@@ -16,9 +16,9 @@
 
 package com.rubensousa.dependencyguard.plugin
 
-import com.rubensousa.dependencyguard.plugin.internal.report.DependencyGraphDump
-import com.rubensousa.dependencyguard.plugin.internal.report.DependencyGraphModuleDump
 import com.rubensousa.dependencyguard.plugin.internal.report.JsonFileWriter
+import com.rubensousa.dependencyguard.plugin.internal.report.RestrictionDump
+import com.rubensousa.dependencyguard.plugin.internal.report.RestrictionModuleReport
 import kotlinx.serialization.json.Json
 import org.gradle.api.DefaultTask
 import org.gradle.api.file.ConfigurableFileCollection
@@ -29,19 +29,19 @@ import org.gradle.api.tasks.TaskAction
 import org.gradle.work.DisableCachingByDefault
 import java.io.File
 
-@DisableCachingByDefault
-abstract class TaskAggregateDependencyDump : DefaultTask() {
+@DisableCachingByDefault(because = "Final report should always be generated")
+abstract class TaskAggregateRestrictionDump : DefaultTask() {
 
     @get:InputFiles
-    abstract val dependencyFiles: ConfigurableFileCollection
+    abstract val dumpFiles: ConfigurableFileCollection
 
     @get:OutputFile
     abstract val outputFile: RegularFileProperty
 
     @TaskAction
-    fun dependencyGuardAggregateDependencyDump() {
-        val executor = AggregateDependencyDumpExecutor(
-            inputFiles = dependencyFiles.files,
+    fun dependencyGuardAggregateRestrictionDump() {
+        val executor = AggregateRestrictionDumpExecutor(
+            inputFiles = dumpFiles.files,
             outputFile = outputFile.get().asFile
         )
         executor.execute()
@@ -49,21 +49,25 @@ abstract class TaskAggregateDependencyDump : DefaultTask() {
 
 }
 
-internal class AggregateDependencyDumpExecutor(
+internal class AggregateRestrictionDumpExecutor(
     private val inputFiles: Set<File>,
     private val outputFile: File,
 ) {
 
     fun execute() {
-        val individualModules = mutableListOf<DependencyGraphModuleDump>()
+        val modules = mutableListOf<RestrictionModuleReport>()
         inputFiles.forEach { file ->
-            if (file.exists()) {
-                individualModules.addAll(Json.decodeFromString<DependencyGraphDump>(file.readText()).modules)
+            runCatching {
+                Json.decodeFromString<RestrictionDump>(file.readText())
+            }.onSuccess { dump ->
+                modules.addAll(dump.modules)
+            }.onFailure {
+                println("Unable to parse file ${file.path}")
             }
         }
-        val aggregateReport = DependencyGraphDump(individualModules.sortedBy { it.module })
+        val dump = RestrictionDump(modules.sortedBy { it.module })
         val jsonWriter = JsonFileWriter()
-        jsonWriter.writeToFile(aggregateReport, outputFile)
+        jsonWriter.writeToFile(dump, outputFile)
     }
 
 }

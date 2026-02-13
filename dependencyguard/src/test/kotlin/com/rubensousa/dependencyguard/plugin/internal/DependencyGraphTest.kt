@@ -45,7 +45,7 @@ class DependencyGraphTest {
         graph.addDependency(module = transitiveDependencyC, dependency = transitiveDependencyE)
 
         // when
-        val dependencies = graph.getDependencyMatches(consumer).map { it.dependencyId }
+        val dependencies = graph.getAllDependencies(consumer).map { it.id }
 
         // then
         assertThat(dependencies).containsExactly(
@@ -74,10 +74,11 @@ class DependencyGraphTest {
         graph.addDependency(module = transitiveDependencyC, dependency = transitiveDependencyD)
 
         // when
-        val dependencies = graph.getDependencyMatches(consumer)
+        val dependencies = graph.getAllDependencies(consumer)
 
         // then
-        assertThat(dependencies.find { it.dependencyId == transitiveDependencyB }!!.path)
+        val dependency = dependencies.find { it.id == transitiveDependencyB }!! as TransitiveDependency
+        assertThat(dependency.path)
             .isEqualTo(listOf(directDependencyA, transitiveDependencyB))
     }
 
@@ -100,10 +101,11 @@ class DependencyGraphTest {
         graph.addDependency(module = directDependencyA, dependency = transitiveDependencyD)
 
         // when
-        val dependencies = graph.getDependencyMatches(consumer)
+        val dependencies = graph.getAllDependencies(consumer)
 
         // then
-        assertThat(dependencies.find { it.dependencyId == transitiveDependencyD }!!.path)
+        val dependency = dependencies.find { it.id == transitiveDependencyD }!! as TransitiveDependency
+        assertThat(dependency.path)
             .isEqualTo(listOf(directDependencyA, transitiveDependencyD))
     }
 

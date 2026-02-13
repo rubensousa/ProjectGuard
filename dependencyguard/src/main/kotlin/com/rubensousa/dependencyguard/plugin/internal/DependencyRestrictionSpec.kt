@@ -16,6 +16,10 @@
 
 package com.rubensousa.dependencyguard.plugin.internal
 
-internal data class SuppressionConfiguration(
-    val suppressions: Map<String, List<DependencySuppression>>
-)
+import java.io.Serializable
+
+internal data class DependencyRestrictionSpec(
+    val dependencyPath: String,
+    val reason: String,
+    val allowed: List<ModuleSpec>,
+): Serializable

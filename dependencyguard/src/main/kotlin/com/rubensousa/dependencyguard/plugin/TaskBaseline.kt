@@ -16,9 +16,9 @@
 
 package com.rubensousa.dependencyguard.plugin
 
-import com.rubensousa.dependencyguard.plugin.internal.DependencyGuardReport
 import com.rubensousa.dependencyguard.plugin.internal.SuppressionMap
 import com.rubensousa.dependencyguard.plugin.internal.YamlProcessor
+import com.rubensousa.dependencyguard.plugin.internal.report.RestrictionDump
 import kotlinx.serialization.json.Json
 import org.gradle.api.DefaultTask
 import org.gradle.api.file.RegularFileProperty
@@ -26,38 +26,48 @@ import org.gradle.api.tasks.InputFile
 import org.gradle.api.tasks.OutputFile
 import org.gradle.api.tasks.TaskAction
 import org.gradle.work.DisableCachingByDefault
+import java.io.File
 
 @DisableCachingByDefault
 abstract class TaskBaseline : DefaultTask() {
 
     @get:InputFile
-    internal abstract val jsonReport: RegularFileProperty
+    internal abstract val restrictionDumpFile: RegularFileProperty
 
     @get:OutputFile
-    internal abstract val baselineFileReference: RegularFileProperty
+    internal abstract val outputFile: RegularFileProperty
 
     @TaskAction
     fun dependencyGuardBaseline() {
-        val jsonReportFile = jsonReport.get().asFile
-        if (!jsonReportFile.exists()) {
-            return
-        }
-        val aggregatedReport = Json.decodeFromString<DependencyGuardReport>(
-            jsonReportFile.readText()
+        val executor = BaselineExecutor(
+            inputFile = restrictionDumpFile.get().asFile,
+            outputFile = outputFile.get().asFile
         )
-        val file = baselineFileReference.asFile.get()
+        executor.execute()
+    }
+
+}
+
+internal class BaselineExecutor(
+    private val inputFile: File,
+    private val outputFile: File,
+) {
+
+    fun execute() {
+        val restrictionDump = Json.decodeFromString<RestrictionDump>(inputFile.readText())
         val yamlProcessor = YamlProcessor()
         val suppressionMap = SuppressionMap()
-        aggregatedReport.modules.forEach { report ->
-            report.fatal.forEach { fatalMatch ->
+        restrictionDump.modules.forEach { report ->
+            report.restrictions.forEach { dependencyReport ->
                 suppressionMap.add(
                     module = report.module,
-                    dependency = fatalMatch.dependency,
-                    reason = "${report.module} -> ${fatalMatch.pathToDependency}"
+                    dependency = dependencyReport.dependency,
+                    // TODO: https://github.com/rubensousa/DependencyGuard/issues/26
+                    reason = "Suppressed from baseline"
                 )
             }
         }
-        yamlProcessor.write(file, suppressionMap.getConfiguration())
+        yamlProcessor.write(outputFile, suppressionMap.getBaseline())
     }
 
 }

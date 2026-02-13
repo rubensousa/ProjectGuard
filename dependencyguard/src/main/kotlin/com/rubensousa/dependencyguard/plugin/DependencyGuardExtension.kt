@@ -17,10 +17,10 @@
 package com.rubensousa.dependencyguard.plugin
 
 import com.rubensousa.dependencyguard.plugin.internal.DependencyGuardSpec
-import com.rubensousa.dependencyguard.plugin.internal.ModuleRestriction
-import com.rubensousa.dependencyguard.plugin.internal.ModuleRestrictionScopeImpl
-import com.rubensousa.dependencyguard.plugin.internal.DependencyRestriction
 import com.rubensousa.dependencyguard.plugin.internal.DependencyRestrictionScopeImpl
+import com.rubensousa.dependencyguard.plugin.internal.DependencyRestrictionSpec
+import com.rubensousa.dependencyguard.plugin.internal.ModuleRestrictionScopeImpl
+import com.rubensousa.dependencyguard.plugin.internal.ModuleRestrictionSpec
 import com.rubensousa.dependencyguard.plugin.internal.getDependencyPath
 import org.gradle.api.Action
 import org.gradle.api.artifacts.MinimalExternalModuleDependency
@@ -33,14 +33,14 @@ abstract class DependencyGuardExtension @Inject constructor(
     objects: ObjectFactory,
 ) : DependencyGuardScope {
 
-    private val moduleRestrictions = objects.listProperty<ModuleRestriction>()
-    private val dependencyRestrictions = objects.listProperty<DependencyRestriction>()
+    private val moduleRestrictions = objects.listProperty<ModuleRestrictionSpec>()
+    private val dependencyRestrictions = objects.listProperty<DependencyRestrictionSpec>()
 
     override fun guard(modulePath: String, action: Action<ModuleRestrictionScope>) {
         val scope = ModuleRestrictionScopeImpl()
         action.execute(scope)
         moduleRestrictions.add(
-            ModuleRestriction(
+            ModuleRestrictionSpec(
                 modulePath = modulePath,
                 denied = scope.getDeniedDependencies(),
             )
@@ -54,7 +54,7 @@ abstract class DependencyGuardExtension @Inject constructor(
         val scope = DependencyRestrictionScopeImpl()
         action.execute(scope)
         dependencyRestrictions.add(
-            DependencyRestriction(
+            DependencyRestrictionSpec(
                 dependencyPath = dependencyPath,
                 reason = scope.getReason(),
                 allowed = scope.getAllowedModules(),

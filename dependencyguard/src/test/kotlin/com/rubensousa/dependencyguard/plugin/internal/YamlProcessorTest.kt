@@ -34,14 +34,14 @@ class YamlProcessorTest {
         val suppressionMap = SuppressionMap()
         suppressionMap.add("module", "dependency")
         suppressionMap.add("anothermodule", "anotherdependency")
-        val configuration = suppressionMap.getConfiguration()
+        val configuration = suppressionMap.getBaseline()
         val file = temporaryFolder.newFile("suppressions.yml")
 
         // when
         yamlProcessor.write(file, configuration)
 
         // then
-        val parsedConfiguration = yamlProcessor.parse(file, SuppressionConfiguration::class.java)
+        val parsedConfiguration = yamlProcessor.parse(file, BaselineConfiguration::class.java)
         assertThat(parsedConfiguration).isEqualTo(configuration)
     }
 

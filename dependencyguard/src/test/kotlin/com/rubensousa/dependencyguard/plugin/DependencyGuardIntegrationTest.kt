@@ -79,7 +79,7 @@ class DependencyGuardIntegrationTest {
         addDependency(from = "libraryA", to = "libraryB")
 
         // when
-        val result = runGradleTask(expectSuccess = false)
+        val result = runCheckTask(expectSuccess = false)
 
         // then
         assertThat(result.task(checkTask)?.outcome!!).isEqualTo(TaskOutcome.FAILED)
@@ -102,7 +102,7 @@ class DependencyGuardIntegrationTest {
         addDependency(from = "consumer", to = "library")
 
         // when
-        val result = runGradleTask(expectSuccess = false)
+        val result = runCheckTask(expectSuccess = false)
 
         // then
         assertThat(result.task(checkTask)?.outcome!!).isEqualTo(TaskOutcome.FAILED)
@@ -125,13 +125,13 @@ class DependencyGuardIntegrationTest {
         addDependency(from = "consumer", to = "library")
 
         // when
-        val result = runGradleTask(expectSuccess = true)
+        val result = runCheckTask(expectSuccess = true)
 
         // then
         assertThat(result.task(checkTask)!!.outcome).isEqualTo(TaskOutcome.SUCCESS)
     }
 
-    private fun runGradleTask(expectSuccess: Boolean): BuildResult {
+    private fun runCheckTask(expectSuccess: Boolean): BuildResult {
         val runner = gradleRunner.withArguments(checkTask)
         return if (expectSuccess) {
             runner.build()

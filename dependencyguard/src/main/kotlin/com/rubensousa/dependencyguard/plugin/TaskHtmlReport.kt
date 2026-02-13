@@ -19,72 +19,61 @@ package com.rubensousa.dependencyguard.plugin
 import com.rubensousa.dependencyguard.plugin.internal.BaselineConfiguration
 import com.rubensousa.dependencyguard.plugin.internal.SuppressionMap
 import com.rubensousa.dependencyguard.plugin.internal.YamlProcessor
+import com.rubensousa.dependencyguard.plugin.internal.report.HtmlReportGenerator
 import com.rubensousa.dependencyguard.plugin.internal.report.RestrictionDump
 import com.rubensousa.dependencyguard.plugin.internal.report.VerificationReportBuilder
 import kotlinx.serialization.json.Json
 import org.gradle.api.DefaultTask
-import org.gradle.api.GradleException
+import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.file.RegularFileProperty
-import org.gradle.api.provider.Property
-import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.InputFile
+import org.gradle.api.tasks.OutputDirectory
 import org.gradle.api.tasks.TaskAction
 import org.gradle.work.DisableCachingByDefault
 import java.io.File
 
-@DisableCachingByDefault(because = "Baseline file might have changed")
-abstract class TaskCheck : DefaultTask() {
+@DisableCachingByDefault(because = "HTML report should always be regenerated")
+abstract class TaskHtmlReport : DefaultTask() {
 
     @get:InputFile
-    internal abstract val baselineFile: RegularFileProperty
+    abstract val restrictionDumpFile: RegularFileProperty
 
     @get:InputFile
-    internal abstract val restrictionDumpFile: RegularFileProperty
+    abstract val baselineFile: RegularFileProperty
 
-    @get:Input
-    internal abstract val reportFilePath: Property<String>
+    @get:OutputDirectory
+    abstract val outputDir: DirectoryProperty
 
     @TaskAction
-    fun dependencyGuardCheck() {
-        val executor = CheckExecutor(
-            baselineFile = baselineFile.get().asFile,
+    fun dependencyGuardHtmlReport() {
+        val executor = HtmlReportExecutor(
             restrictionDumpFile = restrictionDumpFile.get().asFile,
-            reportFilePath = reportFilePath.get(),
+            baselineFile = baselineFile.get().asFile,
+            outputFile = outputDir.get().asFile
         )
-        executor.execute().getOrThrow()
+        executor.execute()
     }
 
 }
 
-internal class CheckExecutor(
-    private val baselineFile: File,
+internal class HtmlReportExecutor(
     private val restrictionDumpFile: File,
-    private val reportFilePath: String = "",
+    private val baselineFile: File,
+    private val outputFile: File,
 ) {
 
-    fun execute(): Result<Unit> = runCatching {
+    fun execute() {
         val yamlProcessor = YamlProcessor()
         val suppressionMap = SuppressionMap()
         runCatching {
             yamlProcessor.parse(baselineFile, BaselineConfiguration::class.java)
         }.onSuccess { config ->
             suppressionMap.set(config)
-        }.onFailure {
-            println("Skipping baseline since it could not be found or was improperly structured!")
         }
         val restrictionDump = Json.decodeFromString<RestrictionDump>(restrictionDumpFile.readText())
-        val reportBuilder = VerificationReportBuilder(suppressionMap)
-        val report = reportBuilder.build(restrictionDump)
-        val fatalMatches = report.modules.flatMap { it.fatal }
-        val suppressedMatches = report.modules.flatMap { it.suppressed }
-        if (suppressedMatches.isNotEmpty()) {
-            println("Found ${suppressedMatches.size} suppressed match(es)")
-        }
-        if (fatalMatches.isNotEmpty()) {
-            throw GradleException("Found ${fatalMatches.size} fatal match(es). See report at file:///$reportFilePath")
-        } else {
-            println("No fatal matches found. See report at file:///$reportFilePath")
-        }
+        val verificationReportBuilder = VerificationReportBuilder(suppressionMap)
+        val verificationReport = verificationReportBuilder.build(restrictionDump)
+        val htmlReportGenerator = HtmlReportGenerator()
+        htmlReportGenerator.generate(verificationReport, outputFile)
     }
-
 }

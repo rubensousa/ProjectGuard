@@ -16,26 +16,9 @@
 
 package com.rubensousa.dependencyguard.plugin.internal
 
-import kotlinx.serialization.Serializable
+import java.io.Serializable
 
-@Serializable
-internal data class RestrictionMatch(
-    val module: String,
-    val dependency: String,
-    val pathToDependency: String = dependency,
-    val reason: String = "Unspecified",
-    val isSuppressed: Boolean = false,
-    val suppressionReason: String = "Unspecified",
-) {
-
-    fun asText(): String {
-        return """
-                | Dependency restriction found!
-                | Module -> $module
-                | Match -> $pathToDependency
-                | Module '$module' cannot depend on '$dependency'
-                | Reason: $reason
-                """.trimMargin()
-    }
-
-}
+internal data class ModuleRestrictionSpec(
+    val modulePath: String,
+    val denied: List<ModuleSpec>,
+): Serializable

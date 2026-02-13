@@ -20,7 +20,7 @@ internal class SuppressionMap {
 
     private val suppressions = mutableMapOf<String, MutableMap<String, DependencySuppression>>()
 
-    fun set(configuration: SuppressionConfiguration) {
+    fun set(configuration: BaselineConfiguration) {
         suppressions.clear()
         configuration.suppressions.forEach { entry ->
             val moduleId = entry.key
@@ -31,7 +31,7 @@ internal class SuppressionMap {
         }
     }
 
-    fun add(module: String, dependency: String, reason: String = "Unspecified") {
+    fun add(module: String, dependency: String, reason: String = UNSPECIFIED_REASON) {
         add(module, DependencySuppression(dependency, reason))
     }
 
@@ -45,7 +45,7 @@ internal class SuppressionMap {
         return moduleSuppressions[dependency]
     }
 
-    fun getConfiguration(): SuppressionConfiguration {
+    fun getBaseline(): BaselineConfiguration {
         val output = mutableMapOf<String, List<DependencySuppression>>()
         suppressions.keys.sorted().forEach { module ->
             suppressions[module]?.let { suppressions ->
@@ -58,7 +58,7 @@ internal class SuppressionMap {
                 output[module] = outputList
             }
         }
-        return SuppressionConfiguration(output)
+        return BaselineConfiguration(output)
     }
 
 }

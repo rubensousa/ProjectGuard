@@ -20,7 +20,6 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory
 import com.fasterxml.jackson.module.kotlin.KotlinModule
 import java.io.File
-import java.io.IOException
 
 internal class YamlProcessor {
 
@@ -30,17 +29,7 @@ internal class YamlProcessor {
         }
 
     fun <T> parse(file: File, clazz: Class<T>): T {
-        return runCatching {
-            objectMapper.readValue(file, clazz)
-        }.fold(
-            onSuccess = { it },
-            onFailure = {
-                throw IOException(
-                    "Error parsing yml file: $file. Make sure you have it correctly structured",
-                    it
-                )
-            },
-        )
+        return objectMapper.readValue(file, clazz)
     }
 
     fun <T> write(file: File, content: T) {

@@ -16,25 +16,13 @@
 
 package com.rubensousa.dependencyguard.plugin.internal
 
-internal class RestrictionMatchProcessor {
-
-    fun process(
-        matches: List<RestrictionMatch>,
-    ): List<RestrictionMatch> {
-        val output = mutableListOf<RestrictionMatch>()
-        val visitedMatches = mutableSetOf<String>()
-        matches.forEach { match ->
-            val matchId = getMatchId(match)
-            if (!visitedMatches.contains(matchId)) {
-                visitedMatches.add(matchId)
-                output.add(match)
-            }
-        }
-        return output
-    }
-
-    private fun getMatchId(match: RestrictionMatch): String {
-        return "module:${match.module}|dependency:${match.dependency}"
-    }
-
+internal sealed interface Dependency {
+    val id: String
 }
+
+internal data class DirectDependency(override val id: String) : Dependency
+
+internal data class TransitiveDependency(
+    override val id: String,
+    val path: List<String>
+) : Dependency

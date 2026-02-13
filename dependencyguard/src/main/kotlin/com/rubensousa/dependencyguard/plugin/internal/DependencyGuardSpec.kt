@@ -19,8 +19,8 @@ package com.rubensousa.dependencyguard.plugin.internal
 import java.io.Serializable
 
 internal data class DependencyGuardSpec(
-    val moduleRestrictions: List<ModuleRestriction>,
-    val dependencyRestrictions: List<DependencyRestriction>,
+    val moduleRestrictions: List<ModuleRestrictionSpec>,
+    val dependencyRestrictions: List<DependencyRestrictionSpec>,
 ): Serializable {
 
     fun isEmpty(): Boolean {
