@@ -57,7 +57,7 @@ class TaskAggregateDependencyDumpTest {
                     module = firstModule,
                     configurations = listOf(
                         ConfigurationDependencies(
-                            id = "implementation",
+                            id = "compileClasspath",
                             dependencies = listOf(firstDependency)
                         ),
                     )
@@ -66,7 +66,7 @@ class TaskAggregateDependencyDumpTest {
                     module = secondModule,
                     configurations = listOf(
                         ConfigurationDependencies(
-                            id = "implementation",
+                            id = "compileClasspath",
                             dependencies = listOf(secondDependency)
                         ),
                     )

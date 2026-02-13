@@ -30,18 +30,21 @@ internal class DependencyGraphBuilder {
     )
     private val androidConfigurationPatterns = mutableSetOf(
         "androidTestUtil", // To exclude test orchestrator in some modules
-        "AndroidTestCompileClasspath" // Tests would include this configuration pattern for types and flavors
+        "AndroidTestCompileClasspath", // Tests would include this configuration pattern for build types and flavors
+        "UnitTestCompileClasspath" // Tests would include this configuration pattern for build types and flavors
     )
 
     fun buildFromDump(projectDump: DependencyGraphDump): List<DependencyGraph> {
         val graphs = mutableMapOf<String, DependencyGraph>()
         projectDump.modules.forEach { report ->
             report.configurations.forEach { configuration ->
-                val graph = graphs.getOrPut(configuration.id) {
-                    DependencyGraph(configurationId = configuration.id)
-                }
-                configuration.dependencies.forEach { dependency ->
-                    graph.addDependency(report.module, dependency)
+                if (isConfigurationSupported(configuration.id)) {
+                    val graph = graphs.getOrPut(configuration.id) {
+                        DependencyGraph(configurationId = configuration.id)
+                    }
+                    configuration.dependencies.forEach { dependency ->
+                        graph.addDependency(report.module, dependency)
+                    }
                 }
             }
         }
@@ -50,7 +53,7 @@ internal class DependencyGraphBuilder {
 
     fun buildFromProject(project: Project): List<DependencyGraph> {
         return project.configurations
-            .filter { config -> config.isCanBeResolved }
+            .filter { config -> config.isCanBeResolved && isConfigurationSupported(config.name) }
             .map { config ->
                 val graph = DependencyGraph(
                     configurationId = config.name,
