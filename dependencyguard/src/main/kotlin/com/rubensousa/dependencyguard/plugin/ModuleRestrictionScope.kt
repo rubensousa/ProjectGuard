@@ -26,12 +26,12 @@ interface ModuleRestrictionScope {
 
     fun deny(
         dependencyPath: String,
-        action: Action<DenyScope>
+        action: Action<DenyScope>,
     )
 
     fun deny(
         provider: Provider<MinimalExternalModuleDependency>,
-        action: Action<DenyScope>
+        action: Action<DenyScope>,
     )
 
     // Required for groovy compatibility

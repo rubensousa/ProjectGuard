@@ -24,7 +24,7 @@ import org.gradle.api.provider.Provider
 
 internal class ModuleRestrictionScopeImpl : ModuleRestrictionScope {
 
-    private val denied = mutableListOf<ModuleSpec>()
+    private val denied = mutableListOf<ModuleDenialSpec>()
 
     override fun deny(
         dependencyPath: String,
@@ -33,7 +33,7 @@ internal class ModuleRestrictionScopeImpl : ModuleRestrictionScope {
         val scope = DenyScopeImpl()
         action.execute(scope)
         denied.add(
-            ModuleSpec(
+            ModuleDenialSpec(
                 modulePath = dependencyPath,
                 reason = scope.denyReason,
             )

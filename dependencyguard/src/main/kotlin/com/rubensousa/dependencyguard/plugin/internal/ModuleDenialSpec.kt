@@ -14,8 +14,11 @@
  * limitations under the License.
  */
 
-package com.rubensousa.dependencyguard.plugin
+package com.rubensousa.dependencyguard.plugin.internal
 
-interface AllowScope {
-    fun reason(reason: String)
-}
+import java.io.Serializable
+
+internal data class ModuleDenialSpec(
+    val modulePath: String,
+    val reason: String,
+): Serializable

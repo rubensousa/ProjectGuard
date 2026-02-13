@@ -21,5 +21,5 @@ import java.io.Serializable
 internal data class DependencyRestrictionSpec(
     val dependencyPath: String,
     val reason: String,
-    val allowed: List<ModuleSpec>,
+    val allowed: List<ModuleAllowSpec>,
 ): Serializable
