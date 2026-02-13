@@ -49,7 +49,9 @@ public final class com/rubensousa/dependencyguard/plugin/GuardScope$Companion {
 
 public abstract interface class com/rubensousa/dependencyguard/plugin/ModuleRestrictionScope {
 	public abstract fun allow (Ljava/lang/String;)V
-	public abstract fun allow (Ljava/util/List;)V
+	public abstract fun allow (Lorg/gradle/api/provider/Provider;)V
+	public abstract fun allowLibs (Ljava/util/List;)V
+	public abstract fun allowModules (Ljava/util/List;)V
 	public abstract fun reason (Ljava/lang/String;)V
 }
 
