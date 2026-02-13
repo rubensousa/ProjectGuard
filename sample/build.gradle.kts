@@ -19,7 +19,7 @@ dependencyGuard {
     restrictModule(":domain") {
         reason("Domain modules should not depend on other modules")
 
-        // Domain modules can only depend on another domain modules
+        // Domain modules can only depend on other domain modules
         allow(":domain")
 
         // Test dependencies are fine
@@ -28,7 +28,7 @@ dependencyGuard {
     restrictDependency(":legacy") {
         reason("Legacy modules should no longer be used")
 
-        // Only legacy modules can still depend on another legacy modules
+        // Only legacy modules can still depend on other legacy modules
         allow(":legacy")
     }
     restrictDependency(libs.mockk) {
