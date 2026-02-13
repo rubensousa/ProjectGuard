@@ -16,6 +16,7 @@
 
 package com.rubensousa.dependencyguard.plugin
 
+import com.rubensousa.dependencyguard.plugin.internal.BaselineConfiguration
 import com.rubensousa.dependencyguard.plugin.internal.SuppressionMap
 import com.rubensousa.dependencyguard.plugin.internal.YamlProcessor
 import com.rubensousa.dependencyguard.plugin.internal.report.RestrictionDump
@@ -53,17 +54,30 @@ internal class BaselineExecutor(
     private val outputFile: File,
 ) {
 
+    private val defaultSuppressionReason = "Suppressed from baseline"
+
     fun execute() {
         val restrictionDump = Json.decodeFromString<RestrictionDump>(inputFile.readText())
         val yamlProcessor = YamlProcessor()
+        val currentReasons = mutableMapOf<String, MutableMap<String, String>>()
+        runCatching {
+            val currentConfiguration = yamlProcessor.parse(outputFile, BaselineConfiguration::class.java)
+            currentConfiguration.suppressions.forEach { (module, dependencies) ->
+                dependencies.forEach { (dependency, reason) ->
+                    val dependencyReasons = currentReasons.getOrPut(module) { mutableMapOf() }
+                    dependencyReasons[dependency] = reason
+                }
+            }
+        }
         val suppressionMap = SuppressionMap()
         restrictionDump.modules.forEach { report ->
             report.restrictions.forEach { dependencyReport ->
                 suppressionMap.add(
                     module = report.module,
                     dependency = dependencyReport.dependency,
-                    // TODO: https://github.com/rubensousa/DependencyGuard/issues/26
-                    reason = "Suppressed from baseline"
+                    reason = currentReasons[report.module]?.let { dependencyReasons ->
+                        dependencyReasons[dependencyReport.dependency] ?: defaultSuppressionReason
+                    } ?: defaultSuppressionReason
                 )
             }
         }

@@ -136,7 +136,7 @@ internal class DependencyPluginSimulator(
         return outputDir
     }
 
-    private fun getBaselineFile(): File {
+    fun getBaselineFile(): File {
         return getFile("baseline.json")
     }
 

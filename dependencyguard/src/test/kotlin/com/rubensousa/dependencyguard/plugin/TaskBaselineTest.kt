@@ -78,4 +78,66 @@ class TaskBaselineTest {
         )
     }
 
+    @Test
+    fun `baseline generation keeps the previous suppresion reasons`() {
+        // given
+        val yamlProcessor = YamlProcessor()
+        val moduleId = ":domain"
+        val secondModuleId = ":data"
+        val fatalModuleId = ":legacy"
+        val firstSuppressionReason = "Domain still depends on this"
+        val secondSuppressionReason = "Data still depends on this"
+        val baselineFile = plugin.getBaselineFile()
+        val currentBaseline = BaselineConfiguration(
+            suppressions = mapOf(
+                moduleId to listOf(
+                    DependencySuppression(
+                        dependency = fatalModuleId,
+                        reason = firstSuppressionReason,
+                    )
+                ),
+                secondModuleId to listOf(
+                    DependencySuppression(
+                        dependency = fatalModuleId,
+                        reason = secondSuppressionReason
+                    ),
+                )
+            )
+        )
+        yamlProcessor.write(baselineFile, currentBaseline)
+        plugin.dumpDependencies(moduleId) {
+            addDependency(moduleId, fatalModuleId)
+        }
+        plugin.dumpDependencies(secondModuleId) {
+            addDependency(secondModuleId, fatalModuleId)
+        }
+        plugin.dumpAggregateDependencies()
+        val spec = dependencyGuard { restrictDependency(fatalModuleId) }
+        plugin.dumpRestrictions(moduleId, spec)
+        plugin.dumpRestrictions(secondModuleId, spec)
+        plugin.dumpAggregateRestrictions()
+
+        // when
+        val outputFile = plugin.generateBaseline()
+
+        // then
+        val baseline = yamlProcessor.parse(outputFile, BaselineConfiguration::class.java)
+        assertThat(baseline.suppressions).isEqualTo(
+            mapOf(
+                moduleId to listOf(
+                    DependencySuppression(
+                        dependency = fatalModuleId,
+                        reason = firstSuppressionReason
+                    )
+                ),
+                secondModuleId to listOf(
+                    DependencySuppression(
+                        dependency = fatalModuleId,
+                        reason = secondSuppressionReason
+                    ),
+                )
+            )
+        )
+    }
+
 }
