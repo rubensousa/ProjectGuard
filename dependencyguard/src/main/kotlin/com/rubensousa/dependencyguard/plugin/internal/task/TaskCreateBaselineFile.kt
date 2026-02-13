@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.rubensousa.dependencyguard.plugin
+package com.rubensousa.dependencyguard.plugin.internal.task
 
 import org.gradle.api.DefaultTask
 import org.gradle.api.file.RegularFileProperty
@@ -26,14 +26,14 @@ import org.gradle.work.DisableCachingByDefault
  * This task is just here to that all other tasks can create the reference file if it does no longer exist.
  */
 @DisableCachingByDefault
-abstract class TaskReadBaseline : DefaultTask() {
+internal abstract class TaskCreateBaselineFile : DefaultTask() {
 
     @get:OutputFile
-    internal abstract val baselineFileReference: RegularFileProperty
+    internal abstract val baselineFile: RegularFileProperty
 
     @TaskAction
     fun dependencyGuardReferenceBaselineFile() {
-        baselineFileReference.asFile.get().createNewFile()
+        baselineFile.asFile.get().createNewFile()
     }
 
 }

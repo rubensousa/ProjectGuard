@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.rubensousa.dependencyguard.plugin
+package com.rubensousa.dependencyguard.plugin.internal.task
 
 import com.rubensousa.dependencyguard.plugin.internal.DependencyGraph
 import com.rubensousa.dependencyguard.plugin.internal.report.ConfigurationDependencies
@@ -32,7 +32,7 @@ import org.gradle.work.DisableCachingByDefault
 import java.io.File
 
 @DisableCachingByDefault
-abstract class TaskDependencyDump : DefaultTask() {
+internal abstract class TaskDependencyDump : DefaultTask() {
 
     @get:Input
     internal abstract val projectPath: Property<String>

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.rubensousa.dependencyguard.plugin
+package com.rubensousa.dependencyguard.plugin.internal.task
 
 import com.rubensousa.dependencyguard.plugin.internal.BaselineConfiguration
 import com.rubensousa.dependencyguard.plugin.internal.SuppressionMap
@@ -33,7 +33,7 @@ import org.gradle.work.DisableCachingByDefault
 import java.io.File
 
 @DisableCachingByDefault(because = "Baseline file might have changed")
-abstract class TaskCheck : DefaultTask() {
+internal abstract class TaskCheck : DefaultTask() {
 
     @get:InputFile
     internal abstract val baselineFile: RegularFileProperty

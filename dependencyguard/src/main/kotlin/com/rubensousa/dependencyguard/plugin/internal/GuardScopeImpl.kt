@@ -17,14 +17,14 @@
 package com.rubensousa.dependencyguard.plugin.internal
 
 import com.rubensousa.dependencyguard.plugin.DenyScope
-import com.rubensousa.dependencyguard.plugin.ModuleRestrictionScope
+import com.rubensousa.dependencyguard.plugin.GuardScope
 import org.gradle.api.Action
 import org.gradle.api.artifacts.MinimalExternalModuleDependency
 import org.gradle.api.provider.Provider
 
-internal class ModuleRestrictionScopeImpl : ModuleRestrictionScope {
+internal class GuardScopeImpl : GuardScope {
 
-    private val denied = mutableListOf<ModuleSpec>()
+    private val denied = mutableListOf<ModuleDenialSpec>()
 
     override fun deny(
         dependencyPath: String,
@@ -33,7 +33,7 @@ internal class ModuleRestrictionScopeImpl : ModuleRestrictionScope {
         val scope = DenyScopeImpl()
         action.execute(scope)
         denied.add(
-            ModuleSpec(
+            ModuleDenialSpec(
                 modulePath = dependencyPath,
                 reason = scope.denyReason,
             )

@@ -20,18 +20,16 @@ import org.gradle.api.Action
 import org.gradle.api.artifacts.MinimalExternalModuleDependency
 import org.gradle.api.provider.Provider
 
-internal val defaultDenyScope = Action<DenyScope> { }
-
-interface ModuleRestrictionScope {
+interface GuardScope {
 
     fun deny(
         dependencyPath: String,
-        action: Action<DenyScope>
+        action: Action<DenyScope>,
     )
 
     fun deny(
         provider: Provider<MinimalExternalModuleDependency>,
-        action: Action<DenyScope>
+        action: Action<DenyScope>,
     )
 
     // Required for groovy compatibility
@@ -48,4 +46,7 @@ interface ModuleRestrictionScope {
         deny(provider, defaultDenyScope)
     }
 
+    companion object {
+        internal val defaultDenyScope = Action<DenyScope> { }
+    }
 }

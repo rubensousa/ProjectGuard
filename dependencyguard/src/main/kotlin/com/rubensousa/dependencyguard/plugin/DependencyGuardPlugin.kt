@@ -17,6 +17,14 @@
 package com.rubensousa.dependencyguard.plugin
 
 import com.rubensousa.dependencyguard.plugin.internal.report.DependencyGraphBuilder
+import com.rubensousa.dependencyguard.plugin.internal.task.TaskAggregateDependencyDump
+import com.rubensousa.dependencyguard.plugin.internal.task.TaskAggregateRestrictionDump
+import com.rubensousa.dependencyguard.plugin.internal.task.TaskBaseline
+import com.rubensousa.dependencyguard.plugin.internal.task.TaskCheck
+import com.rubensousa.dependencyguard.plugin.internal.task.TaskCreateBaselineFile
+import com.rubensousa.dependencyguard.plugin.internal.task.TaskDependencyDump
+import com.rubensousa.dependencyguard.plugin.internal.task.TaskHtmlReport
+import com.rubensousa.dependencyguard.plugin.internal.task.TaskRestrictionDump
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.tasks.TaskProvider

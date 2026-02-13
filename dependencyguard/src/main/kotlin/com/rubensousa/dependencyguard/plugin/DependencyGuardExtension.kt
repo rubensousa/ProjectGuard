@@ -19,7 +19,7 @@ package com.rubensousa.dependencyguard.plugin
 import com.rubensousa.dependencyguard.plugin.internal.DependencyGuardSpec
 import com.rubensousa.dependencyguard.plugin.internal.DependencyRestrictionScopeImpl
 import com.rubensousa.dependencyguard.plugin.internal.DependencyRestrictionSpec
-import com.rubensousa.dependencyguard.plugin.internal.ModuleRestrictionScopeImpl
+import com.rubensousa.dependencyguard.plugin.internal.GuardScopeImpl
 import com.rubensousa.dependencyguard.plugin.internal.ModuleRestrictionSpec
 import com.rubensousa.dependencyguard.plugin.internal.getDependencyPath
 import org.gradle.api.Action
@@ -36,8 +36,8 @@ abstract class DependencyGuardExtension @Inject constructor(
     private val moduleRestrictions = objects.listProperty<ModuleRestrictionSpec>()
     private val dependencyRestrictions = objects.listProperty<DependencyRestrictionSpec>()
 
-    override fun guard(modulePath: String, action: Action<ModuleRestrictionScope>) {
-        val scope = ModuleRestrictionScopeImpl()
+    override fun guard(modulePath: String, action: Action<GuardScope>) {
+        val scope = GuardScopeImpl()
         action.execute(scope)
         moduleRestrictions.add(
             ModuleRestrictionSpec(

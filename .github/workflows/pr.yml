@@ -24,6 +24,9 @@ jobs:
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
 
+      - name: Check public api
+        run: ./gradlew --build-cache checkLegacyAbi
+
       - name: Check and build plugin
         run: ./gradlew --build-cache check assemble --stacktrace
 

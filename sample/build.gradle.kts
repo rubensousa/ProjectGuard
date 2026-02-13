@@ -21,14 +21,14 @@ dependencyGuard {
     }
     restrictDependency(":legacy") {
         reason("Legacy modules should no longer be used")
-        allow(":legacy") {
-            reason("Only legacy modules can still depend on another legacy modules")
-        }
+
+        // Only legacy modules can still depend on another legacy modules
+        allow(":legacy")
     }
     restrictDependency(libs.mockk) {
         reason("Fakes should be used instead")
-        allow(":feature:a") {
-            reason("This feature requires mockk to test platform code")
-        }
+
+        // This feature requires mockk to test platform code
+        allow(":feature:a")
     }
 }

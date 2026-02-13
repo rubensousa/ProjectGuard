@@ -149,6 +149,53 @@ class DependencyRestrictionTest {
     }
 
     @Test
+    fun `restriction supports multiple allows`() {
+        // given
+        val spec = dependencyGuard {
+            restrictDependency(":legacy") {
+                allow(listOf(":legacy:a", ":legacy:b"))
+            }
+        }
+
+        // Ok
+        graph.addDependency(":legacy:b", ":legacy:e")
+        graph.addDependency(":legacy:a", ":legacy:b")
+
+        // Not ok
+        graph.addDependency(":legacy:c", ":legacy:a")
+        graph.addDependency(":legacy:d", ":legacy:e")
+
+        // when
+        val legacyARestrictions = finder.find(moduleId = ":legacy:a", graph = graph, spec = spec)
+        val legacyBRestrictions = finder.find(moduleId = ":legacy:b", graph = graph, spec = spec)
+        val legacyCRestrictions = finder.find(moduleId = ":legacy:c", graph = graph, spec = spec)
+        val legacyDRestrictions = finder.find(moduleId = ":legacy:d", graph = graph, spec = spec)
+
+
+        // then
+        assertThat(legacyARestrictions).isEmpty()
+        assertThat(legacyBRestrictions).isEmpty()
+        assertThat(legacyCRestrictions).containsExactly(
+            DirectDependencyRestriction(
+                dependencyId = ":legacy:a",
+            ),
+            TransitiveDependencyRestriction(
+                dependencyId = ":legacy:b",
+                pathToDependency = listOf(":legacy:a", ":legacy:b")
+            ),
+            TransitiveDependencyRestriction(
+                dependencyId = ":legacy:e",
+                pathToDependency = listOf(":legacy:a", ":legacy:b", ":legacy:e")
+            ),
+        )
+        assertThat(legacyDRestrictions).containsExactly(
+            DirectDependencyRestriction(
+                dependencyId = ":legacy:e",
+            ),
+        )
+    }
+
+    @Test
     fun `duplicate restrictions just return a single match`() {
         // given
         val spec = dependencyGuard {

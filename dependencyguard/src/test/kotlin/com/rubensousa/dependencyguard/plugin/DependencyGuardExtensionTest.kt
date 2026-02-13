@@ -17,7 +17,7 @@
 package com.rubensousa.dependencyguard.plugin
 
 import com.google.common.truth.Truth.assertThat
-import com.rubensousa.dependencyguard.plugin.internal.ModuleSpec
+import com.rubensousa.dependencyguard.plugin.internal.ModuleAllowSpec
 import org.gradle.testfixtures.ProjectBuilder
 import org.junit.Test
 
@@ -56,9 +56,7 @@ class DependencyGuardExtensionTest {
 
         // when
         extension.restrictDependency(":legacy") {
-            allow(":legacy:a") {
-                this.reason("Reason A")
-            }
+            allow(":legacy:a")
         }
 
         // then
@@ -66,11 +64,6 @@ class DependencyGuardExtensionTest {
         val restrictions = spec.dependencyRestrictions
         assertThat(restrictions).hasSize(1)
         assertThat(restrictions.first().dependencyPath).isEqualTo(":legacy")
-        assertThat(restrictions.first().allowed).containsExactly(
-            ModuleSpec(
-                ":legacy:a",
-                "Reason A"
-            )
-        )
+        assertThat(restrictions.first().allowed).containsExactly(ModuleAllowSpec(":legacy:a"))
     }
 }

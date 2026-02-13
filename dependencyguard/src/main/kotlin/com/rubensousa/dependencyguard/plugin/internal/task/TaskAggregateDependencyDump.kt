@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.rubensousa.dependencyguard.plugin
+package com.rubensousa.dependencyguard.plugin.internal.task
 
 import com.rubensousa.dependencyguard.plugin.internal.report.DependencyGraphDump
 import com.rubensousa.dependencyguard.plugin.internal.report.DependencyGraphModuleDump
@@ -30,7 +30,7 @@ import org.gradle.work.DisableCachingByDefault
 import java.io.File
 
 @DisableCachingByDefault
-abstract class TaskAggregateDependencyDump : DefaultTask() {
+internal abstract class TaskAggregateDependencyDump : DefaultTask() {
 
     @get:InputFiles
     abstract val dependencyFiles: ConfigurableFileCollection

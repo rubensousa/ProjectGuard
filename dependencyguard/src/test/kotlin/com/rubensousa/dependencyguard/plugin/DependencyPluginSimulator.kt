@@ -18,6 +18,13 @@ package com.rubensousa.dependencyguard.plugin
 
 import com.rubensousa.dependencyguard.plugin.internal.DependencyGraph
 import com.rubensousa.dependencyguard.plugin.internal.DependencyGuardSpec
+import com.rubensousa.dependencyguard.plugin.internal.task.AggregateDependencyDumpExecutor
+import com.rubensousa.dependencyguard.plugin.internal.task.AggregateRestrictionDumpExecutor
+import com.rubensousa.dependencyguard.plugin.internal.task.BaselineExecutor
+import com.rubensousa.dependencyguard.plugin.internal.task.CheckExecutor
+import com.rubensousa.dependencyguard.plugin.internal.task.DependencyDumpExecutor
+import com.rubensousa.dependencyguard.plugin.internal.task.HtmlReportExecutor
+import com.rubensousa.dependencyguard.plugin.internal.task.RestrictionDumpExecutor
 import org.junit.rules.TemporaryFolder
 import java.io.File
 

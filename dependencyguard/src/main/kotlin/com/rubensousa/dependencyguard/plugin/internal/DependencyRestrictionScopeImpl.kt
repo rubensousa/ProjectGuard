@@ -16,31 +16,29 @@
 
 package com.rubensousa.dependencyguard.plugin.internal
 
-import com.rubensousa.dependencyguard.plugin.AllowScope
 import com.rubensousa.dependencyguard.plugin.DependencyRestrictionScope
-import org.gradle.api.Action
 
 internal class DependencyRestrictionScopeImpl : DependencyRestrictionScope {
 
-    private val allowed = mutableListOf<ModuleSpec>()
-    private var restrictionReason = "Unspecified"
+    private val allowed = mutableListOf<ModuleAllowSpec>()
+    private var restrictionReason = UNSPECIFIED_REASON
 
     override fun reason(reason: String) {
         restrictionReason = reason
     }
 
-    override fun allow(
-        modulePath: String,
-        action: Action<AllowScope>,
-    ) {
-        val scope = AllowScopeImpl()
-        action.execute(scope)
+    override fun allow(modulePath: String) {
         allowed.add(
-            ModuleSpec(
+            ModuleAllowSpec(
                 modulePath = modulePath,
-                reason = scope.getReason()
             )
         )
+    }
+
+    override fun allow(modulePaths: List<String>) {
+        modulePaths.forEach { path ->
+            allow(path)
+        }
     }
 
     fun getAllowedModules() = allowed.toList()

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.rubensousa.dependencyguard.plugin
+package com.rubensousa.dependencyguard.plugin.internal.task
 
 import com.rubensousa.dependencyguard.plugin.internal.BaselineConfiguration
 import com.rubensousa.dependencyguard.plugin.internal.SuppressionMap
@@ -30,7 +30,7 @@ import org.gradle.work.DisableCachingByDefault
 import java.io.File
 
 @DisableCachingByDefault
-abstract class TaskBaseline : DefaultTask() {
+internal abstract class TaskBaseline : DefaultTask() {
 
     @get:InputFile
     internal abstract val restrictionDumpFile: RegularFileProperty

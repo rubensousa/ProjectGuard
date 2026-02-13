@@ -16,16 +16,8 @@
 
 package com.rubensousa.dependencyguard.plugin.internal
 
-import com.rubensousa.dependencyguard.plugin.AllowScope
+import java.io.Serializable
 
-internal class AllowScopeImpl : AllowScope {
-
-    private var allowReason: String = "Unspecified"
-
-    override fun reason(reason: String) {
-        allowReason = reason
-    }
-
-    fun getReason(): String = allowReason
-
-}
+internal data class ModuleAllowSpec(
+    val modulePath: String,
+): Serializable

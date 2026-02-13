@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.rubensousa.dependencyguard.plugin
+package com.rubensousa.dependencyguard.plugin.internal.task
 
 import com.rubensousa.dependencyguard.plugin.internal.report.JsonFileWriter
 import com.rubensousa.dependencyguard.plugin.internal.report.RestrictionDump
@@ -30,7 +30,7 @@ import org.gradle.work.DisableCachingByDefault
 import java.io.File
 
 @DisableCachingByDefault(because = "Final report should always be generated")
-abstract class TaskAggregateRestrictionDump : DefaultTask() {
+internal abstract class TaskAggregateRestrictionDump : DefaultTask() {
 
     @get:InputFiles
     abstract val dumpFiles: ConfigurableFileCollection

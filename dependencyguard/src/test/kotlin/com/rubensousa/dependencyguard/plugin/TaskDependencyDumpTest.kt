@@ -21,6 +21,7 @@ import com.rubensousa.dependencyguard.plugin.internal.DependencyGraph
 import com.rubensousa.dependencyguard.plugin.internal.report.ConfigurationDependencies
 import com.rubensousa.dependencyguard.plugin.internal.report.DependencyGraphDump
 import com.rubensousa.dependencyguard.plugin.internal.report.DependencyGraphModuleDump
+import com.rubensousa.dependencyguard.plugin.internal.task.DependencyDumpExecutor
 import kotlinx.serialization.json.Json
 import org.junit.Before
 import org.junit.Rule

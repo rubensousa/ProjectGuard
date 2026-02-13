@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.rubensousa.dependencyguard.plugin
+package com.rubensousa.dependencyguard.plugin.internal.task
 
 import com.rubensousa.dependencyguard.plugin.internal.DependencyGuardSpec
 import com.rubensousa.dependencyguard.plugin.internal.DependencyRestrictionFinder
@@ -38,7 +38,7 @@ import org.gradle.work.DisableCachingByDefault
 import java.io.File
 
 @DisableCachingByDefault(because = "Dump should always be generated")
-abstract class TaskRestrictionDump : DefaultTask() {
+internal abstract class TaskRestrictionDump : DefaultTask() {
 
     @get:Input
     internal abstract val projectPath: Property<String>

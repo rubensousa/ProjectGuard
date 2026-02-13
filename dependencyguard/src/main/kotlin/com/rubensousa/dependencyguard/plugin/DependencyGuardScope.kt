@@ -20,8 +20,6 @@ import org.gradle.api.Action
 import org.gradle.api.artifacts.MinimalExternalModuleDependency
 import org.gradle.api.provider.Provider
 
-private val defaultDependencyRestrictionScope = Action<DependencyRestrictionScope> {}
-
 interface DependencyGuardScope {
 
     /**
@@ -36,7 +34,7 @@ interface DependencyGuardScope {
      */
     fun guard(
         modulePath: String,
-        action: Action<ModuleRestrictionScope>,
+        action: Action<GuardScope>,
     )
 
     /**
@@ -71,7 +69,7 @@ interface DependencyGuardScope {
 
     // Just here for groovy support
     fun restrictDependency(
-        dependencyPath: String
+        dependencyPath: String,
     ) {
         restrictDependency(dependencyPath, defaultDependencyRestrictionScope)
     }
@@ -83,4 +81,7 @@ interface DependencyGuardScope {
         restrictDependency(provider, defaultDependencyRestrictionScope)
     }
 
+    companion object {
+        private val defaultDependencyRestrictionScope = Action<DependencyRestrictionScope> {}
+    }
 }
