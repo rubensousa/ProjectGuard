@@ -29,12 +29,6 @@ class TaskCheckTest {
     val temporaryFolder = TemporaryFolder()
 
     private val plugin = DependencyPluginSimulator(temporaryFolder)
-    private lateinit var outputFile: File
-
-    @Before
-    fun setup() {
-        outputFile = temporaryFolder.newFile("baseline.yml")
-    }
 
     @Test
     fun `check task succeeds when no restrictions are found`() {

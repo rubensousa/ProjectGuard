@@ -124,6 +124,18 @@ internal class DependencyPluginSimulator(
         return executor.execute()
     }
 
+    fun htmlReport(moduleId: String): File {
+        val outputDir = File(temporaryFolder.root, "html-report-${getValidFilePath(moduleId)}")
+        outputDir.mkdirs()
+        val executor = HtmlReportExecutor(
+            restrictionDumpFile = getRestrictionsFile(moduleId),
+            baselineFile = getBaselineFile(),
+            outputFile = outputDir,
+        )
+        executor.execute()
+        return outputDir
+    }
+
     private fun getBaselineFile(): File {
         return getFile("baseline.json")
     }

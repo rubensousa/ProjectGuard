@@ -16,7 +16,13 @@
 
 package com.rubensousa.dependencyguard.plugin
 
+import com.rubensousa.dependencyguard.plugin.internal.BaselineConfiguration
+import com.rubensousa.dependencyguard.plugin.internal.SuppressionMap
+import com.rubensousa.dependencyguard.plugin.internal.YamlProcessor
 import com.rubensousa.dependencyguard.plugin.internal.report.HtmlReportGenerator
+import com.rubensousa.dependencyguard.plugin.internal.report.RestrictionDump
+import com.rubensousa.dependencyguard.plugin.internal.report.VerificationReportBuilder
+import kotlinx.serialization.json.Json
 import org.gradle.api.DefaultTask
 import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.file.RegularFileProperty
@@ -27,7 +33,7 @@ import org.gradle.work.DisableCachingByDefault
 import java.io.File
 
 @DisableCachingByDefault(because = "HTML report should always be regenerated")
-abstract class TaskReportHtml : DefaultTask() {
+abstract class TaskHtmlReport : DefaultTask() {
 
     @get:InputFile
     abstract val restrictionDumpFile: RegularFileProperty
@@ -40,8 +46,8 @@ abstract class TaskReportHtml : DefaultTask() {
 
     @TaskAction
     fun dependencyGuardHtmlReport() {
-        val executor = ReportHtmlExecutor(
-            inputFile = restrictionDumpFile.get().asFile,
+        val executor = HtmlReportExecutor(
+            restrictionDumpFile = restrictionDumpFile.get().asFile,
             baselineFile = baselineFile.get().asFile,
             outputFile = outputDir.get().asFile
         )
@@ -50,20 +56,24 @@ abstract class TaskReportHtml : DefaultTask() {
 
 }
 
-internal class ReportHtmlExecutor(
-    private val inputFile: File,
-    private val outputFile: File,
+internal class HtmlReportExecutor(
+    private val restrictionDumpFile: File,
     private val baselineFile: File,
+    private val outputFile: File,
 ) {
 
     fun execute() {
-        val htmlGenerator = HtmlReportGenerator()
-       /* val dump = Json.decodeFromString<RestrictionDump>(outputFile.readText())
-        val matches = Json.decodeFromString<List<RestrictionMatch>>(jsonReport.get().asFile.readText())
+        val yamlProcessor = YamlProcessor()
         val suppressionMap = SuppressionMap()
-        val report = HtmlReportBuilder(
-            suppressionMap
-        ).build(matches)
-        htmlGenerator.generate(report, outputDir.get().asFile)*/
+        runCatching {
+            yamlProcessor.parse(baselineFile, BaselineConfiguration::class.java)
+        }.onSuccess { config ->
+            suppressionMap.set(config)
+        }
+        val restrictionDump = Json.decodeFromString<RestrictionDump>(restrictionDumpFile.readText())
+        val verificationReportBuilder = VerificationReportBuilder(suppressionMap)
+        val verificationReport = verificationReportBuilder.build(restrictionDump)
+        val htmlReportGenerator = HtmlReportGenerator()
+        htmlReportGenerator.generate(verificationReport, outputFile)
     }
 }

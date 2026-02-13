@@ -47,7 +47,7 @@ abstract class TaskCheck : DefaultTask() {
             restrictionDumpFile = restrictionDumpFile.get().asFile,
             logger = logger
         )
-        executor.execute()
+        executor.execute().getOrThrow()
     }
 
 }

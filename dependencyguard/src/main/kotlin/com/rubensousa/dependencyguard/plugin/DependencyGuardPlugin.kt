@@ -97,13 +97,13 @@ class DependencyGuardPlugin : Plugin<Project> {
         // HTML report task takes the individual module report
         moduleTasks.htmlReport.configure {
             restrictionDumpFile.set(moduleTasks.restrictionDump.flatMap { task -> task.outputFile })
-            // TODO: Check if there is another way to avoid this
+            baselineFile.set(aggregationTasks.baselineCreate.flatMap { task -> task.baselineFile })
+            outputDir.set(project.layout.buildDirectory.dir(htmlAggregateReportFilePath))
             mustRunAfter(aggregationTasks.restrictionDump)
-            // TODO: Pass baseline state
         }
 
-        // Check task must take the report as input
         moduleTasks.check.configure {
+            // Check task must take the report and baseline as input
             restrictionDumpFile.set(moduleTasks.restrictionDump.flatMap { task -> task.outputFile })
             baselineFile.set(aggregationTasks.baselineCreate.flatMap { task -> task.baselineFile })
             // Run the html report after the check task
@@ -139,20 +139,24 @@ class DependencyGuardPlugin : Plugin<Project> {
         aggregationTasks.restrictionDump.configure {
             // Aggregate report must take the individual module reports
             dumpFiles.from(moduleTasks.map { task -> task.restrictionDump.flatMap { task -> task.outputFile } })
+            outputFile.set(rootProject.layout.buildDirectory.file(jsonReportFilePath))
         }
 
         // Aggregate dependency dump must take the individual module contribution
         aggregationTasks.dependencyDump.configure {
+            outputFile.set(rootProject.layout.buildDirectory.file(dependenciesFilePath))
         }
 
         // Aggregate html report takes the aggregate json and prettifies it
         aggregationTasks.htmlReport.configure {
-            jsonReport.set(aggregationTasks.restrictionDump.flatMap { task -> task.outputFile })
-            htmlReport.set(rootProject.layout.buildDirectory.dir(htmlAggregateReportFilePath))
+            restrictionDumpFile.set(aggregationTasks.restrictionDump.flatMap { task -> task.outputFile })
+            baselineFile.set(aggregationTasks.baselineCreate.flatMap { task -> task.baselineFile })
+            outputDir.set(rootProject.layout.buildDirectory.dir(htmlAggregateReportFilePath))
         }
 
         aggregationTasks.check.configure {
-            reportFile.set(aggregationTasks.restrictionDump.flatMap { task -> task.outputFile })
+            restrictionDumpFile.set(aggregationTasks.restrictionDump.flatMap { task -> task.outputFile })
+            baselineFile.set(aggregationTasks.baselineCreate.flatMap { task -> task.baselineFile })
             // Run the html report after the check task
             finalizedBy(aggregationTasks.htmlReport)
         }
@@ -189,7 +193,7 @@ class DependencyGuardPlugin : Plugin<Project> {
         rootProject: Project,
     ): TaskProvider<TaskAggregateRestrictionDump> {
         return rootProject.tasks.register(
-            "dependencyGuardAggregateReport",
+            "dependencyGuardAggregateRestrictionDump",
             TaskAggregateRestrictionDump::class.java
         ) {
             group = "other"
@@ -200,10 +204,10 @@ class DependencyGuardPlugin : Plugin<Project> {
 
     private fun createAggregateHtmlReportTask(
         rootProject: Project,
-    ): TaskProvider<TaskAggregateHtmlReport> {
+    ): TaskProvider<TaskHtmlReport> {
         return rootProject.tasks.register(
-            "dependencyGuardAggregateHtmlReport",
-            TaskAggregateHtmlReport::class.java
+            "dependencyGuardHtmlReport",
+            TaskHtmlReport::class.java
         ) {
             group = "reporting"
             description = "Generates an HTML report of all dependency matches."
@@ -212,13 +216,13 @@ class DependencyGuardPlugin : Plugin<Project> {
 
     private fun createAggregateCheckTask(
         rootProject: Project,
-    ): TaskProvider<TaskAggregateCheck> {
+    ): TaskProvider<TaskCheck> {
         return rootProject.tasks.register(
             "dependencyGuardCheck",
-            TaskAggregateCheck::class.java
+            TaskCheck::class.java
         ) {
             group = "verification"
-            description = "Verifies if there are any dependency restrictions being violated"
+            description = "Verifies if there are any dependency restrictions in the entire project"
         }
     }
 
@@ -277,7 +281,7 @@ class DependencyGuardPlugin : Plugin<Project> {
         extension: DependencyGuardExtension,
     ): TaskProvider<TaskRestrictionDump> {
         return targetProject.tasks.register(
-            "dependencyGuardModuleReport",
+            "dependencyGuardRestrictionDump",
             TaskRestrictionDump::class.java
         ) {
             group = "other"
@@ -293,10 +297,10 @@ class DependencyGuardPlugin : Plugin<Project> {
 
     private fun createModuleHtmlReportTask(
         targetProject: Project,
-    ): TaskProvider<TaskReportHtml> {
+    ): TaskProvider<TaskHtmlReport> {
         return targetProject.tasks.register(
             "dependencyGuardHtmlReport",
-            TaskReportHtml::class.java
+            TaskHtmlReport::class.java
         ) {
             group = "reporting"
             description = "Generates an HTML report of all dependency matches."
@@ -328,7 +332,7 @@ class DependencyGuardPlugin : Plugin<Project> {
     private data class ModuleTasks(
         val dependencyDump: TaskProvider<TaskDependencyDump>,
         val restrictionDump: TaskProvider<TaskRestrictionDump>,
-        val htmlReport: TaskProvider<TaskReportHtml>,
+        val htmlReport: TaskProvider<TaskHtmlReport>,
         val check: TaskProvider<TaskCheck>,
     )
 
@@ -336,8 +340,8 @@ class DependencyGuardPlugin : Plugin<Project> {
         val baselineCreate: TaskProvider<TaskCreateBaselineFile>,
         val baselineDump: TaskProvider<TaskBaseline>,
         val restrictionDump: TaskProvider<TaskAggregateRestrictionDump>,
-        val check: TaskProvider<TaskAggregateCheck>,
-        val htmlReport: TaskProvider<TaskAggregateHtmlReport>,
+        val check: TaskProvider<TaskCheck>,
+        val htmlReport: TaskProvider<TaskHtmlReport>,
         val dependencyDump: TaskProvider<TaskAggregateDependencyDump>,
     )
 

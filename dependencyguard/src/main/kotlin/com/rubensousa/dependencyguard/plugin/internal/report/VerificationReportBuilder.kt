@@ -23,11 +23,17 @@ internal class VerificationReportBuilder(
 ) {
 
     fun build(dump: RestrictionDump): VerificationReport {
-        val reports = mutableListOf<VerificationModuleReport>()
+        val totalFatalMatches = mutableMapOf<String, MutableList<FatalMatch>>()
+        val totalSuppressedMatches = mutableMapOf<String, MutableList<SuppressedMatch>>()
+        val reports = mutableSetOf<String>()
         dump.modules.forEach { moduleReport ->
             moduleReport.restrictions.forEach { restriction ->
-                val fatalMatches = mutableListOf<FatalMatch>()
-                val suppressedMatches = mutableListOf<SuppressedMatch>()
+                val fatalMatches = totalFatalMatches.getOrPut(moduleReport.module) {
+                    mutableListOf()
+                }
+                val suppressedMatches = totalSuppressedMatches.getOrPut(moduleReport.module) {
+                    mutableListOf()
+                }
                 val suppression = suppressionMap.getSuppression(
                     module = moduleReport.module,
                     dependency = restriction.dependency
@@ -50,20 +56,18 @@ internal class VerificationReportBuilder(
                         )
                     )
                 }
-                fatalMatches.sortedBy { it.dependency }
-                suppressedMatches.sortedBy { it.dependency }
-                reports.add(
-                    VerificationModuleReport(
-                        module = moduleReport.module,
-                        fatal = fatalMatches,
-                        suppressed = suppressedMatches
-                    )
-                )
+                reports.add(moduleReport.module)
             }
         }
-        return VerificationReport(
-            reports.sortedBy { report -> report.module }
-        )
+        val sortedReports = reports.sortedBy { it }
+            .map { moduleId ->
+                VerificationModuleReport(
+                    module = moduleId,
+                    fatal = totalFatalMatches[moduleId]?.sortedBy { it.dependency } ?: emptyList(),
+                    suppressed = totalSuppressedMatches[moduleId]?.sortedBy { it.dependency } ?: emptyList(),
+                )
+            }
+        return VerificationReport(sortedReports)
     }
 
 }
