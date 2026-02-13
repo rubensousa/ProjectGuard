@@ -31,6 +31,6 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           path: |
-            build/outputs
-            build/reports
+            */build/outputs
+            */build/reports
         if: always()
