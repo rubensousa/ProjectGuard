@@ -49,7 +49,7 @@ import java.io.File
 class DependencyGuardPlugin : Plugin<Project> {
 
     private val pluginId = "dependencyguard"
-    private val baselineFilePath = "$pluginId.yml"
+    private val baselineFilePath = "$pluginId-baseline.yml"
     private val htmlAggregateReportFilePath = "reports/$pluginId"
     private val dependenciesFilePath = "reports/$pluginId/dependencies.json"
     private val jsonReportFilePath = "reports/$pluginId/report.json"

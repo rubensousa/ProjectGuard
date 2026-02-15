@@ -1,91 +1,106 @@
 # DependencyGuard
 
-Protect your project against undesired dependencies across different modules.
+A Gradle plugin that acts as a powerful gatekeeper for your project's dependencies. It helps you enforce architectural rules, prevent unwanted dependencies, and keep your module graph clean and maintainable as your project scales.
 
-![Dependency Guard](example_report.png)
+![DependencyGuard Report](example_report.png)
 
 ## Why DependencyGuard?
 
 As projects grow, so does the complexity of their module graph. Without clear rules, you can accidentally introduce dependencies that violate your app's architecture or agreed conventions:
-- A `:domain` module might depend on another `:legacy` module, making it hard to fully switch away from tech debt.
-- A `:impl` module might depend on another `:impl` module, instead of an `:api` or `:domain` one.
-- A third-party dependency your team agreed to migrate away from might be added by mistake to a new module
 
-DependencyGuard protects your project's architecture by enforcing dependency rules that can be checked automatically in your CI/CD setup
+- A `:domain` module might depend on another `:legacy` module, making it hard to fully switch away from tech debt.
+- An `:impl` module might depend on another `:impl` module, instead of an `:api` or `:domain` one.
+- A third-party dependency your team agreed to migrate away from might be added by mistake to a new module.
+
+DependencyGuard protects your project's architecture by enforcing dependency rules that can be checked automatically in your CI/CD setup.
+
+## Key Features
+
+- **Simple DSL:** Configure all your rules in a single block in your gradle configuration
+- **Control external libraries:** Leverage Gradle's version catalogs (`libs`) for compile-time safety and IDE autocompletion.
+- **Dependency usage reports:** Generate a detailed HTML report that clearly shows all dependency violations, making them easy to identify and fix.
+- **CI/CD Integration:** Fail your build when a rule is violated, ensuring that no problematic dependencies make it into your main branch.
+- **Baseline Support:** Don't want to fix all existing violations at once? Create a baseline file to ignore them and focus on preventing new issues.
 
 ## Setup
 
-1. Add the following to your versions.toml:
+1.  **Add the plugin to your root `build.gradle.kts`:**
 
-```
-[plugins]
-dependencyguard = { id = "com.rubensousa.dependencyguard", version = "1.0.0-alpha02" }
-```
+    ```kotlin
+    // Top-level build.gradle.kts
+    plugins {
+        alias(libs.plugins.dependencyguard) apply true
+    }
+    ```
 
-2. Apply the plugin in your root `build.gradle.kts` and all of the subprojects:
+2.  **Configure your dependency rules:**
 
-```kotlin
-plugins {
-    alias(libs.plugins.dependencyguard) apply true
-}
+    ```kotlin
+    dependencyGuard {
+        // Your configuration goes here. See the examples below!
+    }
+    ```
 
-dependencyGuard {
-    // Global configuration. See below for examples
-}
-```
+## How-to
 
-Or if you're still using groovy:
+### `guard`
 
-```groovy
-plugins {
-    alias libs.plugins.dependencyguard apply true
-}
-
-dependencyGuard {
-    // Global configuration. See below for examples
-}
-```
-
-## Features
-
-1. Define dependencies that can't be used for some modules
-
+Denies a set of dependencies for any module that matches the provided path.
 
 ```kotlin
 dependencyGuard {
-    /**
-     * This matches all modules within the domain directory.
-     * E.g (":domain:a", ":domain:b", ":domain:c")
-     */
-    guard(":domain") {
-        /**
-         * This matches all modules within the legacy directory.
-         * E.g (":legacy:a", ":legacy:b", ":legacy:c")
-         */
+    // Deny any module in the `:data` layer from depending on any module in the `:legacy` layer.
+    guard(":data") {
         deny(":legacy")
     }
-}
-```
 
-2. Forbid external third-party dependencies depending on the use case
-
-```kotlin
-dependencyGuard {
-    restrictDependency(libs.mockk) {
-        reason("Mocks should not be used unless really needed")
-        allow(":platform") {
-            reason("Platform modules require mockk for some cases")
-        }
+    // You can also deny specific dependencies from version catalogs
+    guard(":domain") {
+        deny(libs.androidx.compose)
     }
 }
 ```
 
-3. Suppress rules temporarily with `./gradlew dependencyGuardBaseline`. This will create a `dependencyguard.yml` that contains the existing violations
+### `restrictModule`
 
-4. Run `./gradlew dependencyGuardCheck` to validate the project using the rules you configured. There will be a report in `build/reports/dependencyguard`  
+Prevents all dependencies in a module except the ones in the allow list.
 
-5. Run `./gradlew module:dependencyGuardCheck` to validate a single module. There will be a report in `build/reports/`
+```kotlin
+dependencyGuard {
+    // Domain modules should only depend on other domain modules and specific libraries.
+    restrictModule(":domain") {
+        reason("Domain modules have restricted dependencies")
+        allow(":domain") // Allow depending on other :domain modules
+        allow(libs.junit) // Allow JUnit for testing
+    }
+}
+```
 
+### `restrictDependency`
+
+Restricts which modules are allowed to depend on a specific dependency. 
+This is useful for preventing the use of specific libraries in new modules.
+
+```kotlin
+dependencyGuard {
+    // Only allow legacy modules to depend on other legacy modules.
+    restrictDependency(":legacy") {
+        reason("Legacy modules should no longer be used in new code.")
+        allow(":legacy")
+    }
+
+    // Prevent the use of Mockk in favor of fakes, with a few exceptions.
+    restrictDependency(libs.mockk) {
+        reason("Fakes should be used instead of mocks.")
+        allow(":feature:a") // This feature requires mockk to test platform code.
+    }
+}
+```
+
+## Tasks
+
+-   `./gradlew dependencyGuardCheck`: Runs the dependency analysis on all modules and generates a html report.
+-   `./gradlew dependencyGuardBaseline`: Creates a `dependencyguard-baseline.yml` file with all current restrictions. This allows you to start enforcing rules on new code without having to fix all existing issues first.
 
 ## License
 

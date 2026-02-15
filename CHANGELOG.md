@@ -1,11 +1,22 @@
 
 # CHANGELOG
 
+## 1.0.0-alpha03 (2026-02-15)
+
+### API Changes
+
+- Added `restrictModule` to allow restricting all dependencies by default in some modules.
+
+### Bug fixes
+
+- Fixed baseline being regenerated when it is already there in some cases
+- Fixed existing reasons in the baseline not being kept across task executions
+
 ## 1.0.0-alpha02 (2026-02-12)
 
-### Features
+### API Changes
 
-- Added `dependencyGuardBaseline` to generate a file `dependencyguard.yml` with the suppressions for the existing restrictions
+- Added `dependencyGuardBaseline` to generate a yml file  with the suppressions for the existing restrictions. The file is `dependencyguard-baseline.yml`
 - `dependencyGuardCheck` now generates the HTML report by default
 - `dependencyGuardCheck` can now be used for individual modules
 - Include transitive dependency verifications by default
