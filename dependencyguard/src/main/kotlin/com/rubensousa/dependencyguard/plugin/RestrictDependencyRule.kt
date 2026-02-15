@@ -16,15 +16,16 @@
 
 package com.rubensousa.dependencyguard.plugin
 
+import com.rubensousa.dependencyguard.plugin.internal.ModuleAllowSpec
 
-interface DependencyRestrictionScope {
+class RestrictDependencyRule internal constructor() {
 
-    fun reason(reason: String)
+    private var specs = emptyList<ModuleAllowSpec>()
 
-    fun allow(modulePath: String)
+    internal fun setSpecs(specs: List<ModuleAllowSpec>) {
+        this.specs = specs
+    }
 
-    fun allow(modulePaths: List<String>)
-
-    fun applyRule(rule: RestrictDependencyRule)
+    internal fun getSpecs(): List<ModuleAllowSpec> = specs
 
 }

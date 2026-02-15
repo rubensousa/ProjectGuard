@@ -26,13 +26,13 @@ interface DependencyGuardScope {
      * Example:
      *
      * ```
-     * val kotlinRule = restrictModuleRule {
+     * val allowKotlinLibraries = restrictModuleRule {
      *    allow(libs.kotlinx.coroutines)
      *    allow(libs.kotlinx.datetime)
      * }
      * restrictModule(":domain") {
      *      // Domain modules can have access to kotlin libraries
-     *      applyRule(kotlinRule)
+     *      applyRule(allowKotlinLibraries)
      * }
      * ```
      */
@@ -64,12 +64,12 @@ interface DependencyGuardScope {
      * Example:
      *
      * ```
-     * val androidRule = guardRule {
+     * val denyAndroidLibraries = guardRule {
      *    deny("androidx")
      * }
      * guard(":domain") {
      *      // Domain modules should not depend on android libraries
-     *      applyRule(androidRule)
+     *      applyRule(denyAndroidLibraries)
      * }
      * ```
      */
@@ -89,6 +89,21 @@ interface DependencyGuardScope {
         modulePath: String,
         action: Action<GuardScope>,
     )
+
+    /**
+     * Example:
+     *
+     * ```
+     * val allowLegacyConsumers = restrictDependencyRule {
+     *    allow(":legacy")
+     *    allow(":old-feature")
+     * }
+     * restrictDependency(":legacy") {
+     *      applyRule(allowLegacyConsumers)
+     * }
+     * ```
+     */
+    fun restrictDependencyRule(action: Action<DependencyRestrictionScope>): RestrictDependencyRule
 
     /**
      * Example:

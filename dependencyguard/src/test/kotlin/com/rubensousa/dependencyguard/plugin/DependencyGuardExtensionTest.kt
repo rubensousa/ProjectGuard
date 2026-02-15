@@ -132,6 +132,27 @@ class DependencyGuardExtensionTest {
         assertThat(restrictions.first().allowed.first().modulePath).isEqualTo("kotlin")
     }
 
+    @Test
+    fun `extension configures re-usable restrict dependency rule`() {
+        // given
+        val extension = createExtension()
+
+        // when
+        val rule = extension.restrictDependencyRule {
+            allow("old-feature")
+        }
+        extension.restrictDependency(":legacy") {
+            applyRule(rule)
+        }
+
+        // then
+        val spec = extension.getSpec()
+        val restrictions = spec.dependencyRestrictionSpecs
+        assertThat(restrictions).hasSize(1)
+        assertThat(restrictions.first().dependencyPath).isEqualTo(":legacy")
+        assertThat(restrictions.first().allowed.first().modulePath).isEqualTo("old-feature")
+    }
+
     private fun createExtension(): DependencyGuardExtension {
         val project = ProjectBuilder.builder().build()
         return project.extensions.create(

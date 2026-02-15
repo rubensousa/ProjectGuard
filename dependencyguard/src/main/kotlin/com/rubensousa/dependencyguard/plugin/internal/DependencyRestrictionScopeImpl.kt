@@ -17,6 +17,7 @@
 package com.rubensousa.dependencyguard.plugin.internal
 
 import com.rubensousa.dependencyguard.plugin.DependencyRestrictionScope
+import com.rubensousa.dependencyguard.plugin.RestrictDependencyRule
 
 internal class DependencyRestrictionScopeImpl : DependencyRestrictionScope {
 
@@ -39,6 +40,10 @@ internal class DependencyRestrictionScopeImpl : DependencyRestrictionScope {
         modulePaths.forEach { path ->
             allow(path)
         }
+    }
+
+    override fun applyRule(rule: RestrictDependencyRule) {
+        allowed.addAll(rule.getSpecs())
     }
 
     fun getAllowedModules() = allowed.toList()
