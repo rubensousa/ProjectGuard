@@ -1,6 +1,12 @@
 
 # CHANGELOG
 
+## 1.0.0-alpha04 (2026-02-16)
+
+### API Changes
+
+- Added `guardRule`, `restrictModuleRule` and `restrictDependencyRule` to allow re-using a set of rules across different configurations
+
 ## 1.0.0-alpha03 (2026-02-15)
 
 ### API Changes

@@ -24,7 +24,15 @@ DependencyGuard protects your project's architecture by enforcing dependency rul
 
 ## Setup
 
-1.  **Add the plugin to your root `build.gradle.kts`:**
+1. **Add the following to your `versions.toml`**:
+
+    ```
+    [plugins]
+    dependencyguard = { id = "com.rubensousa.dependencyguard", version = "1.0.0-alpha04" }
+    ```
+
+
+2. **Add the plugin to your root `build.gradle.kts`:**
 
     ```kotlin
     // Top-level build.gradle.kts
@@ -93,6 +101,25 @@ dependencyGuard {
     restrictDependency(libs.mockk) {
         reason("Fakes should be used instead of mocks.")
         allow(":feature:a") // This feature requires mockk to test platform code.
+    }
+}
+```
+
+### Rules
+
+You can re-use a set of rules across multiple configurations:
+
+```kotlin
+dependencyGuard {
+    val legacyConsumers = restrictDependencyRule {
+        allow(":legacy")
+        allow(":old-feature")
+    }
+    restrictDependency(":legacy") {
+        applyRule(legacyConsumers)
+    }
+    restrictDependency(libs.mockk) {
+        applyRule(legacyConsumers)
     }
 }
 ```
