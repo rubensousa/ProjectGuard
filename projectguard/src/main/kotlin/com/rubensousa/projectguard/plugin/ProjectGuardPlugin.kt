@@ -190,7 +190,7 @@ class ProjectGuardPlugin : Plugin<Project> {
             htmlReport = createHtmlReportTask(rootProject),
             baselineDump = createBaselineTask(rootProject),
             baselineCreate = createBaselineReferenceTask(rootProject),
-            check = createCheckTask(rootProject)
+            check = createAggregateCheckTask(rootProject)
         )
     }
 
@@ -261,6 +261,16 @@ class ProjectGuardPlugin : Plugin<Project> {
     private fun createCheckTask(project: Project): TaskProvider<TaskCheck> {
         return project.tasks.register(
             "projectGuardCheck",
+            TaskCheck::class.java
+        ) {
+            group = "verification"
+            description = "Verifies if there are any dependency restrictions"
+        }
+    }
+
+    private fun createAggregateCheckTask(project: Project): TaskProvider<TaskCheck> {
+        return project.tasks.register(
+            "projectGuardAggregateCheck",
             TaskCheck::class.java
         ) {
             group = "verification"

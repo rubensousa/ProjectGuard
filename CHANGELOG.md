@@ -1,6 +1,10 @@
 
 # CHANGELOG
 
+## 1.0.0-alpha06 (2026-02-16)
+
+- Split aggregation check task to `projectGuardAggregateCheck`. The plugin is capable of generating the entire project report without running all individual check tasks
+
 ## 1.0.0-alpha05 (2026-02-16)
 
 - Rename plugin to `ProjectGuard` to avoid confusion with other similar plugins after community feedback

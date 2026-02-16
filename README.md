@@ -28,7 +28,7 @@ ProjectGuard protects your project's architecture by enforcing dependency rules 
 
     ```
     [plugins]
-    projectguard = { id = "com.rubensousa.projectguard", version = "1.0.0-alpha05" }
+    projectguard = { id = "com.rubensousa.projectguard", version = "see github for latest release" }
     ```
 
 
@@ -126,8 +126,9 @@ projectGuard {
 
 ## Tasks
 
--   `./gradlew projectGuardCheck`: Runs the dependency analysis on all modules and generates a html report.
--   `./gradlew projectGuardBaseline`: Creates a `projectguard-baseline.yml` file with all current restrictions. This allows you to start enforcing rules on new code without having to fix all existing issues first.
+- `./gradlew projectGuardAggregateCheck`: Runs the dependency analysis on the entire project and generates a html report.
+- `./gradlew projectGuardCheck`: Runs the dependency analysis on individual modules and generates a html report.
+- `./gradlew projectGuardBaseline`: Creates a `projectguard-baseline.yml` file with all current restrictions. This allows you to start enforcing rules on new code without having to fix all existing issues first.
 
 ## License
 
