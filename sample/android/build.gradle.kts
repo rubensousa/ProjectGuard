@@ -3,7 +3,7 @@ plugins {
 }
 
 android {
-    namespace = "com.rubensousa.dependencyguard.android"
+    namespace = "com.rubensousa.projectguard.android"
     compileSdk {
         version = release(36)
     }

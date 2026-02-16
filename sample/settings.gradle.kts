@@ -27,7 +27,7 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "DependencyGuardSample"
+rootProject.name = "ProjectGuardSample"
 include(":data:a")
 include(":data:b")
 include(":data:c")

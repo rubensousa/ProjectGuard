@@ -1,10 +1,10 @@
-# DependencyGuard
+# ProjectGuard
 
 A Gradle plugin that acts as a powerful gatekeeper for your project's dependencies. It helps you enforce architectural rules, prevent unwanted dependencies, and keep your module graph clean and maintainable as your project scales.
 
-![DependencyGuard Report](example_report.png)
+![ProjectGuard Report](example_report.png)
 
-## Why DependencyGuard?
+## Why ProjectGuard?
 
 As projects grow, so does the complexity of their module graph. Without clear rules, you can accidentally introduce dependencies that violate your app's architecture or agreed conventions:
 
@@ -12,7 +12,7 @@ As projects grow, so does the complexity of their module graph. Without clear ru
 - An `:impl` module might depend on another `:impl` module, instead of an `:api` or `:domain` one.
 - A third-party dependency your team agreed to migrate away from might be added by mistake to a new module.
 
-DependencyGuard protects your project's architecture by enforcing dependency rules that can be checked automatically in your CI/CD setup.
+ProjectGuard protects your project's architecture by enforcing dependency rules that can be checked automatically in your CI/CD setup.
 
 ## Key Features
 
@@ -28,7 +28,7 @@ DependencyGuard protects your project's architecture by enforcing dependency rul
 
     ```
     [plugins]
-    dependencyguard = { id = "com.rubensousa.dependencyguard", version = "1.0.0-alpha04" }
+    projectguard = { id = "com.rubensousa.projectguard", version = "1.0.0-alpha04" }
     ```
 
 
@@ -37,14 +37,14 @@ DependencyGuard protects your project's architecture by enforcing dependency rul
     ```kotlin
     // Top-level build.gradle.kts
     plugins {
-        alias(libs.plugins.dependencyguard) apply true
+        alias(libs.plugins.projectguard) apply true
     }
     ```
 
 2.  **Configure your dependency rules:**
 
     ```kotlin
-    dependencyGuard {
+    projectGuard {
         // Your configuration goes here. See the examples below!
     }
     ```
@@ -56,7 +56,7 @@ DependencyGuard protects your project's architecture by enforcing dependency rul
 Denies a set of dependencies for any module that matches the provided path.
 
 ```kotlin
-dependencyGuard {
+projectGuard {
     // Deny any module in the `:data` layer from depending on any module in the `:legacy` layer.
     guard(":data") {
         deny(":legacy")
@@ -74,7 +74,7 @@ dependencyGuard {
 Prevents all dependencies in a module except the ones in the allow list.
 
 ```kotlin
-dependencyGuard {
+projectGuard {
     // Domain modules should only depend on other domain modules and specific libraries.
     restrictModule(":domain") {
         reason("Domain modules have restricted dependencies")
@@ -90,7 +90,7 @@ Restricts which modules are allowed to depend on a specific dependency.
 This is useful for preventing the use of specific libraries in new modules.
 
 ```kotlin
-dependencyGuard {
+projectGuard {
     // Only allow legacy modules to depend on other legacy modules.
     restrictDependency(":legacy") {
         reason("Legacy modules should no longer be used in new code.")
@@ -110,7 +110,7 @@ dependencyGuard {
 You can re-use a set of rules across multiple configurations:
 
 ```kotlin
-dependencyGuard {
+projectGuard {
     val legacyConsumers = restrictDependencyRule {
         allow(":legacy")
         allow(":old-feature")
@@ -126,8 +126,8 @@ dependencyGuard {
 
 ## Tasks
 
--   `./gradlew dependencyGuardCheck`: Runs the dependency analysis on all modules and generates a html report.
--   `./gradlew dependencyGuardBaseline`: Creates a `dependencyguard-baseline.yml` file with all current restrictions. This allows you to start enforcing rules on new code without having to fix all existing issues first.
+-   `./gradlew projectGuardCheck`: Runs the dependency analysis on all modules and generates a html report.
+-   `./gradlew projectGuardBaseline`: Creates a `projectguard-baseline.yml` file with all current restrictions. This allows you to start enforcing rules on new code without having to fix all existing issues first.
 
 ## License
 

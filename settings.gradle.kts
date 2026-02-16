@@ -19,5 +19,5 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "DependencyGuard"
-include(":dependencyguard")
+rootProject.name = "ProjectGuard"
+include(":projectguard")

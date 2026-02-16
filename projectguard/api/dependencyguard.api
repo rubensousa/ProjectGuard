@@ -1,0 +1,75 @@
+public abstract interface class com/rubensousa/projectguard/plugin/DenyScope {
+	public abstract fun reason (Ljava/lang/String;)V
+}
+
+public abstract class com/rubensousa/projectguard/plugin/ProjectGuardExtension : com/rubensousa/projectguard/plugin/ProjectGuardScope {
+	public fun <init> (Lorg/gradle/api/model/ObjectFactory;)V
+	public fun guard (Ljava/lang/String;Lorg/gradle/api/Action;)V
+	public fun guardRule (Lorg/gradle/api/Action;)Lcom/rubensousa/projectguard/plugin/GuardRule;
+	public fun restrictDependency (Ljava/lang/String;Lorg/gradle/api/Action;)V
+	public fun restrictDependency (Lorg/gradle/api/provider/Provider;Lorg/gradle/api/Action;)V
+	public fun restrictDependencyRule (Lorg/gradle/api/Action;)Lcom/rubensousa/projectguard/plugin/RestrictDependencyRule;
+	public fun restrictModule (Ljava/lang/String;Lorg/gradle/api/Action;)V
+	public fun restrictModuleRule (Lorg/gradle/api/Action;)Lcom/rubensousa/projectguard/plugin/RestrictModuleRule;
+}
+
+public final class com/rubensousa/projectguard/plugin/ProjectGuardPlugin : org/gradle/api/Plugin {
+	public fun <init> ()V
+	public synthetic fun apply (Ljava/lang/Object;)V
+	public fun apply (Lorg/gradle/api/Project;)V
+}
+
+public abstract interface class com/rubensousa/projectguard/plugin/ProjectGuardScope {
+	public static final field Companion Lcom/rubensousa/projectguard/plugin/ProjectGuardScope$Companion;
+	public abstract fun guard (Ljava/lang/String;Lorg/gradle/api/Action;)V
+	public abstract fun guardRule (Lorg/gradle/api/Action;)Lcom/rubensousa/projectguard/plugin/GuardRule;
+	public fun restrictDependency (Ljava/lang/String;)V
+	public abstract fun restrictDependency (Ljava/lang/String;Lorg/gradle/api/Action;)V
+	public fun restrictDependency (Lorg/gradle/api/provider/Provider;)V
+	public abstract fun restrictDependency (Lorg/gradle/api/provider/Provider;Lorg/gradle/api/Action;)V
+	public abstract fun restrictDependencyRule (Lorg/gradle/api/Action;)Lcom/rubensousa/projectguard/plugin/RestrictDependencyRule;
+	public fun restrictModule (Ljava/lang/String;)V
+	public abstract fun restrictModule (Ljava/lang/String;Lorg/gradle/api/Action;)V
+	public abstract fun restrictModuleRule (Lorg/gradle/api/Action;)Lcom/rubensousa/projectguard/plugin/RestrictModuleRule;
+}
+
+public final class com/rubensousa/projectguard/plugin/ProjectGuardScope$Companion {
+}
+
+public abstract interface class com/rubensousa/projectguard/plugin/DependencyRestrictionScope {
+	public abstract fun allow (Ljava/lang/String;)V
+	public abstract fun allow (Ljava/util/List;)V
+	public abstract fun applyRule (Lcom/rubensousa/projectguard/plugin/RestrictDependencyRule;)V
+	public abstract fun reason (Ljava/lang/String;)V
+}
+
+public final class com/rubensousa/projectguard/plugin/GuardRule {
+}
+
+public abstract interface class com/rubensousa/projectguard/plugin/GuardScope {
+	public static final field Companion Lcom/rubensousa/projectguard/plugin/GuardScope$Companion;
+	public abstract fun applyRule (Lcom/rubensousa/projectguard/plugin/GuardRule;)V
+	public fun deny (Ljava/lang/String;)V
+	public abstract fun deny (Ljava/lang/String;Lorg/gradle/api/Action;)V
+	public fun deny (Lorg/gradle/api/provider/Provider;)V
+	public abstract fun deny (Lorg/gradle/api/provider/Provider;Lorg/gradle/api/Action;)V
+}
+
+public final class com/rubensousa/projectguard/plugin/GuardScope$Companion {
+}
+
+public abstract interface class com/rubensousa/projectguard/plugin/ModuleRestrictionScope {
+	public abstract fun allow (Ljava/lang/String;)V
+	public abstract fun allow (Lorg/gradle/api/provider/Provider;)V
+	public abstract fun allowLibs (Ljava/util/List;)V
+	public abstract fun allowModules (Ljava/util/List;)V
+	public abstract fun applyRule (Lcom/rubensousa/projectguard/plugin/RestrictModuleRule;)V
+	public abstract fun reason (Ljava/lang/String;)V
+}
+
+public final class com/rubensousa/projectguard/plugin/RestrictDependencyRule {
+}
+
+public final class com/rubensousa/projectguard/plugin/RestrictModuleRule {
+}
+

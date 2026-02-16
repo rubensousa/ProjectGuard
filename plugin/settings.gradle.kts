@@ -12,5 +12,5 @@ dependencyResolutionManagement {
 }
 
 rootProject.name = "plugin"
-include(":dependencyguard")
-project(":dependencyguard").projectDir = File("../dependencyguard")
+include(":projectguard")
+project(":projectguard").projectDir = File("../projectguard")

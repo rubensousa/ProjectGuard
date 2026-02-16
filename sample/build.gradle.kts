@@ -5,10 +5,10 @@ plugins {
     alias(libs.plugins.jetbrains.kotlin.jvm) apply false
     alias(libs.plugins.maven.publish) apply false
     alias(libs.plugins.android.library) apply false
-    alias(libs.plugins.dependencyguard) apply true
+    alias(libs.plugins.projectguard) apply true
 }
 
-dependencyGuard {
+projectGuard {
     guard(":data") {
         deny(":legacy")
     }

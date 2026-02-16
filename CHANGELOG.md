@@ -1,6 +1,10 @@
 
 # CHANGELOG
 
+## 1.0.0-alpha05 (2026-02-16)
+
+- Rename plugin to `ProjectGuard` to avoid confusion with other similar plugins after community feedback
+
 ## 1.0.0-alpha04 (2026-02-16)
 
 ### API Changes
@@ -22,9 +26,9 @@
 
 ### API Changes
 
-- Added `dependencyGuardBaseline` to generate a yml file  with the suppressions for the existing restrictions. The file is `dependencyguard-baseline.yml`
-- `dependencyGuardCheck` now generates the HTML report by default
-- `dependencyGuardCheck` can now be used for individual modules
+- Added `projectGuardBaseline` to generate a yml file  with the suppressions for the existing restrictions. The file is `projectguard-baseline.yml`
+- `projectGuardCheck` now generates the HTML report by default
+- `projectGuardCheck` can now be used for individual modules
 - Include transitive dependency verifications by default
 - Renamed `setReason` to `reason` in the kotlin DSL
 - Improved html report to allow filtering by module and dependency
