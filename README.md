@@ -28,7 +28,7 @@ ProjectGuard protects your project's architecture by enforcing dependency rules 
 
     ```
     [plugins]
-    projectguard = { id = "com.rubensousa.projectguard", version = "1.0.0-alpha04" }
+    projectguard = { id = "com.rubensousa.projectguard", version = "1.0.0-alpha05" }
     ```
 
 
