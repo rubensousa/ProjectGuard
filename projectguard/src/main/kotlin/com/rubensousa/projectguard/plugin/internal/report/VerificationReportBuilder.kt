@@ -73,10 +73,14 @@ internal class VerificationReportBuilder(
         val graph = mutableMapOf<String, MutableSet<DependencyReferenceDump>>()
         dependencyGraphDump.modules.forEach { report ->
             report.configurations.forEach { configuration ->
-                val moduleDependencies = graph.getOrPut(report.module) { mutableSetOf() }
-                moduleDependencies.addAll(configuration.dependencies.map { dependency ->
-                    DependencyReferenceDump(dependency.id, dependency.isLibrary)
-                })
+                // TODO: Until https://github.com/rubensousa/ProjectGuard/issues/3 is clarified,
+                //  filter out test dependencies from the graph reports
+                if (configuration.id == "compileClasspath") {
+                    val moduleDependencies = graph.getOrPut(report.module) { mutableSetOf() }
+                    moduleDependencies.addAll(configuration.dependencies.map { dependency ->
+                        DependencyReferenceDump(dependency.id, dependency.isLibrary)
+                    })
+                }
             }
         }
         return VerificationReport(sortedReports, graph.mapValues { entry ->
