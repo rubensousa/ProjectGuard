@@ -328,7 +328,7 @@ function renderByModuleView(report) {
             icon,
             module.module,
             `module-${module.module.replace(/:/g, '-')}`,
-            `${fatalMatches.length + suppressedMatches.length} dependency restrictions found`,
+            `${fatalMatches.length + suppressedMatches.length} dependency restriction(s) found`,
             fatalMatches,
             suppressedMatches,
             'Matches'
