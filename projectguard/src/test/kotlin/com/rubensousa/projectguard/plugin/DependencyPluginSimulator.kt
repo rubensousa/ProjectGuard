@@ -23,7 +23,6 @@ import com.rubensousa.projectguard.plugin.internal.task.AggregateRestrictionDump
 import com.rubensousa.projectguard.plugin.internal.task.BaselineExecutor
 import com.rubensousa.projectguard.plugin.internal.task.CheckExecutor
 import com.rubensousa.projectguard.plugin.internal.task.DependencyDumpExecutor
-import com.rubensousa.projectguard.plugin.internal.task.HtmlReportExecutor
 import com.rubensousa.projectguard.plugin.internal.task.RestrictionDumpExecutor
 import org.junit.rules.TemporaryFolder
 import java.io.File
@@ -115,32 +114,27 @@ internal class DependencyPluginSimulator(
         return outputFile
     }
 
-    fun check(): Result<Unit> {
-        val executor = CheckExecutor(
-            baselineFile = getBaselineFile(),
-            restrictionDumpFile = getAggregateRestrictionsFile()
-        )
-        return executor.execute()
-    }
-
-    fun check(moduleId: String): Result<Unit> {
-        val executor = CheckExecutor(
-            baselineFile = getBaselineFile(),
-            restrictionDumpFile = getRestrictionsFile(moduleId),
-        )
-        return executor.execute()
-    }
-
-    fun htmlReport(moduleId: String): File {
-        val outputDir = File(temporaryFolder.root, "html-report-${getValidFilePath(moduleId)}")
+    fun check(): Result<File> {
+        val outputDir = File(temporaryFolder.root, "global-html-report")
         outputDir.mkdirs()
-        val executor = HtmlReportExecutor(
-            restrictionDumpFile = getRestrictionsFile(moduleId),
+        val executor = CheckExecutor(
             baselineFile = getBaselineFile(),
-            outputFile = outputDir,
+            dependenciesFile = getAggregateDependenciesFile(),
+            restrictionDumpFile = getAggregateRestrictionsFile(),
+            reportDir = outputDir
         )
-        executor.execute()
-        return outputDir
+        return executor.execute().map { outputDir }
+    }
+
+    fun check(moduleId: String): Result<File> {
+        val outputDir = File(temporaryFolder.root, "html-report-${getValidFilePath(moduleId)}")
+        val executor = CheckExecutor(
+            baselineFile = getBaselineFile(),
+            dependenciesFile = getAggregateDependenciesFile(),
+            restrictionDumpFile = getRestrictionsFile(moduleId),
+            reportDir = outputDir
+        )
+        return executor.execute().map { outputDir }
     }
 
     fun getBaselineFile(): File {

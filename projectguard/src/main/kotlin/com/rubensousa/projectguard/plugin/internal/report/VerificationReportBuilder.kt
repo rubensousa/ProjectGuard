@@ -22,11 +22,14 @@ internal class VerificationReportBuilder(
     private val suppressionMap: SuppressionMap,
 ) {
 
-    fun build(dump: RestrictionDump): VerificationReport {
+    fun build(
+        dependencyGraphDump: DependencyGraphDump,
+        restrictionDump: RestrictionDump,
+    ): VerificationReport {
         val totalFatalMatches = mutableMapOf<String, MutableList<FatalMatch>>()
         val totalSuppressedMatches = mutableMapOf<String, MutableList<SuppressedMatch>>()
         val reports = mutableSetOf<String>()
-        dump.modules.forEach { moduleReport ->
+        restrictionDump.modules.forEach { moduleReport ->
             moduleReport.restrictions.forEach { restriction ->
                 val fatalMatches = totalFatalMatches.getOrPut(moduleReport.module) {
                     mutableListOf()
@@ -67,7 +70,14 @@ internal class VerificationReportBuilder(
                     suppressed = totalSuppressedMatches[moduleId]?.sortedBy { it.dependency } ?: emptyList(),
                 )
             }
-        return VerificationReport(sortedReports)
+        val graph = mutableMapOf<String, MutableSet<String>>()
+        dependencyGraphDump.modules.forEach { report ->
+            report.configurations.forEach { configuration ->
+                val moduleDependencies = graph.getOrPut(report.module) { mutableSetOf() }
+                moduleDependencies.addAll(configuration.dependencies)
+            }
+        }
+        return VerificationReport(sortedReports, graph.mapValues { it.value.sorted() })
     }
 
 }

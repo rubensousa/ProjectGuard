@@ -1,5 +1,5 @@
 // The report data is injected by the report generator
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
     if (window.REPORT_DATA) {
         initializeReport(window.REPORT_DATA);
     } else {
@@ -43,8 +43,10 @@ function updateViewControlsHeader(activeTab) {
     const header = document.getElementById('view-title');
     if (activeTab === 'by-module') {
         header.textContent = 'MODULE RESTRICTIONS';
-    } else {
+    } else if (activeTab === 'by-dependency') {
         header.textContent = 'DEPENDENCY RESTRICTIONS';
+    } else {
+        header.textContent = 'DEPENDENCY GRAPH';
     }
 }
 
@@ -53,14 +55,16 @@ function renderForActiveTab(report) {
     if (activeTabId === 'by-module') {
         renderSidebarForModules(report);
         renderByModuleView(report);
-    } else {
+    } else if (activeTabId === 'by-dependency') {
         renderSidebarForDependencies(report);
         renderByDependencyView(report);
+    } else {
+        renderGraphView(report);
     }
 }
 
 function setupGlobalEventListeners() {
-    document.body.addEventListener('click', function(event) {
+    document.body.addEventListener('click', function (event) {
         // Handle main card header clicks for expansion
         const cardHeader = event.target.closest('.card-header');
         if (cardHeader) {
@@ -72,7 +76,7 @@ function setupGlobalEventListeners() {
         }
     });
 
-    document.getElementById('sidebar').addEventListener('click', function(event) {
+    document.getElementById('sidebar').addEventListener('click', function (event) {
         const summary = event.target.closest('summary');
         if (summary) {
             event.preventDefault();
@@ -238,7 +242,7 @@ function renderSidebarForDependencies(report) {
         content += renderDependencyGroups(groupedSuppressedDeps, dependencies, false);
     }
 
-     if (depsWithFatal.length === 0 && depsWithSuppressedOnly.length === 0) {
+    if (depsWithFatal.length === 0 && depsWithSuppressedOnly.length === 0) {
         content = '<p style="color:white; padding: 0 0.5rem;">No matches found.</p>';
     }
 
@@ -264,8 +268,11 @@ function renderByModuleView(report) {
     }
 
     container.innerHTML = sortedModules.map(module => {
-        const fatalMatches = module.fatal.map(match => ({ item: match.dependency, reason: match.reason }));
-        const suppressedMatches = module.suppressed.map(match => ({ item: match.dependency, reason: match.suppressionReason }));
+        const fatalMatches = module.fatal.map(match => ({item: match.pathToDependency, reason: match.reason}));
+        const suppressedMatches = module.suppressed.map(match => ({
+            item: match.pathToDependency,
+            reason: match.suppressionReason
+        }));
         const icon = fatalMatches.length > 0 ? 'cancel' : 'block';
         return createRestrictionCard(
             icon,
@@ -297,8 +304,14 @@ function renderByDependencyView(report) {
 
     container.innerHTML = sortedDependencies.map(dep => {
         const matches = dependencies[dep];
-        const fatalMatches = matches.filter(v => !v.isSuppressed).map(match => ({ item: match.module, reason: match.reason }));
-        const suppressedMatches = matches.filter(v => v.isSuppressed).map(match => ({ item: match.module, reason: match.reason }));
+        const fatalMatches = matches.filter(v => !v.isSuppressed).map(match => ({
+            item: match.module,
+            reason: match.reason
+        }));
+        const suppressedMatches = matches.filter(v => v.isSuppressed).map(match => ({
+            item: match.module,
+            reason: match.reason
+        }));
         const icon = fatalMatches.length > 0 ? 'cancel' : 'block';
         return createRestrictionCard(
             icon,
@@ -385,13 +398,112 @@ function getMatchesByDependency(report) {
         module.fatal.forEach(match => {
             const dep = match.dependency;
             if (!dependencies[dep]) dependencies[dep] = [];
-            dependencies[dep].push({ module: module.module, reason: match.reason, isSuppressed: false });
+            dependencies[dep].push({module: module.module, reason: match.reason, isSuppressed: false});
         });
         module.suppressed.forEach(match => {
             const dep = match.dependency;
             if (!dependencies[dep]) dependencies[dep] = [];
-            dependencies[dep].push({ module: module.module, reason: match.suppressionReason, isSuppressed: true });
+            dependencies[dep].push({module: module.module, reason: match.suppressionReason, isSuppressed: true});
         });
     });
     return dependencies;
+}
+
+
+// --- Graph View Rendering ---
+
+function renderGraphView(report) {
+    const selector = document.getElementById('module-selector');
+    selector.innerHTML = report.modules.map(m => `<option value="${m.module}">${m.module}</option>`).join('');
+    selector.addEventListener('change', () => renderModuleGraph(report, selector.value));
+    renderModuleGraph(report, selector.value);
+}
+
+function renderModuleGraph(report, moduleName) {
+    const moduleReport = report.modules.find(m => m.module === moduleName);
+    if (!moduleReport) return;
+    const graph = getModuleDependencyGraph(moduleReport.module, report.dependencyGraph);
+    const restrictedDependencies = getModuleRestrictions(moduleReport);
+    const nodes = new Map();
+    let counter = 0;
+
+    graph.keys().forEach(nodeName => {
+        if (!nodes.has(nodeName)) {
+            nodes.set(nodeName, `id${counter++}`);
+        }
+    });
+
+    let graphDefinition = 'graph TD;\n';
+
+    // Define all nodes with their text
+    for (const [name, id] of nodes.entries()) {
+        graphDefinition += `    ${id}["${name}"];\n`;
+        if (restrictedDependencies.has(name)) {
+            graphDefinition += `    style ${id} fill:#FFEBEE,stroke:#f66,stroke-width:2px,color:#ff0000;\n`;
+        }
+    }
+
+    // Traverse the entire graph and define it
+    for (let [key, value] of graph) {
+        const moduleId = nodes.get(key)
+        value.forEach((dependency) => {
+            const dependencyId = nodes.get(dependency)
+            graphDefinition += `    ${moduleId} --> ${dependencyId};\n`;
+        })
+    }
+    const graphContainer = document.getElementById('graph-container');
+    const uniqueGraphId = 'mermaid-graph';
+    mermaid.render(uniqueGraphId, graphDefinition, (svgCode) => {
+        graphContainer.innerHTML = svgCode
+        const svgElement = graphContainer.querySelector('svg');
+        const panzoomInstance = Panzoom(svgElement, {
+            maxScale: 5,
+            minScale: 0.01,
+            step: 0.1,
+        });
+        svgElement.setAttribute("height", "750px");
+        graphContainer.addEventListener("wheel", (event) => {
+            panzoomInstance.zoomWithWheel(event);
+        });
+    });
+}
+
+/**
+ * Traverse the project dependencies to build the portion relevant to this module
+ * @param module
+ * @param projectDependencies
+ * @returns {Map<any, any>}
+ */
+function getModuleDependencyGraph(module, projectDependencies) {
+    const projectMap = new Map(Object.entries(projectDependencies));
+    const nodeMap = new Map();
+    const visitedSet = new Set();
+    const stack = []
+    stack.push(module)
+    while (stack.length > 0) {
+        let dependency = stack.pop();
+        if (visitedSet.has(dependency)) {
+            continue
+        }
+        visitedSet.add(dependency)
+        const list = [];
+        nextDependencies = projectMap.get(dependency);
+        nextDependencies?.forEach((nextDependency) => {
+            list.push(nextDependency)
+            stack.push(nextDependency)
+        })
+        nodeMap.set(dependency, list);
+    }
+    return nodeMap
+}
+
+function getModuleRestrictions(moduleReport) {
+    const restrictedDependencies = new Set();
+    moduleReport.fatal.forEach(item => {
+        restrictedDependencies.add(item.dependency);
+    })
+    moduleReport.suppressed.forEach(item => {
+        restrictedDependencies.add(item.dependency);
+    })
+    return restrictedDependencies
 }

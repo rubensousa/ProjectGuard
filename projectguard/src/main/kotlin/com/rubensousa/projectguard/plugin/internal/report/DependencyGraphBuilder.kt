@@ -38,13 +38,11 @@ internal class DependencyGraphBuilder {
         val graphs = mutableMapOf<String, DependencyGraph>()
         projectDump.modules.forEach { report ->
             report.configurations.forEach { configuration ->
-                if (isConfigurationSupported(configuration.id)) {
-                    val graph = graphs.getOrPut(configuration.id) {
-                        DependencyGraph(configurationId = configuration.id)
-                    }
-                    configuration.dependencies.forEach { dependency ->
-                        graph.addDependency(report.module, dependency)
-                    }
+                val graph = graphs.getOrPut(configuration.id) {
+                    DependencyGraph(configurationId = configuration.id)
+                }
+                configuration.dependencies.forEach { dependency ->
+                    graph.addDependency(report.module, dependency)
                 }
             }
         }

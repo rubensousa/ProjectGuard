@@ -23,7 +23,6 @@ import com.rubensousa.projectguard.plugin.internal.task.TaskBaseline
 import com.rubensousa.projectguard.plugin.internal.task.TaskCheck
 import com.rubensousa.projectguard.plugin.internal.task.TaskCreateBaselineFile
 import com.rubensousa.projectguard.plugin.internal.task.TaskDependencyDump
-import com.rubensousa.projectguard.plugin.internal.task.TaskHtmlReport
 import com.rubensousa.projectguard.plugin.internal.task.TaskRestrictionDump
 import org.gradle.api.Plugin
 import org.gradle.api.Project
@@ -42,9 +41,9 @@ import java.io.File
  *
  * Public facing tasks:
  *
+ * - projectGuardAggregateCheck
  * - projectGuardCheck
  * - projectGuardBaseline
- * - projectGuardHtmlReport
  */
 class ProjectGuardPlugin : Plugin<Project> {
 
@@ -102,21 +101,13 @@ class ProjectGuardPlugin : Plugin<Project> {
             dependenciesFile.set(aggregationTasks.dependencyDump.flatMap { task -> task.outputFile })
         }
 
-        // HTML report task takes the individual module report
-        moduleTasks.htmlReport.configure {
-            restrictionDumpFile.set(moduleTasks.restrictionDump.flatMap { task -> task.outputFile })
-            baselineFile.set(aggregationTasks.baselineCreate.flatMap { task -> task.baselineFile })
-            outputDir.set(project.layout.buildDirectory.dir(htmlAggregateReportFilePath))
-            mustRunAfter(aggregationTasks.restrictionDump)
-        }
-
         moduleTasks.check.configure {
             // Check task must take the report and baseline as input
             restrictionDumpFile.set(moduleTasks.restrictionDump.flatMap { task -> task.outputFile })
             baselineFile.set(aggregationTasks.baselineCreate.flatMap { task -> task.baselineFile })
+            dependenciesFile.set(aggregationTasks.dependencyDump.flatMap { task -> task.outputFile })
+            outputDir.set(project.layout.buildDirectory.dir(htmlAggregateReportFilePath))
             reportFilePath.set(getProjectReportFilePath(project))
-            // Run the html report after the check task
-            finalizedBy(moduleTasks.htmlReport)
         }
     }
 
@@ -156,20 +147,12 @@ class ProjectGuardPlugin : Plugin<Project> {
             outputFile.set(rootProject.layout.buildDirectory.file(dependenciesFilePath))
         }
 
-        // Aggregate html report takes the aggregate json and prettifies it
-        aggregationTasks.htmlReport.configure {
-            restrictionDumpFile.set(aggregationTasks.restrictionDump.flatMap { task -> task.outputFile })
-            baselineFile.set(aggregationTasks.baselineCreate.flatMap { task -> task.baselineFile })
-            outputDir.set(rootProject.layout.buildDirectory.dir(htmlAggregateReportFilePath))
-        }
-
         aggregationTasks.check.configure {
             restrictionDumpFile.set(aggregationTasks.restrictionDump.flatMap { task -> task.outputFile })
             baselineFile.set(aggregationTasks.baselineCreate.flatMap { task -> task.baselineFile })
+            dependenciesFile.set(aggregationTasks.dependencyDump.flatMap { task -> task.outputFile })
+            outputDir.set(rootProject.layout.buildDirectory.dir(htmlAggregateReportFilePath))
             reportFilePath.set(getProjectReportFilePath(project))
-            setMustRunAfter(moduleTasks.map { it.htmlReport })
-            // Run the html report after the check task
-            finalizedBy(aggregationTasks.htmlReport)
         }
     }
 
@@ -187,7 +170,6 @@ class ProjectGuardPlugin : Plugin<Project> {
         return AggregationTasks(
             dependencyDump = createAggregateDependencyDumpTask(rootProject),
             restrictionDump = createAggregateRestrictionTask(rootProject),
-            htmlReport = createHtmlReportTask(rootProject),
             baselineDump = createBaselineTask(rootProject),
             baselineCreate = createBaselineReferenceTask(rootProject),
             check = createAggregateCheckTask(rootProject)
@@ -253,7 +235,6 @@ class ProjectGuardPlugin : Plugin<Project> {
         return ModuleTasks(
             check = createCheckTask(targetProject),
             restrictionDump = createModuleRestrictionTask(targetProject, extension),
-            htmlReport = createHtmlReportTask(targetProject),
             dependencyDump = createDependencyDumpTask(targetProject)
         )
     }
@@ -265,6 +246,7 @@ class ProjectGuardPlugin : Plugin<Project> {
         ) {
             group = "verification"
             description = "Verifies if there are any dependency restrictions"
+            outputs.upToDateWhen { false }
         }
     }
 
@@ -275,6 +257,7 @@ class ProjectGuardPlugin : Plugin<Project> {
         ) {
             group = "verification"
             description = "Verifies if there are any dependency restrictions"
+            outputs.upToDateWhen { false }
         }
     }
 
@@ -293,19 +276,6 @@ class ProjectGuardPlugin : Plugin<Project> {
             outputFile.set(
                 project.layout.buildDirectory.file(jsonReportFilePath)
             )
-            outputs.upToDateWhen { false }
-        }
-    }
-
-    private fun createHtmlReportTask(
-        project: Project,
-    ): TaskProvider<TaskHtmlReport> {
-        return project.tasks.register(
-            "projectGuardHtmlReport",
-            TaskHtmlReport::class.java
-        ) {
-            group = "reporting"
-            description = "Generates an HTML report of all dependency matches."
             outputs.upToDateWhen { false }
         }
     }
@@ -331,7 +301,6 @@ class ProjectGuardPlugin : Plugin<Project> {
     private data class ModuleTasks(
         val dependencyDump: TaskProvider<TaskDependencyDump>,
         val restrictionDump: TaskProvider<TaskRestrictionDump>,
-        val htmlReport: TaskProvider<TaskHtmlReport>,
         val check: TaskProvider<TaskCheck>,
     )
 
@@ -340,7 +309,6 @@ class ProjectGuardPlugin : Plugin<Project> {
         val baselineDump: TaskProvider<TaskBaseline>,
         val restrictionDump: TaskProvider<TaskAggregateRestrictionDump>,
         val check: TaskProvider<TaskCheck>,
-        val htmlReport: TaskProvider<TaskHtmlReport>,
         val dependencyDump: TaskProvider<TaskAggregateDependencyDump>,
     )
 

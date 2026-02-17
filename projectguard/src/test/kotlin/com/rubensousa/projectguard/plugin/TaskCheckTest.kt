@@ -20,6 +20,7 @@ import com.google.common.truth.Truth.assertThat
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
+import java.io.File
 
 class TaskCheckTest {
 
@@ -86,6 +87,26 @@ class TaskCheckTest {
 
         // then
         assertThat(result.isFailure).isTrue()
+    }
+
+    @Test
+    fun `html report is generated for module`() {
+        // given
+        val moduleId = ":domain"
+        val fatalModuleId = ":legacy"
+        plugin.dumpDependencies(moduleId) { addDependency(moduleId, fatalModuleId) }
+        plugin.dumpAggregateDependencies()
+        // Empty spec to allow the invalid combination
+        val spec = projectGuard {}
+        plugin.dumpRestrictions(moduleId, spec)
+
+        // when
+        val outputDir = plugin.check(moduleId).getOrThrow()
+
+        // then
+        assertThat(File(outputDir, "index.html").exists()).isTrue()
+        assertThat(File(outputDir, "script.js").exists()).isTrue()
+        assertThat(File(outputDir, "style.css").exists()).isTrue()
     }
 
 }
