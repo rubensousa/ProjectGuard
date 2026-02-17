@@ -506,7 +506,7 @@ function renderModuleGraph(report, moduleName) {
         graphContainer.innerHTML = svgCode
         const svgElement = graphContainer.querySelector('svg');
         const panzoomInstance = Panzoom(svgElement, {
-            maxScale: 5,
+            maxScale: 1000,
             minScale: 0.01,
             step: 0.1,
         });
