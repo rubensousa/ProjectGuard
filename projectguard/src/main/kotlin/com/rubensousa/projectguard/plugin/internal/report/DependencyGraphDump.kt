@@ -32,5 +32,11 @@ internal data class DependencyGraphModuleDump(
 @Serializable
 internal data class ConfigurationDependencies(
     val id: String,
-    val dependencies: List<String>,
+    val dependencies: List<DependencyReferenceDump>,
+)
+
+@Serializable
+internal data class DependencyReferenceDump(
+    val id: String,
+    val isLibrary: Boolean = false
 )

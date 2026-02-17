@@ -20,6 +20,7 @@ import com.rubensousa.projectguard.plugin.internal.DependencyGraph
 import com.rubensousa.projectguard.plugin.internal.report.ConfigurationDependencies
 import com.rubensousa.projectguard.plugin.internal.report.DependencyGraphDump
 import com.rubensousa.projectguard.plugin.internal.report.DependencyGraphModuleDump
+import com.rubensousa.projectguard.plugin.internal.report.DependencyReferenceDump
 import com.rubensousa.projectguard.plugin.internal.report.JsonFileWriter
 import org.gradle.api.DefaultTask
 import org.gradle.api.file.RegularFileProperty
@@ -71,7 +72,9 @@ internal class DependencyDumpExecutor(
                     configurations = dependencyGraphs.map { graph ->
                         ConfigurationDependencies(
                             id = graph.configurationId,
-                            dependencies = graph.getDependencies(moduleId).toList()
+                            dependencies = graph.getDependencies(moduleId).toList().map { dependencyId ->
+                                DependencyReferenceDump(dependencyId, graph.isExternalLibrary(dependencyId))
+                            }
                         )
                     }
                 )

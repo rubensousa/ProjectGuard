@@ -19,16 +19,20 @@ package com.rubensousa.projectguard.plugin.internal.task
 import com.rubensousa.projectguard.plugin.internal.BaselineConfiguration
 import com.rubensousa.projectguard.plugin.internal.SuppressionMap
 import com.rubensousa.projectguard.plugin.internal.YamlProcessor
+import com.rubensousa.projectguard.plugin.internal.report.DependencyGraphDump
+import com.rubensousa.projectguard.plugin.internal.report.HtmlReportGenerator
 import com.rubensousa.projectguard.plugin.internal.report.RestrictionDump
 import com.rubensousa.projectguard.plugin.internal.report.VerificationReportBuilder
 import kotlinx.serialization.json.Json
 import org.gradle.api.DefaultTask
-import org.gradle.api.GradleException
+import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.file.RegularFileProperty
 import org.gradle.api.provider.Property
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.InputFile
+import org.gradle.api.tasks.OutputDirectory
 import org.gradle.api.tasks.TaskAction
+import org.gradle.api.tasks.VerificationException
 import org.gradle.work.DisableCachingByDefault
 import java.io.File
 
@@ -41,15 +45,23 @@ internal abstract class TaskCheck : DefaultTask() {
     @get:InputFile
     internal abstract val restrictionDumpFile: RegularFileProperty
 
+    @get:InputFile
+    internal abstract val dependenciesFile: RegularFileProperty
+
     @get:Input
     internal abstract val reportFilePath: Property<String>
+
+    @get:OutputDirectory
+    abstract val outputDir: DirectoryProperty
 
     @TaskAction
     fun projectGuardCheck() {
         val executor = CheckExecutor(
             baselineFile = baselineFile.get().asFile,
             restrictionDumpFile = restrictionDumpFile.get().asFile,
-            reportFilePath = reportFilePath.get(),
+            dependenciesFile = dependenciesFile.get().asFile,
+            reportDir = outputDir.get().asFile,
+            reportFilePath = reportFilePath.get()
         )
         executor.execute().getOrThrow()
     }
@@ -59,10 +71,13 @@ internal abstract class TaskCheck : DefaultTask() {
 internal class CheckExecutor(
     private val baselineFile: File,
     private val restrictionDumpFile: File,
+    private val dependenciesFile: File,
+    private val reportDir: File,
     private val reportFilePath: String = "",
 ) {
 
     fun execute(): Result<Unit> = runCatching {
+        val dependencyGraphDump = Json.decodeFromString<DependencyGraphDump>(dependenciesFile.readText())
         val yamlProcessor = YamlProcessor()
         val suppressionMap = SuppressionMap()
         runCatching {
@@ -74,14 +89,16 @@ internal class CheckExecutor(
         }
         val restrictionDump = Json.decodeFromString<RestrictionDump>(restrictionDumpFile.readText())
         val reportBuilder = VerificationReportBuilder(suppressionMap)
-        val report = reportBuilder.build(restrictionDump)
+        val report = reportBuilder.build(dependencyGraphDump, restrictionDump)
         val fatalMatches = report.modules.flatMap { it.fatal }
         val suppressedMatches = report.modules.flatMap { it.suppressed }
         if (suppressedMatches.isNotEmpty()) {
             println("Found ${suppressedMatches.size} suppressed match(es)")
         }
+        val htmlReportGenerator = HtmlReportGenerator()
+        htmlReportGenerator.generate(report, reportDir)
         if (fatalMatches.isNotEmpty()) {
-            throw GradleException("Found ${fatalMatches.size} fatal match(es). See report at file:///$reportFilePath")
+            throw VerificationException("Found ${fatalMatches.size} fatal match(es). See report at file:///$reportFilePath")
         } else {
             println("No fatal matches found. See report at file:///$reportFilePath")
         }

@@ -2,7 +2,9 @@
 
 A Gradle plugin that acts as a powerful gatekeeper for your project's dependencies. It helps you enforce architectural rules, prevent unwanted dependencies, and keep your module graph clean and maintainable as your project scales.
 
-![ProjectGuard Report](example_report.png)
+![ProjectGuard Module Report](example_report_modules.png)
+
+![ProjectGuard Graph Report](example_report_graph.png)
 
 ## Why ProjectGuard?
 
@@ -21,6 +23,7 @@ ProjectGuard protects your project's architecture by enforcing dependency rules 
 - **Dependency usage reports:** Generate a detailed HTML report that clearly shows all dependency violations, making them easy to identify and fix.
 - **CI/CD Integration:** Fail your build when a rule is violated, ensuring that no problematic dependencies make it into your main branch.
 - **Baseline Support:** Don't want to fix all existing violations at once? Create a baseline file to ignore them and focus on preventing new issues.
+- **Mermaid graph for visualization:** Check your dependency graph for each module of your project
 
 ## Setup
 
@@ -126,8 +129,8 @@ projectGuard {
 
 ## Tasks
 
-- `./gradlew projectGuardAggregateCheck`: Runs the dependency analysis on the entire project and generates a html report.
-- `./gradlew projectGuardCheck`: Runs the dependency analysis on individual modules and generates a html report.
+- `./gradlew projectGuardAggregateCheck`: Runs the dependency analysis on the entire project and generates a html report under `rootProject/build/reports/projectguard/index.html`.
+- `./gradlew projectGuardCheck`: Runs the dependency analysis on individual modules and generates a html report under `module/build/reports/projectguard/index.html`.
 - `./gradlew projectGuardBaseline`: Creates a `projectguard-baseline.yml` file with all current restrictions. This allows you to start enforcing rules on new code without having to fix all existing issues first.
 
 ## License

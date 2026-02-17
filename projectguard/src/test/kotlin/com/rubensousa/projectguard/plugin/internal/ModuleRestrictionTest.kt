@@ -32,8 +32,8 @@ class ModuleRestrictionTest {
         val spec = projectGuard {
             restrictModule(":domain")
         }
-        graph.addDependency(":domain", ":legacy")
-        graph.addDependency(":domain", ":data")
+        graph.addInternalDependency(":domain", ":legacy")
+        graph.addInternalDependency(":domain", ":data")
 
 
         // when
@@ -56,7 +56,7 @@ class ModuleRestrictionTest {
         val spec = projectGuard {
             restrictModule(":domain")
         }
-        graph.addDependency(":domain:a", ":legacy:a")
+        graph.addInternalDependency(":domain:a", ":legacy:a")
 
         // when
         val restrictions = finder.find(
@@ -77,8 +77,8 @@ class ModuleRestrictionTest {
             restrictModule(":data")
         }
         val graph = buildDependencyGraph {
-            addDependency(":domain", ":legacy")
-            addDependency(":data", ":legacy")
+            addInternalDependency(":domain", ":legacy")
+            addInternalDependency(":data", ":legacy")
         }
 
         // when
@@ -98,8 +98,8 @@ class ModuleRestrictionTest {
                 allow(":domain")
             }
         }
-        graph.addDependency(":domain:a", ":domain:b")
-        graph.addDependency(":domain:b", ":legacy:a")
+        graph.addInternalDependency(":domain:a", ":domain:b")
+        graph.addInternalDependency(":domain:b", ":legacy:a")
 
         // when
         val restrictions = finder.find(moduleId = ":domain:a", graph = graph, spec = spec)
@@ -125,7 +125,7 @@ class ModuleRestrictionTest {
                 reason(reason)
             }
         }
-        graph.addDependency(":domain:a", ":legacy:a")
+        graph.addInternalDependency(":domain:a", ":legacy:a")
 
         // when
         val restrictions = finder.find(moduleId = ":domain:a", graph = graph, spec = spec)
@@ -149,11 +149,11 @@ class ModuleRestrictionTest {
         }
 
         // Ok
-        graph.addDependency(":domain:c", ":domain:a")
-        graph.addDependency(":domain:b", ":domain:a")
+        graph.addInternalDependency(":domain:c", ":domain:a")
+        graph.addInternalDependency(":domain:b", ":domain:a")
 
         // Not ok
-        graph.addDependency(":domain:d", ":domain:c")
+        graph.addInternalDependency(":domain:d", ":domain:c")
 
         // when
         val restrictionsB = finder.find(moduleId = ":domain:b", graph = graph, spec = spec)
@@ -178,7 +178,7 @@ class ModuleRestrictionTest {
             restrictModule(":domain")
             restrictModule(":domain:a")
         }
-        graph.addDependency(":domain:a", ":legacy:a")
+        graph.addInternalDependency(":domain:a", ":legacy:a")
 
         // when
         val restrictions = finder.find(

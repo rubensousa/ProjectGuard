@@ -20,6 +20,7 @@ import com.google.common.truth.Truth.assertThat
 import com.rubensousa.projectguard.plugin.internal.report.ConfigurationDependencies
 import com.rubensousa.projectguard.plugin.internal.report.DependencyGraphDump
 import com.rubensousa.projectguard.plugin.internal.report.DependencyGraphModuleDump
+import com.rubensousa.projectguard.plugin.internal.report.DependencyReferenceDump
 import kotlinx.serialization.json.Json
 import org.junit.Rule
 import org.junit.Test
@@ -40,10 +41,10 @@ class TaskAggregateDependencyDumpTest {
         val secondModule = "module:b"
         val secondDependency = "domain:b"
         plugin.dumpDependencies(firstModule) {
-            addDependency(firstModule, firstDependency)
+            addInternalDependency(firstModule, firstDependency)
         }
         plugin.dumpDependencies(secondModule) {
-            addDependency(secondModule, secondDependency)
+            addExternalDependency(module = secondModule, dependency = secondDependency)
         }
 
         // when
@@ -58,7 +59,7 @@ class TaskAggregateDependencyDumpTest {
                     configurations = listOf(
                         ConfigurationDependencies(
                             id = "compileClasspath",
-                            dependencies = listOf(firstDependency)
+                            dependencies = listOf(DependencyReferenceDump(firstDependency, false))
                         ),
                     )
                 ),
@@ -67,7 +68,7 @@ class TaskAggregateDependencyDumpTest {
                     configurations = listOf(
                         ConfigurationDependencies(
                             id = "compileClasspath",
-                            dependencies = listOf(secondDependency)
+                            dependencies = listOf(DependencyReferenceDump(secondDependency, true))
                         ),
                     )
                 )

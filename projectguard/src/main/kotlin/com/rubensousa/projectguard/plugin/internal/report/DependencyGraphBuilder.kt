@@ -38,12 +38,20 @@ internal class DependencyGraphBuilder {
         val graphs = mutableMapOf<String, DependencyGraph>()
         projectDump.modules.forEach { report ->
             report.configurations.forEach { configuration ->
-                if (isConfigurationSupported(configuration.id)) {
-                    val graph = graphs.getOrPut(configuration.id) {
-                        DependencyGraph(configurationId = configuration.id)
-                    }
-                    configuration.dependencies.forEach { dependency ->
-                        graph.addDependency(report.module, dependency)
+                val graph = graphs.getOrPut(configuration.id) {
+                    DependencyGraph(configurationId = configuration.id)
+                }
+                configuration.dependencies.forEach { dependency ->
+                    if (dependency.isLibrary) {
+                        graph.addExternalDependency(
+                            module = report.module,
+                            dependency = dependency.id,
+                        )
+                    } else {
+                        graph.addInternalDependency(
+                            module = report.module,
+                            dependency = dependency.id,
+                        )
                     }
                 }
             }
@@ -64,21 +72,20 @@ internal class DependencyGraphBuilder {
                         when (dependency) {
                             is ProjectDependency -> {
                                 if (dependency.path != moduleId) {
-                                    graph.addDependency(moduleId, dependency.path)
+                                    graph.addInternalDependency(moduleId, dependency.path)
                                 }
                             }
 
                             is ExternalModuleDependency -> {
-                                graph.addDependency(
-                                    moduleId,
-                                    "${dependency.group}:${dependency.name}"
+                                graph.addExternalDependency(
+                                    module = moduleId,
+                                    dependency = "${dependency.group}:${dependency.name}",
                                 )
                             }
                         }
                     }
                 graph
             }
-            .filter { graph -> graph.nodes.isNotEmpty() }
     }
 
     private fun isConfigurationSupported(configurationId: String): Boolean {

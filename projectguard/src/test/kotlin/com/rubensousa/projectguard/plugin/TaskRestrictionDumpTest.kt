@@ -39,7 +39,7 @@ class TaskRestrictionDumpTest {
         val fatalModuleId = ":legacy"
         val reason = "Some reason"
         plugin.dumpDependencies(moduleId) {
-            addDependency(moduleId, fatalModuleId)
+            addInternalDependency(moduleId, fatalModuleId)
         }
         plugin.dumpAggregateDependencies()
         val spec = projectGuard {

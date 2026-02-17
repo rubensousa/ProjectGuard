@@ -39,10 +39,10 @@ class TaskBaselineTest {
         val fatalModuleId = ":legacy"
         val reason = "Some reason"
         plugin.dumpDependencies(moduleId) {
-            addDependency(moduleId, fatalModuleId)
+            addInternalDependency(moduleId, fatalModuleId)
         }
         plugin.dumpDependencies(secondModuleId) {
-            addDependency(secondModuleId, fatalModuleId)
+            addInternalDependency(secondModuleId, fatalModuleId)
         }
         plugin.dumpAggregateDependencies()
         val spec = projectGuard {
@@ -106,10 +106,10 @@ class TaskBaselineTest {
         )
         yamlProcessor.write(baselineFile, currentBaseline)
         plugin.dumpDependencies(moduleId) {
-            addDependency(moduleId, fatalModuleId)
+            addInternalDependency(moduleId, fatalModuleId)
         }
         plugin.dumpDependencies(secondModuleId) {
-            addDependency(secondModuleId, fatalModuleId)
+            addInternalDependency(secondModuleId, fatalModuleId)
         }
         plugin.dumpAggregateDependencies()
         val spec = projectGuard { restrictDependency(fatalModuleId) }

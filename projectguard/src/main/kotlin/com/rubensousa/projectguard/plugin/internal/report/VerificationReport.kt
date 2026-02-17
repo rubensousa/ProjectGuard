@@ -21,6 +21,7 @@ import kotlinx.serialization.Serializable
 @Serializable
 internal data class VerificationReport(
     val modules: List<VerificationModuleReport>,
+    val dependencyGraph: Map<String, List<DependencyReferenceDump>>,
 )
 
 @Serializable

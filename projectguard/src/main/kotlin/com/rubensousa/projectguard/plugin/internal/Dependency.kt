@@ -20,9 +20,11 @@ internal sealed interface Dependency {
     val id: String
 }
 
-internal data class DirectDependency(override val id: String) : com.rubensousa.projectguard.plugin.internal.Dependency
+internal data class DirectDependency(
+    override val id: String,
+) : Dependency
 
 internal data class TransitiveDependency(
     override val id: String,
-    val path: List<String>
-) : com.rubensousa.projectguard.plugin.internal.Dependency
+    val path: List<String>,
+) : Dependency

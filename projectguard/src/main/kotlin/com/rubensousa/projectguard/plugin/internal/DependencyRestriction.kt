@@ -30,14 +30,14 @@ internal sealed interface DependencyRestriction {
 
     companion object {
 
-        fun from(dependency: com.rubensousa.projectguard.plugin.internal.Dependency, reason: String): DependencyRestriction {
+        fun from(dependency: Dependency, reason: String): DependencyRestriction {
             return when (dependency) {
-                is com.rubensousa.projectguard.plugin.internal.DirectDependency -> DirectDependencyRestriction(
+                is DirectDependency -> DirectDependencyRestriction(
                     dependencyId = dependency.id,
                     reason = reason,
                 )
 
-                is com.rubensousa.projectguard.plugin.internal.TransitiveDependency -> TransitiveDependencyRestriction(
+                is TransitiveDependency -> TransitiveDependencyRestriction(
                     dependencyId = dependency.id,
                     pathToDependency = dependency.path,
                     reason = reason,

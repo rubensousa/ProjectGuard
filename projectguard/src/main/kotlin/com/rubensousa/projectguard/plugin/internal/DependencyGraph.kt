@@ -23,12 +23,24 @@ internal class DependencyGraph(
     val nodes: MutableMap<String, MutableSet<String>> = mutableMapOf(),
 ) : Serializable {
 
-    fun addDependency(
-        module: String,
-        dependency: String,
-    ) {
+    private val libraries = mutableSetOf<String>()
+
+    fun addInternalDependency(module: String, dependency: String) {
+        addDependency(module, dependency)
+    }
+
+    fun addExternalDependency(module: String, dependency: String) {
+        addDependency(module, dependency)
+        libraries.add(dependency)
+    }
+
+    private fun addDependency(module: String, dependency: String) {
         val existingDependencies = nodes.getOrPut(module) { mutableSetOf() }
         existingDependencies.add(dependency)
+    }
+
+    fun isExternalLibrary(dependency: String): Boolean {
+        return libraries.contains(dependency)
     }
 
     fun getDependencies(module: String): Set<String> {

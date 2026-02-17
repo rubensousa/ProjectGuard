@@ -21,6 +21,7 @@ import com.rubensousa.projectguard.plugin.internal.DependencyGraph
 import com.rubensousa.projectguard.plugin.internal.report.ConfigurationDependencies
 import com.rubensousa.projectguard.plugin.internal.report.DependencyGraphDump
 import com.rubensousa.projectguard.plugin.internal.report.DependencyGraphModuleDump
+import com.rubensousa.projectguard.plugin.internal.report.DependencyReferenceDump
 import com.rubensousa.projectguard.plugin.internal.task.DependencyDumpExecutor
 import kotlinx.serialization.json.Json
 import org.junit.Before
@@ -58,14 +59,14 @@ class TaskDependencyDumpTest {
             DependencyGraph(
                 configurationId = "implementation",
             ).apply {
-                addDependency(inputModule, firstDependency)
+                addInternalDependency(inputModule, firstDependency)
             },
         )
         dependencies.add(
             DependencyGraph(
                 configurationId = "testImplementation",
             ).apply {
-                addDependency(inputModule, secondDependency)
+                addInternalDependency(inputModule, secondDependency)
             },
         )
 
@@ -81,11 +82,11 @@ class TaskDependencyDumpTest {
                     configurations = listOf(
                         ConfigurationDependencies(
                             id = "implementation",
-                            dependencies = listOf(firstDependency)
+                            dependencies = listOf(DependencyReferenceDump(firstDependency, false))
                         ),
                         ConfigurationDependencies(
                             id = "testImplementation",
-                            dependencies = listOf(secondDependency)
+                            dependencies = listOf(DependencyReferenceDump(secondDependency, false))
                         )
                     )
                 )

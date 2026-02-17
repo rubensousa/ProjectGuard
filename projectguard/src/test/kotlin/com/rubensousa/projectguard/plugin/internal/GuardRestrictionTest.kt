@@ -37,8 +37,8 @@ class GuardRestrictionTest {
             }
         }
         graph.apply {
-            addDependency(":domain:a", ":other:a")
-            addDependency(":domain:a", ":other:c")
+            addInternalDependency(":domain:a", ":other:a")
+            addInternalDependency(":domain:a", ":other:c")
         }
 
         // when
@@ -61,7 +61,7 @@ class GuardRestrictionTest {
             }
         }
         graph.apply {
-            addDependency(":domain:a", ":other:a")
+            addInternalDependency(":domain:a", ":other:a")
         }
 
         // when
@@ -84,8 +84,8 @@ class GuardRestrictionTest {
             }
         }
         graph.apply {
-            addDependency(":domain", ":legacy")
-            addDependency(":another", ":legacy")
+            addInternalDependency(":domain", ":legacy")
+            addInternalDependency(":another", ":legacy")
         }
 
         // when
@@ -108,7 +108,7 @@ class GuardRestrictionTest {
             }
         }
         graph.apply {
-            addDependency(":domain", ":legacy")
+            addInternalDependency(":domain", ":legacy")
         }
 
         // when
@@ -130,7 +130,7 @@ class GuardRestrictionTest {
                 deny(":legacy")
             }
         }
-        graph.addDependency(":domain:a", ":legacy:a")
+        graph.addInternalDependency(":domain:a", ":legacy:a")
 
         // when
         val restrictions = finder.find(
@@ -152,7 +152,7 @@ class GuardRestrictionTest {
         val restrictions = finder.find(
             moduleId = ":domain",
             graph = buildDependencyGraph {
-                addDependency(":domain", ":legacy")
+                addInternalDependency(":domain", ":legacy")
             },
             spec = spec
         )
@@ -173,8 +173,8 @@ class GuardRestrictionTest {
             }
         }
         graph.apply {
-            addDependency(":domain:a", ":legacy")
-            addDependency(":domain:a", ":deprecated")
+            addInternalDependency(":domain:a", ":legacy")
+            addInternalDependency(":domain:a", ":deprecated")
         }
 
         // when
@@ -202,7 +202,7 @@ class GuardRestrictionTest {
                 }
             }
         }
-        graph.addDependency(":domain:a", ":legacy:a")
+        graph.addInternalDependency(":domain:a", ":legacy:a")
 
 
         // when

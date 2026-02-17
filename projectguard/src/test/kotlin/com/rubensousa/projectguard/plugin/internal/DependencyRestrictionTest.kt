@@ -34,7 +34,7 @@ class DependencyRestrictionTest {
         val spec = projectGuard {
             restrictDependency(":legacy")
         }
-        graph.addDependency(":domain", ":legacy")
+        graph.addInternalDependency(":domain", ":legacy")
 
         // when
         val restrictions = finder.find(
@@ -53,7 +53,7 @@ class DependencyRestrictionTest {
         val spec = projectGuard {
             restrictDependency(":legacy")
         }
-        graph.addDependency(":domain:a", ":legacy:a")
+        graph.addInternalDependency(":domain:a", ":legacy:a")
 
         // when
         val restrictions = finder.find(
@@ -74,8 +74,8 @@ class DependencyRestrictionTest {
             restrictDependency(":deprecated")
         }
         val graph = buildDependencyGraph {
-            addDependency(":domain", ":legacy")
-            addDependency(":domain", ":deprecated")
+            addInternalDependency(":domain", ":legacy")
+            addInternalDependency(":domain", ":deprecated")
         }
 
         // when
@@ -98,8 +98,8 @@ class DependencyRestrictionTest {
         val spec = projectGuard {
             restrictDependency(":legacy")
         }
-        graph.addDependency(":data:a", ":domain:a")
-        graph.addDependency(":domain:a", ":legacy:a")
+        graph.addInternalDependency(":data:a", ":domain:a")
+        graph.addInternalDependency(":domain:a", ":legacy:a")
 
         // when
         val restrictions = finder.find(
@@ -130,7 +130,7 @@ class DependencyRestrictionTest {
                 allow(":legacy")
             }
         }
-        graph.addDependency(":domain:a", ":legacy:a")
+        graph.addInternalDependency(":domain:a", ":legacy:a")
 
         // when
         val restrictions = finder.find(
@@ -158,12 +158,12 @@ class DependencyRestrictionTest {
         }
 
         // Ok
-        graph.addDependency(":legacy:b", ":legacy:e")
-        graph.addDependency(":legacy:a", ":legacy:b")
+        graph.addInternalDependency(":legacy:b", ":legacy:e")
+        graph.addInternalDependency(":legacy:a", ":legacy:b")
 
         // Not ok
-        graph.addDependency(":legacy:c", ":legacy:a")
-        graph.addDependency(":legacy:d", ":legacy:e")
+        graph.addInternalDependency(":legacy:c", ":legacy:a")
+        graph.addInternalDependency(":legacy:d", ":legacy:e")
 
         // when
         val legacyARestrictions = finder.find(moduleId = ":legacy:a", graph = graph, spec = spec)
@@ -206,7 +206,7 @@ class DependencyRestrictionTest {
                 allow(":legacy")
             }
         }
-        graph.addDependency(":domain:a", ":legacy:a")
+        graph.addInternalDependency(":domain:a", ":legacy:a")
 
         // when
         val restrictions = finder.find(

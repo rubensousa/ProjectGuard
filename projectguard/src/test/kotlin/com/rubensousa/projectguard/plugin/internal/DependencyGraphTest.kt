@@ -30,19 +30,19 @@ class DependencyGraphTest {
         // given
         val consumer = "consumer"
         val directDependencyA = "dependencyA"
-        graph.addDependency(module = consumer, dependency = directDependencyA)
+        graph.addInternalDependency(module = consumer, dependency = directDependencyA)
         // A -> B
         val transitiveDependencyB = "dependencyB"
-        graph.addDependency(module = directDependencyA, dependency = transitiveDependencyB)
+        graph.addInternalDependency(module = directDependencyA, dependency = transitiveDependencyB)
         // A -> C
         val transitiveDependencyC = "dependencyC"
-        graph.addDependency(module = directDependencyA, dependency = transitiveDependencyC)
+        graph.addInternalDependency(module = directDependencyA, dependency = transitiveDependencyC)
         // B -> D
         val transitiveDependencyD = "dependencyD"
-        graph.addDependency(module = transitiveDependencyB, dependency = transitiveDependencyD)
+        graph.addInternalDependency(module = transitiveDependencyB, dependency = transitiveDependencyD)
         // C -> E
         val transitiveDependencyE = "dependencyE"
-        graph.addDependency(module = transitiveDependencyC, dependency = transitiveDependencyE)
+        graph.addInternalDependency(module = transitiveDependencyC, dependency = transitiveDependencyE)
 
         // when
         val dependencies = graph.getAllDependencies(consumer).map { it.id }
@@ -62,16 +62,16 @@ class DependencyGraphTest {
         // given
         val consumer = "consumer"
         val directDependencyA = "dependencyA"
-        graph.addDependency(module = consumer, dependency = directDependencyA)
+        graph.addInternalDependency(module = consumer, dependency = directDependencyA)
         // A -> B
         val transitiveDependencyB = "dependencyB"
-        graph.addDependency(module = directDependencyA, dependency = transitiveDependencyB)
+        graph.addInternalDependency(module = directDependencyA, dependency = transitiveDependencyB)
         // B -> C
         val transitiveDependencyC = "dependencyC"
-        graph.addDependency(module = transitiveDependencyB, dependency = transitiveDependencyC)
+        graph.addInternalDependency(module = transitiveDependencyB, dependency = transitiveDependencyC)
         // C -> D
         val transitiveDependencyD = "dependencyD"
-        graph.addDependency(module = transitiveDependencyC, dependency = transitiveDependencyD)
+        graph.addInternalDependency(module = transitiveDependencyC, dependency = transitiveDependencyD)
 
         // when
         val dependencies = graph.getAllDependencies(consumer)
@@ -87,18 +87,18 @@ class DependencyGraphTest {
         // given
         val consumer = "consumer"
         val directDependencyA = "dependencyA"
-        graph.addDependency(module = consumer, dependency = directDependencyA)
+        graph.addInternalDependency(module = consumer, dependency = directDependencyA)
         // A -> B
         val transitiveDependencyB = "dependencyB"
-        graph.addDependency(module = directDependencyA, dependency = transitiveDependencyB)
+        graph.addInternalDependency(module = directDependencyA, dependency = transitiveDependencyB)
         // B -> C
         val transitiveDependencyC = "dependencyC"
-        graph.addDependency(module = transitiveDependencyB, dependency = transitiveDependencyC)
+        graph.addInternalDependency(module = transitiveDependencyB, dependency = transitiveDependencyC)
         // C -> D
         val transitiveDependencyD = "dependencyD"
-        graph.addDependency(module = transitiveDependencyC, dependency = transitiveDependencyD)
+        graph.addInternalDependency(module = transitiveDependencyC, dependency = transitiveDependencyD)
         // A -> D
-        graph.addDependency(module = directDependencyA, dependency = transitiveDependencyD)
+        graph.addInternalDependency(module = directDependencyA, dependency = transitiveDependencyD)
 
         // when
         val dependencies = graph.getAllDependencies(consumer)
