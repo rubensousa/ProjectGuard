@@ -43,8 +43,10 @@ function updateViewControlsHeader(activeTab) {
     const header = document.getElementById('view-title');
     if (activeTab === 'by-module') {
         header.textContent = 'MODULE RESTRICTIONS';
-    } else {
+    } else if (activeTab === 'by-dependency') {
         header.textContent = 'DEPENDENCY RESTRICTIONS';
+    } else {
+        header.textContent = 'DEPENDENCY GRAPH';
     }
 }
 
@@ -53,9 +55,11 @@ function renderForActiveTab(report) {
     if (activeTabId === 'by-module') {
         renderSidebarForModules(report);
         renderByModuleView(report);
-    } else {
+    } else if (activeTabId === 'by-dependency') {
         renderSidebarForDependencies(report);
         renderByDependencyView(report);
+    } else {
+        renderGraphView(report);
     }
 }
 
@@ -394,4 +398,67 @@ function getMatchesByDependency(report) {
         });
     });
     return dependencies;
+}
+
+
+// --- Graph View Rendering ---
+
+function renderGraphView(report) {
+    const selector = document.getElementById('module-selector');
+    selector.innerHTML = report.modules.map(m => `<option value="${m.module}">${m.module}</option>`).join('');
+    selector.addEventListener('change', () => renderModuleGraph(report, selector.value));
+    renderModuleGraph(report, selector.value);
+}
+
+function renderModuleGraph(report, moduleName) {
+    const module = report.modules.find(m => m.module === moduleName);
+    if (!module) return;
+
+    // TODO: Include all dependencies, not just the restrictions
+    const dependencies = [
+        ...module.fatal.map(match => match.dependency),
+        ...module.suppressed.map(match => match.dependency)
+    ];
+    const uniqueDependencies = [...new Set(dependencies)];
+    const nodes = [module.module, ...uniqueDependencies];
+    const nodeMap = new Map();
+    let counter = 0;
+
+    nodes.forEach(nodeName => {
+        if (!nodeMap.has(nodeName)) {
+            nodeMap.set(nodeName, `id${counter++}`);
+        }
+    });
+
+    let graphDefinition = 'graph TD;\n';
+
+    // Define all nodes with their text
+    for (const [name, id] of nodeMap.entries()) {
+        graphDefinition += `    ${id}["${name}"];\n`;
+    }
+
+    // Define links
+    const rootId = nodeMap.get(module.module);
+    if (uniqueDependencies.length > 0) {
+         uniqueDependencies.forEach(dep => {
+            const depId = nodeMap.get(dep);
+            graphDefinition += `    ${rootId} --> ${depId};\n`;
+        });
+    }
+
+    const graphContainer = document.getElementById('graph-container');
+    const uniqueGraphId = 'mermaid-graph';
+    mermaid.render(uniqueGraphId, graphDefinition, (svgCode) => {
+        graphContainer.innerHTML = svgCode
+        const svgElement = graphContainer.querySelector('svg');
+        const panzoomInstance = Panzoom(svgElement, {
+            maxScale: 5,
+            minScale: 0.1,
+            step: 0.1,
+        });
+        svgElement.setAttribute("height", "750px");
+        graphContainer.addEventListener("wheel", (event) => {
+            panzoomInstance.zoomWithWheel(event);
+        });
+    });
 }
