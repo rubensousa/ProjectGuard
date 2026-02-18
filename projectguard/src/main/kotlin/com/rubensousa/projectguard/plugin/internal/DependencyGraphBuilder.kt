@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-package com.rubensousa.projectguard.plugin.internal.report
+package com.rubensousa.projectguard.plugin.internal
 
-import com.rubensousa.projectguard.plugin.internal.DependencyGraph
+import com.rubensousa.projectguard.plugin.internal.report.DependencyGraphDump
 import org.gradle.api.Project
 import org.gradle.api.artifacts.ExternalModuleDependency
 import org.gradle.api.artifacts.ProjectDependency
@@ -50,7 +50,7 @@ internal class DependencyGraphBuilder {
 
     fun buildFromProject(project: Project): List<DependencyGraph> {
         return project.configurations
-            .filter { config -> config.isCanBeResolved && isConfigurationSupported(config.name) }
+            .filter { config -> config.isCanBeResolved && DependencyConfiguration.isConfigurationSupported(config.name) }
             .map { config ->
                 val graph = DependencyGraph(
                     configurationId = config.name,
@@ -88,26 +88,4 @@ internal class DependencyGraphBuilder {
                 graph
             }
     }
-
-
-    companion object {
-        private val supportedConfigurations = mutableSetOf(
-            "androidTestUtil",
-            "compileClasspath",
-            "testCompileClasspath",
-            "testFixturesCompileClasspath",
-        )
-
-        fun isConfigurationSupported(configurationId: String): Boolean {
-            return supportedConfigurations.any { pattern ->
-                configurationId.lowercase().contains(pattern.lowercase())
-            }
-        }
-
-        fun isReleaseConfiguration(configurationId: String): Boolean {
-            return configurationId == "compileClasspath"
-                    || configurationId.lowercase().contains("releasecompileclasspath")
-        }
-    }
-
 }

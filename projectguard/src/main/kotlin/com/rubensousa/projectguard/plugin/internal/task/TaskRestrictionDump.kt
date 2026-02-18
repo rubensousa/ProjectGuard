@@ -20,7 +20,7 @@ import com.rubensousa.projectguard.plugin.internal.DependencyRestrictionFinder
 import com.rubensousa.projectguard.plugin.internal.DirectDependencyRestriction
 import com.rubensousa.projectguard.plugin.internal.ProjectGuardSpec
 import com.rubensousa.projectguard.plugin.internal.TransitiveDependencyRestriction
-import com.rubensousa.projectguard.plugin.internal.report.DependencyGraphBuilder
+import com.rubensousa.projectguard.plugin.internal.DependencyGraphBuilder
 import com.rubensousa.projectguard.plugin.internal.report.DependencyGraphDump
 import com.rubensousa.projectguard.plugin.internal.report.JsonFileWriter
 import com.rubensousa.projectguard.plugin.internal.report.RestrictionDependencyReport

@@ -16,7 +16,7 @@
 
 package com.rubensousa.projectguard.plugin
 
-import com.rubensousa.projectguard.plugin.internal.report.DependencyGraphBuilder
+import com.rubensousa.projectguard.plugin.internal.DependencyGraphBuilder
 import com.rubensousa.projectguard.plugin.internal.task.TaskAggregateDependencyDump
 import com.rubensousa.projectguard.plugin.internal.task.TaskAggregateRestrictionDump
 import com.rubensousa.projectguard.plugin.internal.task.TaskBaseline

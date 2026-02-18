@@ -16,6 +16,7 @@
 
 package com.rubensousa.projectguard.plugin.internal.report
 
+import com.rubensousa.projectguard.plugin.internal.DependencyConfiguration
 import com.rubensousa.projectguard.plugin.internal.SuppressionMap
 
 internal class VerificationReportBuilder(
@@ -76,7 +77,7 @@ internal class VerificationReportBuilder(
                 // TODO: Until https://github.com/rubensousa/ProjectGuard/issues/3 is clarified,
                 //  filter out test dependencies from the graph reports
                 val moduleDependencies = graph.getOrPut(report.module) { mutableSetOf() }
-                if (DependencyGraphBuilder.isReleaseConfiguration(configuration.id)) {
+                if (DependencyConfiguration.isReleaseConfiguration(configuration.id)) {
                     moduleDependencies.addAll(configuration.dependencies.map { dependency ->
                         DependencyReferenceDump(dependency.id, dependency.isLibrary)
                     })
