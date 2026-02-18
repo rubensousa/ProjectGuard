@@ -16,7 +16,7 @@
 
 package com.rubensousa.projectguard.plugin.internal
 
-object DependencyConfiguration {
+internal object DependencyConfiguration {
 
     private val supportedConfigurations = mutableSetOf(
         "androidTestUtil",
