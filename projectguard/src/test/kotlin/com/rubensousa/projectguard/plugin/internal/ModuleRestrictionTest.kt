@@ -17,14 +17,13 @@
 package com.rubensousa.projectguard.plugin.internal
 
 import com.google.common.truth.Truth.assertThat
-import com.rubensousa.projectguard.plugin.buildDependencyGraph
 import com.rubensousa.projectguard.plugin.projectGuard
 import kotlin.test.Test
 
 class ModuleRestrictionTest {
 
-    private val graph = ConfigurationDependencyGraph(id = "implementation")
-    private val finder = DependencyRestrictionFinder()
+    private val graph = DependencyGraph()
+    private val finder = DependencyRestrictionFinder(graph)
 
     @Test
     fun `restrictModule denies all by default`() {
@@ -37,11 +36,7 @@ class ModuleRestrictionTest {
 
 
         // when
-        val restrictions = finder.find(
-            moduleId = ":domain",
-            graph = graph,
-            spec = spec
-        )
+        val restrictions = finder.find(moduleId = ":domain", spec = spec)
 
         // then
         assertThat(restrictions).containsExactly(
@@ -59,11 +54,7 @@ class ModuleRestrictionTest {
         graph.addInternalDependency(":domain:a", ":legacy:a")
 
         // when
-        val restrictions = finder.find(
-            moduleId = ":domain:a",
-            graph = graph,
-            spec = spec
-        )
+        val restrictions = finder.find(moduleId = ":domain:a", spec = spec)
 
         // then
         assertThat(restrictions).containsExactly(DirectDependencyRestriction(":legacy:a"))
@@ -76,14 +67,13 @@ class ModuleRestrictionTest {
             restrictModule(":domain")
             restrictModule(":data")
         }
-        val graph = buildDependencyGraph {
-            addInternalDependency(":domain", ":legacy")
-            addInternalDependency(":data", ":legacy")
-        }
+
+        graph.addInternalDependency(":domain", ":legacy")
+        graph.addInternalDependency(":data", ":legacy")
 
         // when
-        val domainRestrictions = finder.find(moduleId = ":domain", graph = graph, spec = spec)
-        val dataRestrictions = finder.find(moduleId = ":data", graph = graph, spec = spec)
+        val domainRestrictions = finder.find(moduleId = ":domain", spec = spec)
+        val dataRestrictions = finder.find(moduleId = ":data", spec = spec)
 
         // then
         assertThat(domainRestrictions).containsExactly(DirectDependencyRestriction(":legacy"))
@@ -102,7 +92,7 @@ class ModuleRestrictionTest {
         graph.addInternalDependency(":domain:b", ":legacy:a")
 
         // when
-        val restrictions = finder.find(moduleId = ":domain:a", graph = graph, spec = spec)
+        val restrictions = finder.find(moduleId = ":domain:a", spec = spec)
 
         // then
         assertThat(restrictions).containsExactly(
@@ -128,7 +118,7 @@ class ModuleRestrictionTest {
         graph.addInternalDependency(":domain:a", ":legacy:a")
 
         // when
-        val restrictions = finder.find(moduleId = ":domain:a", graph = graph, spec = spec)
+        val restrictions = finder.find(moduleId = ":domain:a", spec = spec)
 
         // then
         assertThat(restrictions).containsExactly(
@@ -156,9 +146,9 @@ class ModuleRestrictionTest {
         graph.addInternalDependency(":domain:d", ":domain:c")
 
         // when
-        val restrictionsB = finder.find(moduleId = ":domain:b", graph = graph, spec = spec)
-        val restrictionsC = finder.find(moduleId = ":domain:c", graph = graph, spec = spec)
-        val restrictionsD = finder.find(moduleId = ":domain:d", graph = graph, spec = spec)
+        val restrictionsB = finder.find(moduleId = ":domain:b", spec = spec)
+        val restrictionsC = finder.find(moduleId = ":domain:c", spec = spec)
+        val restrictionsD = finder.find(moduleId = ":domain:d", spec = spec)
 
 
         // then
@@ -181,11 +171,7 @@ class ModuleRestrictionTest {
         graph.addInternalDependency(":domain:a", ":legacy:a")
 
         // when
-        val restrictions = finder.find(
-            moduleId = ":domain:a",
-            graph = graph,
-            spec = spec
-        )
+        val restrictions = finder.find(moduleId = ":domain:a", spec = spec)
 
         // then
         assertThat(restrictions).containsExactly(DirectDependencyRestriction(":legacy:a"))

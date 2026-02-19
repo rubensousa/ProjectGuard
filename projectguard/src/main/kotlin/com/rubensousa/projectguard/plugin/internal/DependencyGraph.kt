@@ -20,8 +20,10 @@ import java.io.Serializable
 
 internal class DependencyGraph : Serializable {
 
-    private val configurations = mutableMapOf<String, ConfigurationGraph>()
+    private val configurations = mutableMapOf<String, Configuration>()
     private val libraries = mutableSetOf<String>()
+
+    fun getConfigurations() = configurations.values.toList()
 
     fun addInternalDependency(
         module: String,
@@ -48,15 +50,8 @@ internal class DependencyGraph : Serializable {
         libraries.add(dependency)
     }
 
-    private fun addDependency(
-        module: String,
-        dependency: String,
-        configurationId: String,
-    ) {
-        val configuration = configurations.getOrPut(configurationId) {
-            ConfigurationGraph(configurationId)
-        }
-        configuration.add(module = module, dependency = dependency)
+    fun isExternalLibrary(dependency: String): Boolean {
+        return libraries.contains(dependency)
     }
 
     fun getDependencies(module: String): List<Dependency> {
@@ -111,7 +106,18 @@ internal class DependencyGraph : Serializable {
                 }
             }
         }
-        return paths.values.toList()
+        return paths.values.sortedBy { it.id }
+    }
+
+    private fun addDependency(
+        module: String,
+        dependency: String,
+        configurationId: String,
+    ) {
+        val configuration = configurations.getOrPut(configurationId) {
+            Configuration(configurationId)
+        }
+        configuration.add(module = module, dependency = dependency)
     }
 
     private data class TraversalState(
@@ -121,7 +127,7 @@ internal class DependencyGraph : Serializable {
         val path: List<String>,
     )
 
-    private class ConfigurationGraph(val id: String) : Serializable {
+    class Configuration(val id: String) : Serializable {
 
         private val nodes = mutableMapOf<String, MutableSet<String>>()
 
@@ -135,7 +141,7 @@ internal class DependencyGraph : Serializable {
         }
 
         override fun equals(other: Any?): Boolean {
-            return other is ConfigurationGraph
+            return other is Configuration
                     && other.id == this.id
                     && other.nodes == this.nodes
         }

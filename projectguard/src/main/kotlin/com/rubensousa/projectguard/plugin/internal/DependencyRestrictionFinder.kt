@@ -16,35 +16,22 @@
 
 package com.rubensousa.projectguard.plugin.internal
 
-internal class DependencyRestrictionFinder {
+internal class DependencyRestrictionFinder(
+    private val graph: DependencyGraph,
+) {
 
     fun find(
         moduleId: String,
-        graph: ConfigurationDependencyGraph,
-        spec: ProjectGuardSpec,
-    ): List<DependencyRestriction> {
-        return find(
-            moduleId = moduleId,
-            graphs = listOf(graph),
-            spec = spec
-        )
-    }
-
-    fun find(
-        moduleId: String,
-        graphs: List<ConfigurationDependencyGraph>,
         spec: ProjectGuardSpec,
     ): List<DependencyRestriction> {
         val restrictions = mutableListOf<DependencyRestriction>()
-        graphs.forEach { graph ->
-            graph.getAllDependencies(moduleId).forEach { dependency ->
-                fillRestrictions(
-                    restrictions = restrictions,
-                    moduleId = moduleId,
-                    dependency = dependency,
-                    spec = spec,
-                )
-            }
+        graph.getDependencies(moduleId).forEach { dependency ->
+            fillRestrictions(
+                restrictions = restrictions,
+                moduleId = moduleId,
+                dependency = dependency,
+                spec = spec,
+            )
         }
         // We might find multiple restrictions to the same dependency, just filter them out
         return filterRestrictions(moduleId, restrictions)

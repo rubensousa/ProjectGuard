@@ -16,11 +16,11 @@
 
 package com.rubensousa.projectguard.plugin.internal.task
 
+import com.rubensousa.projectguard.plugin.internal.DependencyGraphBuilder
 import com.rubensousa.projectguard.plugin.internal.DependencyRestrictionFinder
 import com.rubensousa.projectguard.plugin.internal.DirectDependencyRestriction
 import com.rubensousa.projectguard.plugin.internal.ProjectGuardSpec
 import com.rubensousa.projectguard.plugin.internal.TransitiveDependencyRestriction
-import com.rubensousa.projectguard.plugin.internal.DependencyGraphBuilder
 import com.rubensousa.projectguard.plugin.internal.report.DependencyGraphDump
 import com.rubensousa.projectguard.plugin.internal.report.JsonFileWriter
 import com.rubensousa.projectguard.plugin.internal.report.RestrictionDependencyReport
@@ -74,11 +74,10 @@ internal class RestrictionDumpExecutor(
     fun execute() {
         val dependencyGraphDump = Json.decodeFromString<DependencyGraphDump>(dependenciesFile.readText())
         val graphBuilder = DependencyGraphBuilder()
-        val graphs = graphBuilder.buildFromDump(dependencyGraphDump)
-        val restrictionFinder = DependencyRestrictionFinder()
+        val graph = graphBuilder.buildFromDump(dependencyGraphDump)
+        val restrictionFinder = DependencyRestrictionFinder(graph)
         val restrictions = restrictionFinder.find(
             moduleId = moduleId,
-            graphs = graphs,
             spec = spec
         )
         val module = RestrictionModuleReport(

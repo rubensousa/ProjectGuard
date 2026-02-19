@@ -53,12 +53,14 @@ class DependencyGraphBuilderTest {
         val legacyProjectB = consumerProject.addLegacyDependency("b")
 
         // when
-        val graphs = graphBuilder.buildFromProject(consumerProject)
+        val graph = graphBuilder.buildFromProject(consumerProject)
 
         // then
-        val compileGraph = graphs.findCompilationGraph()!!
-        assertThat(compileGraph.getDependencies(consumerProject.path)).isEqualTo(
-            setOf(legacyProjectA.path, legacyProjectB.path)
+        assertThat(graph.getDependencies(consumerProject.path)).isEqualTo(
+            listOf(
+                DirectDependency(legacyProjectA.path),
+                DirectDependency(legacyProjectB.path)
+            )
         )
     }
 
@@ -69,21 +71,15 @@ class DependencyGraphBuilderTest {
         val legacyProjectC = consumerProject.addLegacyTestDependency("c")
 
         // when
-        val graphs = graphBuilder.buildFromProject(consumerProject)
+        val graph = graphBuilder.buildFromProject(consumerProject)
 
         // then
-        val testGraph = graphs.findTestGraph()!!
-        assertThat(testGraph.getDependencies(consumerProject.path)).isEqualTo(
-            setOf(legacyProjectA.path, legacyProjectC.path)
+        assertThat(graph.getDependencies(consumerProject.path)).isEqualTo(
+            listOf(
+                DirectDependency(legacyProjectA.path),
+                DirectDependency(legacyProjectC.path)
+            )
         )
-    }
-
-    private fun List<ConfigurationDependencyGraph>.findCompilationGraph(): ConfigurationDependencyGraph? {
-        return this.find { it.id == "compileClasspath" }
-    }
-
-    private fun List<ConfigurationDependencyGraph>.findTestGraph(): ConfigurationDependencyGraph? {
-        return this.find { it.id == "testCompileClasspath" }
     }
 
     private fun Project.addLegacyDependency(dependency: String): Project {

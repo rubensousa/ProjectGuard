@@ -23,21 +23,20 @@ import org.gradle.api.artifacts.ProjectDependency
 
 internal class DependencyGraphBuilder {
 
-    fun buildFromDump(projectDump: DependencyGraphDump): List<ConfigurationDependencyGraph> {
-        val graphs = mutableMapOf<String, ConfigurationDependencyGraph>()
+    fun buildFromDump(projectDump: DependencyGraphDump): DependencyGraph {
+        val graph = DependencyGraph()
         projectDump.modules.forEach { report ->
             report.configurations.forEach { configuration ->
-                val graph = graphs.getOrPut(configuration.id) {
-                    ConfigurationDependencyGraph(id = configuration.id)
-                }
                 configuration.dependencies.forEach { dependency ->
                     if (dependency.isLibrary) {
                         graph.addExternalDependency(
+                            configurationId = configuration.id,
                             module = report.module,
                             dependency = dependency.id,
                         )
                     } else {
                         graph.addInternalDependency(
+                            configurationId = configuration.id,
                             module = report.module,
                             dependency = dependency.id,
                         )
@@ -45,16 +44,14 @@ internal class DependencyGraphBuilder {
                 }
             }
         }
-        return graphs.values.toList()
+        return graph
     }
 
-    fun buildFromProject(project: Project): List<ConfigurationDependencyGraph> {
-        return project.configurations
+    fun buildFromProject(project: Project): DependencyGraph {
+        val graph = DependencyGraph()
+        project.configurations
             .filter { config -> config.isCanBeResolved && DependencyConfiguration.isConfigurationSupported(config.name) }
-            .map { config ->
-                val graph = ConfigurationDependencyGraph(
-                    id = config.name,
-                )
+            .forEach { config ->
                 val moduleId = project.path
                 config.incoming.dependencies
                     .forEach { dependency ->
@@ -76,7 +73,7 @@ internal class DependencyGraphBuilder {
                             }
                         }
                     }
-                graph
             }
+        return graph
     }
 }

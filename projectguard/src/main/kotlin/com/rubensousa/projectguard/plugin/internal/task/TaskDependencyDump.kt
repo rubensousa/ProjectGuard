@@ -16,7 +16,7 @@
 
 package com.rubensousa.projectguard.plugin.internal.task
 
-import com.rubensousa.projectguard.plugin.internal.ConfigurationDependencyGraph
+import com.rubensousa.projectguard.plugin.internal.DependencyGraph
 import com.rubensousa.projectguard.plugin.internal.report.ConfigurationDependencies
 import com.rubensousa.projectguard.plugin.internal.report.DependencyGraphDump
 import com.rubensousa.projectguard.plugin.internal.report.DependencyGraphModuleDump
@@ -24,7 +24,6 @@ import com.rubensousa.projectguard.plugin.internal.report.DependencyReferenceDum
 import com.rubensousa.projectguard.plugin.internal.report.JsonFileWriter
 import org.gradle.api.DefaultTask
 import org.gradle.api.file.RegularFileProperty
-import org.gradle.api.provider.ListProperty
 import org.gradle.api.provider.Property
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.OutputFile
@@ -39,7 +38,7 @@ internal abstract class TaskDependencyDump : DefaultTask() {
     internal abstract val projectPath: Property<String>
 
     @get:Input
-    internal abstract val dependencies: ListProperty<ConfigurationDependencyGraph>
+    internal abstract val dependencyGraph: Property<DependencyGraph>
 
     @get:OutputFile
     internal abstract val outputFile: RegularFileProperty
@@ -49,7 +48,7 @@ internal abstract class TaskDependencyDump : DefaultTask() {
         val executor = DependencyDumpExecutor(
             moduleId = projectPath.get(),
             outputFile = outputFile.get().asFile,
-            dependencyGraphs = dependencies.get()
+            dependencyGraph = dependencyGraph.get()
         )
         executor.execute()
     }
@@ -59,7 +58,7 @@ internal abstract class TaskDependencyDump : DefaultTask() {
 internal class DependencyDumpExecutor(
     private val moduleId: String,
     private val outputFile: File,
-    private val dependencyGraphs: List<ConfigurationDependencyGraph>,
+    private val dependencyGraph: DependencyGraph,
 ) {
 
     private val jsonWriter = JsonFileWriter()
@@ -69,11 +68,11 @@ internal class DependencyDumpExecutor(
             modules = listOf(
                 DependencyGraphModuleDump(
                     module = moduleId,
-                    configurations = dependencyGraphs.map { graph ->
+                    configurations = dependencyGraph.getConfigurations().map { configuration ->
                         ConfigurationDependencies(
-                            id = graph.id,
-                            dependencies = graph.getDependencies(moduleId).toList().map { dependencyId ->
-                                DependencyReferenceDump(dependencyId, graph.isExternalLibrary(dependencyId))
+                            id = configuration.id,
+                            dependencies = configuration.getDependencies(moduleId).toList().map { dependencyId ->
+                                DependencyReferenceDump(dependencyId, dependencyGraph.isExternalLibrary(dependencyId))
                             }
                         )
                     }
