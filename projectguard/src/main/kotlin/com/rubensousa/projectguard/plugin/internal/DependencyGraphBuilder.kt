@@ -23,21 +23,20 @@ import org.gradle.api.artifacts.ProjectDependency
 
 internal class DependencyGraphBuilder {
 
-    fun buildFromDump(projectDump: DependencyGraphDump): List<DependencyGraph> {
-        val graphs = mutableMapOf<String, DependencyGraph>()
+    fun buildFromDump(projectDump: DependencyGraphDump): DependencyGraph {
+        val graph = DependencyGraph()
         projectDump.modules.forEach { report ->
             report.configurations.forEach { configuration ->
-                val graph = graphs.getOrPut(configuration.id) {
-                    DependencyGraph(configurationId = configuration.id)
-                }
                 configuration.dependencies.forEach { dependency ->
                     if (dependency.isLibrary) {
                         graph.addExternalDependency(
+                            configurationId = configuration.id,
                             module = report.module,
                             dependency = dependency.id,
                         )
                     } else {
                         graph.addInternalDependency(
+                            configurationId = configuration.id,
                             module = report.module,
                             dependency = dependency.id,
                         )
@@ -45,16 +44,14 @@ internal class DependencyGraphBuilder {
                 }
             }
         }
-        return graphs.values.toList()
+        return graph
     }
 
-    fun buildFromProject(project: Project): List<DependencyGraph> {
-        return project.configurations
+    fun buildFromProject(project: Project): DependencyGraph {
+        val graph = DependencyGraph()
+        project.configurations
             .filter { config -> config.isCanBeResolved && DependencyConfiguration.isConfigurationSupported(config.name) }
-            .map { config ->
-                val graph = DependencyGraph(
-                    configurationId = config.name,
-                )
+            .forEach { config ->
                 val moduleId = project.path
                 config.incoming.dependencies
                     .forEach { dependency ->
@@ -63,7 +60,8 @@ internal class DependencyGraphBuilder {
                                 if (dependency.path != moduleId) {
                                     graph.addInternalDependency(
                                         module = moduleId,
-                                        dependency = dependency.path
+                                        dependency = dependency.path,
+                                        configurationId = config.name
                                     )
                                 }
                             }
@@ -72,11 +70,12 @@ internal class DependencyGraphBuilder {
                                 graph.addExternalDependency(
                                     module = moduleId,
                                     dependency = "${dependency.group}:${dependency.name}",
+                                    configurationId = config.name
                                 )
                             }
                         }
                     }
-                graph
             }
+        return graph
     }
 }

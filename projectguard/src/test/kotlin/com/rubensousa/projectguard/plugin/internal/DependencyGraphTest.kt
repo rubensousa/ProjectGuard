@@ -17,13 +17,15 @@
 package com.rubensousa.projectguard.plugin.internal
 
 import com.google.common.truth.Truth.assertThat
+import java.io.ByteArrayInputStream
+import java.io.ByteArrayOutputStream
+import java.io.ObjectInputStream
+import java.io.ObjectOutputStream
 import kotlin.test.Test
 
 class DependencyGraphTest {
 
-    private val graph = DependencyGraph(
-        configurationId = "implementation"
-    )
+    private val graph = DependencyGraph()
 
     @Test
     fun `transitive dependencies are returned`() {
@@ -45,7 +47,7 @@ class DependencyGraphTest {
         graph.addInternalDependency(module = transitiveDependencyC, dependency = transitiveDependencyE)
 
         // when
-        val dependencies = graph.getAllDependencies(consumer).map { it.id }
+        val dependencies = graph.getDependencies(consumer).map { it.id }
 
         // then
         assertThat(dependencies).containsExactly(
@@ -74,7 +76,7 @@ class DependencyGraphTest {
         graph.addInternalDependency(module = transitiveDependencyC, dependency = transitiveDependencyD)
 
         // when
-        val dependencies = graph.getAllDependencies(consumer)
+        val dependencies = graph.getDependencies(consumer)
 
         // then
         val dependency = dependencies.find { it.id == transitiveDependencyB }!! as TransitiveDependency
@@ -101,12 +103,116 @@ class DependencyGraphTest {
         graph.addInternalDependency(module = directDependencyA, dependency = transitiveDependencyD)
 
         // when
-        val dependencies = graph.getAllDependencies(consumer)
+        val dependencies = graph.getDependencies(consumer)
 
         // then
         val dependency = dependencies.find { it.id == transitiveDependencyD }!! as TransitiveDependency
         assertThat(dependency.path)
             .isEqualTo(listOf(directDependencyA, transitiveDependencyD))
+    }
+
+    @Test
+    fun `implementation of a test dependency is considered a transitive dependency`() {
+        // given
+        val consumer = "consumer"
+        val consumerDependency = "dependencyA"
+        val dependencyOfConsumerDependency = "dependencyB"
+        graph.addInternalDependency(
+            configurationId = DependencyConfiguration.TEST,
+            module = consumer,
+            dependency = consumerDependency
+        )
+        graph.addInternalDependency(
+            configurationId = DependencyConfiguration.COMPILE,
+            module = consumerDependency,
+            dependency = dependencyOfConsumerDependency
+        )
+
+        // when
+        val dependencies = graph.getDependencies(consumer)
+
+        // then
+        assertThat(dependencies).isEqualTo(
+            listOf(
+                DirectDependency(consumerDependency),
+                TransitiveDependency(dependencyOfConsumerDependency, listOf(consumerDependency, dependencyOfConsumerDependency))
+            )
+        )
+    }
+
+    @Test
+    fun `test implementation of a test dependency is not considered a transitive dependency`() {
+        // given
+        val consumer = "consumer"
+        val consumerDependency = "dependencyA"
+        val dependencyOfConsumerDependency = "dependencyB"
+        graph.addInternalDependency(
+            configurationId = DependencyConfiguration.TEST,
+            module = consumer,
+            dependency = consumerDependency
+        )
+        graph.addInternalDependency(
+            configurationId = DependencyConfiguration.TEST,
+            module = consumerDependency,
+            dependency = dependencyOfConsumerDependency
+        )
+
+        // when
+        val dependencies = graph.getDependencies(consumer)
+
+        // then
+        assertThat(dependencies).isEqualTo(
+            listOf(
+                DirectDependency(consumerDependency),
+            )
+        )
+    }
+
+    @Test
+    fun `test implementation of a direct dependency is not considered a transitive dependency`() {
+        // given
+        val consumer = "consumer"
+        val consumerDependency = "dependencyA"
+        val dependencyOfConsumerDependency = "dependencyB"
+        graph.addInternalDependency(
+            configurationId = DependencyConfiguration.COMPILE,
+            module = consumer,
+            dependency = consumerDependency
+        )
+        graph.addInternalDependency(
+            configurationId = DependencyConfiguration.TEST,
+            module = consumerDependency,
+            dependency = dependencyOfConsumerDependency
+        )
+
+        // when
+        val dependencies = graph.getDependencies(consumer)
+
+        // then
+        assertThat(dependencies).isEqualTo(
+            listOf(
+                DirectDependency(consumerDependency),
+            )
+        )
+    }
+
+    @Test
+    fun `graph can be deserialized`() {
+        // given
+        graph.addInternalDependency(
+            module = "consumer",
+            dependency = "dependencyA"
+        )
+
+        // when
+        val byteArray = ByteArrayOutputStream()
+        ObjectOutputStream(byteArray).use { stream -> stream.writeObject(graph) }
+
+        // then
+        val deserializedGraph = ObjectInputStream(ByteArrayInputStream(byteArray.toByteArray())).use { stream ->
+            stream.readObject()
+        } as DependencyGraph
+        assertThat(graph).isEqualTo(deserializedGraph)
     }
 
 }

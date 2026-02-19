@@ -18,11 +18,15 @@ package com.rubensousa.projectguard.plugin.internal
 
 internal object DependencyConfiguration {
 
+    const val COMPILE = "compileClasspath"
+    const val TEST = "testCompileClasspath"
+    const val TEST_FIXTURE = "testFixturesCompileClasspath"
+
     private val supportedConfigurations = mutableSetOf(
         "androidTestUtil",
-        "compileClasspath",
-        "testCompileClasspath",
-        "testFixturesCompileClasspath",
+        COMPILE,
+        TEST,
+        TEST_FIXTURE,
     )
 
     fun isConfigurationSupported(configurationId: String): Boolean {
@@ -36,6 +40,10 @@ internal object DependencyConfiguration {
         return lowerCaseConfiguration.contains("compileclasspath")
                 && !lowerCaseConfiguration.contains("test")
                 && !lowerCaseConfiguration.contains("metadata")
+    }
+
+    fun isTestConfiguration(configurationId: String): Boolean {
+        return configurationId.lowercase().contains("test")
     }
 
 }

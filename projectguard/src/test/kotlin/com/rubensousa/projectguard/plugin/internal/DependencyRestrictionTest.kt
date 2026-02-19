@@ -17,16 +17,13 @@
 package com.rubensousa.projectguard.plugin.internal
 
 import com.google.common.truth.Truth.assertThat
-import com.rubensousa.projectguard.plugin.buildDependencyGraph
 import com.rubensousa.projectguard.plugin.projectGuard
 import kotlin.test.Test
 
 class DependencyRestrictionTest {
 
-    private val graph = DependencyGraph(
-        configurationId = "implementation"
-    )
-    private val finder = DependencyRestrictionFinder()
+    private val graph = DependencyGraph()
+    private val finder = DependencyRestrictionFinder(graph)
 
     @Test
     fun `there is a restriction for a direct match`() {
@@ -39,7 +36,6 @@ class DependencyRestrictionTest {
         // when
         val restrictions = finder.find(
             moduleId = ":domain",
-            graph = graph,
             spec = spec
         )
 
@@ -58,7 +54,6 @@ class DependencyRestrictionTest {
         // when
         val restrictions = finder.find(
             moduleId = ":domain:a",
-            graph = graph,
             spec = spec
         )
 
@@ -73,15 +68,13 @@ class DependencyRestrictionTest {
             restrictDependency(":legacy")
             restrictDependency(":deprecated")
         }
-        val graph = buildDependencyGraph {
-            addInternalDependency(":domain", ":legacy")
-            addInternalDependency(":domain", ":deprecated")
-        }
+
+        graph.addInternalDependency(":domain", ":legacy")
+        graph.addInternalDependency(":domain", ":deprecated")
 
         // when
         val restrictions = finder.find(
             moduleId = ":domain",
-            graph = graph,
             spec = spec
         )
 
@@ -104,7 +97,6 @@ class DependencyRestrictionTest {
         // when
         val restrictions = finder.find(
             moduleId = ":data:a",
-            graph = graph,
             spec = spec
         )
 
@@ -135,7 +127,6 @@ class DependencyRestrictionTest {
         // when
         val restrictions = finder.find(
             moduleId = ":domain:a",
-            graph = graph,
             spec = spec
         )
 
@@ -166,10 +157,10 @@ class DependencyRestrictionTest {
         graph.addInternalDependency(":legacy:d", ":legacy:e")
 
         // when
-        val legacyARestrictions = finder.find(moduleId = ":legacy:a", graph = graph, spec = spec)
-        val legacyBRestrictions = finder.find(moduleId = ":legacy:b", graph = graph, spec = spec)
-        val legacyCRestrictions = finder.find(moduleId = ":legacy:c", graph = graph, spec = spec)
-        val legacyDRestrictions = finder.find(moduleId = ":legacy:d", graph = graph, spec = spec)
+        val legacyARestrictions = finder.find(moduleId = ":legacy:a", spec = spec)
+        val legacyBRestrictions = finder.find(moduleId = ":legacy:b", spec = spec)
+        val legacyCRestrictions = finder.find(moduleId = ":legacy:c", spec = spec)
+        val legacyDRestrictions = finder.find(moduleId = ":legacy:d", spec = spec)
 
 
         // then
@@ -211,7 +202,6 @@ class DependencyRestrictionTest {
         // when
         val restrictions = finder.find(
             moduleId = ":domain:a",
-            graph = graph,
             spec = spec
         )
 

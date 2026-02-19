@@ -17,16 +17,13 @@
 package com.rubensousa.projectguard.plugin.internal
 
 import com.google.common.truth.Truth.assertThat
-import com.rubensousa.projectguard.plugin.buildDependencyGraph
 import com.rubensousa.projectguard.plugin.projectGuard
 import kotlin.test.Test
 
 class GuardRestrictionTest {
 
-    private val graph = DependencyGraph(
-        configurationId = "implementation"
-    )
-    private val finder = DependencyRestrictionFinder()
+    private val graph = DependencyGraph()
+    private val finder = DependencyRestrictionFinder(graph)
 
     @Test
     fun `module is restricted to concrete child but not its sibling`() {
@@ -44,7 +41,6 @@ class GuardRestrictionTest {
         // when
         val restrictions = finder.find(
             moduleId = ":domain:a",
-            graph = graph,
             spec = spec
         )
 
@@ -67,7 +63,6 @@ class GuardRestrictionTest {
         // when
         val restrictions = finder.find(
             moduleId = ":domain:a",
-            graph = graph,
             spec = spec
         )
 
@@ -89,11 +84,7 @@ class GuardRestrictionTest {
         }
 
         // when
-        val restrictions = finder.find(
-            moduleId = ":another",
-            graph = graph,
-            spec = spec
-        )
+        val restrictions = finder.find(moduleId = ":another", spec = spec)
 
         // then
         assertThat(restrictions).isEmpty()
@@ -112,11 +103,7 @@ class GuardRestrictionTest {
         }
 
         // when
-        val restrictions = finder.find(
-            moduleId = ":domain",
-            graph = graph,
-            spec = spec
-        )
+        val restrictions = finder.find(moduleId = ":domain", spec = spec)
 
         // then
         assertThat(restrictions).containsExactly(DirectDependencyRestriction(":legacy"))
@@ -133,11 +120,7 @@ class GuardRestrictionTest {
         graph.addInternalDependency(":domain:a", ":legacy:a")
 
         // when
-        val restrictions = finder.find(
-            moduleId = ":domain:a",
-            graph = graph,
-            spec = spec
-        )
+        val restrictions = finder.find(moduleId = ":domain:a", spec = spec)
 
         // then
         assertThat(restrictions).containsExactly(DirectDependencyRestriction(":legacy:a"))
@@ -147,13 +130,11 @@ class GuardRestrictionTest {
     fun `there is no restriction by default`() {
         // given
         val spec = projectGuard {}
+        graph.addInternalDependency(":domain", ":legacy")
 
         // when
         val restrictions = finder.find(
             moduleId = ":domain",
-            graph = buildDependencyGraph {
-                addInternalDependency(":domain", ":legacy")
-            },
             spec = spec
         )
 
@@ -178,11 +159,7 @@ class GuardRestrictionTest {
         }
 
         // when
-        val restrictions = finder.find(
-            moduleId = ":domain:a",
-            graph = graph,
-            spec = spec
-        )
+        val restrictions = finder.find(moduleId = ":domain:a", spec = spec)
 
         // then
         assertThat(restrictions).containsExactly(
@@ -206,11 +183,7 @@ class GuardRestrictionTest {
 
 
         // when
-        val restrictions = finder.find(
-            moduleId = ":domain:a",
-            graph = graph,
-            spec = spec
-        )
+        val restrictions = finder.find(moduleId = ":domain:a", spec = spec)
 
         // then
         assertThat(restrictions).containsExactly(DirectDependencyRestriction(":legacy:a", reason))

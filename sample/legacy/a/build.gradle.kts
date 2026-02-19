@@ -4,4 +4,5 @@ plugins {
 
 dependencies {
     implementation(project(":legacy:b"))
+    testImplementation(libs.mockk)
 }

@@ -17,6 +17,7 @@
 package com.rubensousa.projectguard.plugin
 
 import com.google.common.truth.Truth.assertThat
+import com.rubensousa.projectguard.plugin.internal.DependencyConfiguration
 import com.rubensousa.projectguard.plugin.internal.DependencyGraph
 import com.rubensousa.projectguard.plugin.internal.report.ConfigurationDependencies
 import com.rubensousa.projectguard.plugin.internal.report.DependencyGraphDump
@@ -36,7 +37,7 @@ class TaskDependencyDumpTest {
     val temporaryFolder = TemporaryFolder()
 
     private val inputModule = "module"
-    private val dependencies = mutableListOf<DependencyGraph>()
+    private val graph = DependencyGraph()
     private lateinit var outputFile: File
     private lateinit var executor: DependencyDumpExecutor
 
@@ -46,7 +47,7 @@ class TaskDependencyDumpTest {
         executor = DependencyDumpExecutor(
             moduleId = inputModule,
             outputFile = outputFile,
-            dependencyGraphs = dependencies,
+            dependencyGraph = graph
         )
     }
 
@@ -55,19 +56,15 @@ class TaskDependencyDumpTest {
         // given
         val firstDependency = "domain:a"
         val secondDependency = "domain:b"
-        dependencies.add(
-            DependencyGraph(
-                configurationId = "implementation",
-            ).apply {
-                addInternalDependency(inputModule, firstDependency)
-            },
+        graph.addInternalDependency(
+            module = inputModule,
+            dependency = firstDependency,
+            configurationId = DependencyConfiguration.COMPILE
         )
-        dependencies.add(
-            DependencyGraph(
-                configurationId = "testImplementation",
-            ).apply {
-                addInternalDependency(inputModule, secondDependency)
-            },
+        graph.addInternalDependency(
+            module = inputModule,
+            dependency = secondDependency,
+            configurationId = DependencyConfiguration.TEST
         )
 
         // when
@@ -81,11 +78,11 @@ class TaskDependencyDumpTest {
                     module = inputModule,
                     configurations = listOf(
                         ConfigurationDependencies(
-                            id = "implementation",
+                            id = DependencyConfiguration.COMPILE,
                             dependencies = listOf(DependencyReferenceDump(firstDependency, false))
                         ),
                         ConfigurationDependencies(
-                            id = "testImplementation",
+                            id = DependencyConfiguration.TEST,
                             dependencies = listOf(DependencyReferenceDump(secondDependency, false))
                         )
                     )

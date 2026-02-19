@@ -53,13 +53,12 @@ class DependencyGraphBuilderTest {
         val legacyProjectB = consumerProject.addLegacyDependency("b")
 
         // when
-        val graphs = graphBuilder.buildFromProject(consumerProject)
+        val graph = graphBuilder.buildFromProject(consumerProject)
 
         // then
-        val compileGraph = graphs.findCompilationGraph()!!
-        assertThat(compileGraph.getDependencies(consumerProject.path)).isEqualTo(
-            setOf(legacyProjectA.path, legacyProjectB.path)
-        )
+        val compileConfiguration = graph.getConfigurations().find { it.id == DependencyConfiguration.COMPILE }!!
+        assertThat(compileConfiguration.getDependencies(consumerProject.path))
+            .isEqualTo(setOf(legacyProjectA.path, legacyProjectB.path))
     }
 
     @Test
@@ -69,21 +68,12 @@ class DependencyGraphBuilderTest {
         val legacyProjectC = consumerProject.addLegacyTestDependency("c")
 
         // when
-        val graphs = graphBuilder.buildFromProject(consumerProject)
+        val graph = graphBuilder.buildFromProject(consumerProject)
 
         // then
-        val testGraph = graphs.findTestGraph()!!
-        assertThat(testGraph.getDependencies(consumerProject.path)).isEqualTo(
-            setOf(legacyProjectA.path, legacyProjectC.path)
-        )
-    }
-
-    private fun List<DependencyGraph>.findCompilationGraph(): DependencyGraph? {
-        return this.find { it.configurationId == "compileClasspath" }
-    }
-
-    private fun List<DependencyGraph>.findTestGraph(): DependencyGraph? {
-        return this.find { it.configurationId == "testCompileClasspath" }
+        val testConfiguration = graph.getConfigurations().find { it.id == DependencyConfiguration.TEST }!!
+        assertThat(testConfiguration.getDependencies(consumerProject.path))
+            .isEqualTo(setOf(legacyProjectA.path, legacyProjectC.path))
     }
 
     private fun Project.addLegacyDependency(dependency: String): Project {

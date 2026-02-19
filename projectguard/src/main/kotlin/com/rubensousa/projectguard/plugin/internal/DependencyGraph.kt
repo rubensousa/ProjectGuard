@@ -18,85 +18,145 @@ package com.rubensousa.projectguard.plugin.internal
 
 import java.io.Serializable
 
-internal class DependencyGraph(
-    val configurationId: String,
-    val nodes: MutableMap<String, MutableSet<String>> = mutableMapOf(),
-) : Serializable {
+internal class DependencyGraph : Serializable {
 
+    private val configurations = mutableMapOf<String, Configuration>()
     private val libraries = mutableSetOf<String>()
 
-    fun addInternalDependency(module: String, dependency: String) {
-        addDependency(module, dependency)
+    fun getConfigurations() = configurations.values.toList()
+
+    fun addInternalDependency(
+        module: String,
+        dependency: String,
+        configurationId: String = DependencyConfiguration.COMPILE,
+    ) {
+        addDependency(
+            module = module,
+            dependency = dependency,
+            configurationId = configurationId
+        )
     }
 
-    fun addExternalDependency(module: String, dependency: String) {
-        addDependency(module, dependency)
+    fun addExternalDependency(
+        module: String,
+        dependency: String,
+        configurationId: String = DependencyConfiguration.COMPILE,
+    ) {
+        addDependency(
+            module = module,
+            dependency = dependency,
+            configurationId = configurationId
+        )
         libraries.add(dependency)
-    }
-
-    private fun addDependency(module: String, dependency: String) {
-        val existingDependencies = nodes.getOrPut(module) { mutableSetOf() }
-        existingDependencies.add(dependency)
     }
 
     fun isExternalLibrary(dependency: String): Boolean {
         return libraries.contains(dependency)
     }
 
-    fun getDependencies(module: String): Set<String> {
-        return nodes[module] ?: emptySet()
-    }
-
-    fun getAllDependencies(module: String): List<Dependency> {
-        /**
-         * Until https://github.com/rubensousa/ProjectGuard/issues/3 is resolved,
-         * exclude transitive dependency traversals for test configurations
-         */
-        if (configurationId.contains("test")) {
-            return getDependencies(module).map {
-                DirectDependency(it)
-            }
-        }
+    fun getDependencies(module: String): List<Dependency> {
         val visitedDependencies = mutableSetOf<String>()
         val paths = mutableMapOf<String, Dependency>()
-        val stack = ArrayDeque<TraversalState>()
-        stack.addAll(getDependencies(module).map { dependency ->
-            TraversalState(dependency, emptyList())
-        })
-        while (stack.isNotEmpty()) {
-            val currentModule = stack.removeFirst()
-            val currentDependency = currentModule.dependency
-            if (visitedDependencies.contains(currentDependency)) {
-                continue
-            }
-            paths[currentDependency] = if (currentModule.path.isEmpty()) {
-                DirectDependency(currentDependency)
-            } else {
-                TransitiveDependency(
-                    currentDependency,
-                    currentModule.path + currentDependency
-                )
-            }
-            visitedDependencies.add(currentDependency)
-            getDependencies(currentDependency).forEach { nextDependency ->
-                stack.addFirst(
+        val queue = ArrayDeque<TraversalState>()
+        configurations.values.forEach { configuration ->
+            configuration.getDependencies(module).forEach { dependency ->
+                queue.addFirst(
                     TraversalState(
-                        nextDependency,
-                        currentModule.path + currentDependency
+                        configurationId = configuration.id,
+                        dependency = dependency,
+                        path = emptyList()
                     )
                 )
             }
         }
-        return paths.values.toList()
+        while (queue.isNotEmpty()) {
+            val currentTraversal = queue.removeFirst()
+            val currentDependency = currentTraversal.dependency
+            if (visitedDependencies.contains(currentDependency)) {
+                continue
+            }
+            paths[currentDependency] = if (currentTraversal.path.isEmpty()) {
+                DirectDependency(currentDependency)
+            } else {
+                TransitiveDependency(
+                    currentDependency,
+                    currentTraversal.path + currentDependency
+                )
+            }
+            visitedDependencies.add(currentDependency)
+            configurations.values.forEach { configuration ->
+                // Search only for non-test configurations as they're not considered transitive at this point
+                if (!DependencyConfiguration.isTestConfiguration(configuration.id)) {
+                    configuration.getDependencies(currentDependency).forEach { nextDependency ->
+                        queue.addFirst(
+                            TraversalState(
+                                configurationId = configuration.id,
+                                dependency = nextDependency,
+                                path = currentTraversal.path + currentDependency
+                            )
+                        )
+                    }
+                }
+            }
+        }
+        return paths.values.sortedBy { it.id }
     }
 
-    override fun toString(): String {
-        return "DependencyGraph(configurationId='$configurationId', nodes=$nodes)"
+    private fun addDependency(
+        module: String,
+        dependency: String,
+        configurationId: String,
+    ) {
+        val configuration = configurations.getOrPut(configurationId) {
+            Configuration(configurationId)
+        }
+        configuration.add(module = module, dependency = dependency)
     }
 
     private data class TraversalState(
+        val configurationId: String,
         val dependency: String,
         val path: List<String>,
     )
+
+    class Configuration(val id: String) : Serializable {
+
+        private val nodes = mutableMapOf<String, MutableSet<String>>()
+
+        fun add(module: String, dependency: String) {
+            val existingDependencies = nodes.getOrPut(module) { mutableSetOf() }
+            existingDependencies.add(dependency)
+        }
+
+        fun getDependencies(module: String): Set<String> {
+            return nodes[module] ?: emptySet()
+        }
+
+        override fun equals(other: Any?): Boolean {
+            return other is Configuration
+                    && other.id == this.id
+                    && other.nodes == this.nodes
+        }
+
+        override fun hashCode(): Int {
+            var result = id.hashCode()
+            result = 31 * result + nodes.hashCode()
+            return result
+        }
+
+    }
+
+    override fun equals(other: Any?): Boolean {
+        return other is DependencyGraph
+                && other.libraries == this.libraries
+                && other.configurations == this.configurations
+    }
+
+    override fun hashCode(): Int {
+        var result = configurations.hashCode()
+        result = 31 * result + libraries.hashCode()
+        return result
+    }
+
 
 }

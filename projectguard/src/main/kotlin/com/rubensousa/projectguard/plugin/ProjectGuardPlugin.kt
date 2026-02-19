@@ -290,7 +290,7 @@ class ProjectGuardPlugin : Plugin<Project> {
             group = "other"
             description = "Generates a JSON containing the dependencies of this module."
             projectPath.set(project.path)
-            dependencies.set(graphBuilder.buildFromProject(project))
+            dependencyGraph.set(graphBuilder.buildFromProject(project))
             outputFile.set(
                 project.layout.buildDirectory.file(dependenciesFilePath)
             )

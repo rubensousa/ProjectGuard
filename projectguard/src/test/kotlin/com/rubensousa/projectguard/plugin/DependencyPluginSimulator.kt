@@ -35,13 +35,13 @@ internal class DependencyPluginSimulator(
         moduleId: String,
         action: DependencyGraph.() -> Unit = {},
     ): File {
-        val graph = DependencyGraph(configurationId = "compileClasspath")
+        val graph = DependencyGraph()
         graph.action()
         val outputFile = getDependencyFile(moduleId)
         val executor = DependencyDumpExecutor(
             moduleId = moduleId,
             outputFile = outputFile,
-            dependencyGraphs = listOf(graph),
+            dependencyGraph = graph,
         )
         executor.execute()
         return outputFile
