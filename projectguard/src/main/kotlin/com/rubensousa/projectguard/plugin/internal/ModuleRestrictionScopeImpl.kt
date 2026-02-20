@@ -26,6 +26,7 @@ internal class ModuleRestrictionScopeImpl : ModuleRestrictionScope {
 
     private val allowed = mutableListOf<ModuleAllowSpec>()
     private var restrictionReason = UNSPECIFIED_REASON
+    private var allowExternalLibraries = false
 
     override fun reason(reason: String) {
         restrictionReason = reason
@@ -41,6 +42,10 @@ internal class ModuleRestrictionScopeImpl : ModuleRestrictionScope {
         allow(modulePath = moduleDelegation.map { module -> module.path }.toTypedArray())
     }
 
+    override fun allowExternalLibraries() {
+        allowExternalLibraries = true
+    }
+
     override fun allow(vararg library: Provider<MinimalExternalModuleDependency>) {
         allow(modulePath = library.map { lib ->
             lib.getDependencyPath()
@@ -54,6 +59,8 @@ internal class ModuleRestrictionScopeImpl : ModuleRestrictionScope {
     fun getAllowedDependencies() = allowed.toList()
 
     fun getReason() = restrictionReason
+
+    fun areExternalLibrariesAllowed() = allowExternalLibraries
 
 
 }

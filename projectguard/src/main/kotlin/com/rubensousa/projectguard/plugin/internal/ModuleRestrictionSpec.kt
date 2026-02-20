@@ -22,4 +22,5 @@ internal data class ModuleRestrictionSpec(
     val modulePath: String,
     val reason: String,
     val allowed: List<ModuleAllowSpec>,
+    val allowExternalLibraries: Boolean,
 ): Serializable
