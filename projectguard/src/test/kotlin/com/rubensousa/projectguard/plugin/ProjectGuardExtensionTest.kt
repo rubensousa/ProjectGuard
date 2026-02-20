@@ -61,6 +61,37 @@ class ProjectGuardExtensionTest {
     }
 
     @Test
+    fun `module restriction does not allow all external libraries by default`() {
+        // given
+        val extension = createExtension()
+
+        // when
+        extension.restrictModule(":domain")
+
+        // then
+        val spec = extension.getSpec()
+        val restrictions = spec.moduleRestrictionSpecs
+        assertThat(restrictions.first().allowExternalLibraries).isFalse()
+    }
+
+    @Test
+    fun `module restriction can allow all external libraries`() {
+        // given
+        val extension = createExtension()
+
+        // when
+        extension.restrictModule(":domain") {
+            allow(":feature")
+            allowExternalLibraries()
+        }
+
+        // then
+        val spec = extension.getSpec()
+        val restrictions = spec.moduleRestrictionSpecs
+        assertThat(restrictions.first().allowExternalLibraries).isTrue()
+    }
+
+    @Test
     fun `extension correctly configures dependency restrictions`() {
         // given
         val extension = createExtension()

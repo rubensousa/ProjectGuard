@@ -89,7 +89,10 @@ internal class DependencyRestrictionFinder(
         dependency: Dependency,
         spec: ProjectGuardSpec,
     ) {
-        spec.moduleRestrictionSpecs.forEach { restriction ->
+        for (restriction in spec.moduleRestrictionSpecs) {
+            if (dependency.isLibrary && restriction.allowExternalLibraries) {
+                continue
+            }
             val matchesModule = hasModuleMatch(
                 modulePath = moduleId,
                 referencePath = restriction.modulePath

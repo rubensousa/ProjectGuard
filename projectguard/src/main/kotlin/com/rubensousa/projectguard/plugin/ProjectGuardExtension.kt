@@ -46,7 +46,8 @@ abstract class ProjectGuardExtension @Inject constructor(
             ModuleRestrictionSpec(
                 modulePath = modulePath,
                 reason = scope.getReason(),
-                allowed = scope.getAllowedDependencies()
+                allowed = scope.getAllowedDependencies(),
+                allowExternalLibraries = scope.areExternalLibrariesAllowed()
             )
         )
     }

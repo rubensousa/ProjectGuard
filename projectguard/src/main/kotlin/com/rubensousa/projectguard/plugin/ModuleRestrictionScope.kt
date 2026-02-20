@@ -30,6 +30,8 @@ interface ModuleRestrictionScope {
 
     fun allow(vararg library: Provider<MinimalExternalModuleDependency>)
 
+    fun allowExternalLibraries()
+
     fun applyRule(rule: RestrictModuleRule)
 
     // Not sure this is a good idea, bundles can be updated without seeing what dependencies we are allowing

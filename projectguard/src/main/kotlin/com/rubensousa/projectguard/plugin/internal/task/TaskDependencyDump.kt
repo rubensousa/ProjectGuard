@@ -71,8 +71,11 @@ internal class DependencyDumpExecutor(
                     configurations = dependencyGraph.getConfigurations().map { configuration ->
                         ConfigurationDependencies(
                             id = configuration.id,
-                            dependencies = configuration.getDependencies(moduleId).toList().map { dependencyId ->
-                                DependencyReferenceDump(dependencyId, dependencyGraph.isExternalLibrary(dependencyId))
+                            dependencies = configuration.getDependencies(moduleId).map { dependency ->
+                                DependencyReferenceDump(
+                                    id = dependency.id,
+                                    isLibrary = dependency.isLibrary
+                                )
                             }
                         )
                     }

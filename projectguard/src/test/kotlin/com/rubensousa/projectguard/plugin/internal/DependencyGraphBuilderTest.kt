@@ -57,8 +57,8 @@ class DependencyGraphBuilderTest {
 
         // then
         val compileConfiguration = graph.getConfigurations().find { it.id == DependencyConfiguration.COMPILE }!!
-        assertThat(compileConfiguration.getDependencies(consumerProject.path))
-            .isEqualTo(setOf(legacyProjectA.path, legacyProjectB.path))
+        assertThat(compileConfiguration.getDependencies(consumerProject.path).map { it.id })
+            .containsExactly(legacyProjectA.path, legacyProjectB.path)
     }
 
     @Test
@@ -72,8 +72,8 @@ class DependencyGraphBuilderTest {
 
         // then
         val testConfiguration = graph.getConfigurations().find { it.id == DependencyConfiguration.TEST }!!
-        assertThat(testConfiguration.getDependencies(consumerProject.path))
-            .isEqualTo(setOf(legacyProjectA.path, legacyProjectC.path))
+        assertThat(testConfiguration.getDependencies(consumerProject.path).map { it.id })
+            .containsExactly(legacyProjectA.path, legacyProjectC.path)
     }
 
     private fun Project.addLegacyDependency(dependency: String): Project {

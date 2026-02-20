@@ -16,15 +16,20 @@
 
 package com.rubensousa.projectguard.plugin.internal
 
-internal sealed interface Dependency {
+import java.io.Serializable
+
+internal sealed interface Dependency : Serializable {
     val id: String
+    val isLibrary: Boolean
 }
 
 internal data class DirectDependency(
     override val id: String,
+    override val isLibrary: Boolean,
 ) : Dependency
 
 internal data class TransitiveDependency(
     override val id: String,
+    override val isLibrary: Boolean,
     val path: List<String>,
 ) : Dependency

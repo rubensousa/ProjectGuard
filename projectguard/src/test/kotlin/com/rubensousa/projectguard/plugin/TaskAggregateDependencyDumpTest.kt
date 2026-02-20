@@ -44,7 +44,7 @@ class TaskAggregateDependencyDumpTest {
             addInternalDependency(firstModule, firstDependency)
         }
         plugin.dumpDependencies(secondModule) {
-            addExternalDependency(module = secondModule, dependency = secondDependency)
+            addLibraryDependency(module = secondModule, dependency = secondDependency)
         }
 
         // when

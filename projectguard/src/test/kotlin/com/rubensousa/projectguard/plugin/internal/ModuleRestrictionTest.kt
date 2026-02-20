@@ -177,4 +177,21 @@ class ModuleRestrictionTest {
         assertThat(restrictions).containsExactly(DirectDependencyRestriction(":legacy:a"))
     }
 
+    @Test
+    fun `restriction does not apply to external libraries if configured to do so`() {
+        // given
+        val spec = projectGuard {
+            restrictModule(":domain") {
+                allowExternalLibraries()
+            }
+        }
+        graph.addLibraryDependency(":domain:a", "datetime")
+
+        // when
+        val restrictions = finder.find(moduleId = ":domain:a", spec = spec)
+
+        // then
+        assertThat(restrictions).isEmpty()
+    }
+
 }

@@ -134,8 +134,12 @@ class DependencyGraphTest {
         // then
         assertThat(dependencies).isEqualTo(
             listOf(
-                DirectDependency(consumerDependency),
-                TransitiveDependency(dependencyOfConsumerDependency, listOf(consumerDependency, dependencyOfConsumerDependency))
+                DirectDependency(id = consumerDependency, isLibrary = false),
+                TransitiveDependency(
+                    id = dependencyOfConsumerDependency,
+                    isLibrary = false,
+                    path = listOf(consumerDependency, dependencyOfConsumerDependency)
+                )
             )
         )
     }
@@ -163,7 +167,7 @@ class DependencyGraphTest {
         // then
         assertThat(dependencies).isEqualTo(
             listOf(
-                DirectDependency(consumerDependency),
+                DirectDependency(id = consumerDependency, isLibrary = false),
             )
         )
     }
@@ -191,7 +195,7 @@ class DependencyGraphTest {
         // then
         assertThat(dependencies).isEqualTo(
             listOf(
-                DirectDependency(consumerDependency),
+                DirectDependency(id = consumerDependency, isLibrary = false),
             )
         )
     }
@@ -213,6 +217,28 @@ class DependencyGraphTest {
             stream.readObject()
         } as DependencyGraph
         assertThat(graph).isEqualTo(deserializedGraph)
+    }
+
+    @Test
+    fun `libraries are identified as such`() {
+        // given
+        val consumer = "consumer"
+        val consumerDependency = "dependencyA"
+        graph.addLibraryDependency(
+            configurationId = DependencyConfiguration.TEST,
+            module = consumer,
+            dependency = consumerDependency
+        )
+
+        // when
+        val dependencies = graph.getDependencies(consumer)
+
+        // then
+        assertThat(dependencies).isEqualTo(
+            listOf(
+                DirectDependency(id = consumerDependency, isLibrary = true),
+            )
+        )
     }
 
 }
