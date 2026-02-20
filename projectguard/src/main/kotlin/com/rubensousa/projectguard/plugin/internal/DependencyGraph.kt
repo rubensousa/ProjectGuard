@@ -69,7 +69,6 @@ internal class DependencyGraph : Serializable {
                     TraversalState(
                         configurationId = configuration.id,
                         dependency = dependency,
-                        path = emptyList()
                     )
                 )
             }
@@ -80,15 +79,7 @@ internal class DependencyGraph : Serializable {
             if (visitedDependencies.contains(currentDependency.id)) {
                 continue
             }
-            paths[currentDependency.id] = if (currentTraversal.path.isEmpty()) {
-                currentDependency
-            } else {
-                TransitiveDependency(
-                    id = currentDependency.id,
-                    isLibrary = currentDependency.isLibrary,
-                    path = currentTraversal.path + currentDependency.id,
-                )
-            }
+            paths[currentDependency.id] = currentDependency
             visitedDependencies.add(currentDependency.id)
             configurations.values.forEach { configuration ->
                 // Search only for non-test configurations as they're not considered transitive at this point
@@ -97,21 +88,26 @@ internal class DependencyGraph : Serializable {
                         queue.addFirst(
                             TraversalState(
                                 configurationId = configuration.id,
-                                dependency = nextDependency,
-                                path = currentTraversal.path + currentDependency.id
+                                dependency = TransitiveDependency(
+                                    id = nextDependency.id,
+                                    isLibrary = nextDependency.isLibrary,
+                                    path = when (currentDependency) {
+                                        is DirectDependency -> listOf(currentDependency.id, nextDependency.id)
+                                        is TransitiveDependency -> currentDependency.path + nextDependency.id
+                                    },
+                                )
                             )
                         )
                     }
                 }
             }
         }
-        return paths.values.sortedBy { it.id }
+        return paths.values.sortedBy { dependency -> dependency.id }
     }
 
     private data class TraversalState(
         val configurationId: String,
-        val dependency: DirectDependency,
-        val path: List<String>,
+        val dependency: Dependency,
     )
 
     class Configuration(val id: String) : Serializable {

@@ -26,8 +26,6 @@ internal sealed interface DependencyRestriction {
         return "module:$moduleId|dependency:${dependencyId}"
     }
 
-    fun getText(moduleId: String): String
-
     companion object {
 
         fun from(dependency: Dependency, reason: String): DependencyRestriction {
@@ -50,35 +48,13 @@ internal sealed interface DependencyRestriction {
 internal data class DirectDependencyRestriction(
     override val dependencyId: String,
     override val reason: String = UNSPECIFIED_REASON,
-) : DependencyRestriction {
-
-    override fun getText(moduleId: String): String {
-        return """
-                | Dependency restriction found!
-                | Module -> $moduleId
-                | Match -> $dependencyId
-                | Module '$moduleId' cannot depend on '$dependencyId'
-                | Reason: $reason
-                """.trimMargin()
-    }
-
-}
+) : DependencyRestriction
 
 internal data class TransitiveDependencyRestriction(
     override val dependencyId: String,
     val pathToDependency: List<String>,
     override val reason: String = UNSPECIFIED_REASON,
 ) : DependencyRestriction {
-
-    override fun getText(moduleId: String): String {
-        return """
-                | Transitive dependency restriction found!
-                | Module -> $moduleId
-                | Match -> $dependencyId from ${getPathToDependencyText()}
-                | Module '$moduleId' cannot depend on '$dependencyId'
-                | Reason: $reason
-                """.trimMargin()
-    }
 
     fun getPathToDependencyText(): String {
         return pathToDependency.joinToString(separator = " -> ") { it }
