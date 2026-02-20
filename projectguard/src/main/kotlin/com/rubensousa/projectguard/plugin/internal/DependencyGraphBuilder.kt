@@ -33,7 +33,8 @@ internal class DependencyGraphBuilder {
                         dependency = DirectDependency(
                             id = dependency.id,
                             isLibrary = dependency.isLibrary
-                        )
+                        ),
+                        configurationId = configuration.id
                     )
                 }
             }
