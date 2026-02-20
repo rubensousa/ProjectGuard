@@ -16,39 +16,45 @@
 
 package com.rubensousa.projectguard.plugin
 
+import groovy.lang.Closure
 import org.gradle.api.Action
 import org.gradle.api.artifacts.MinimalExternalModuleDependency
+import org.gradle.api.internal.catalog.DelegatingProjectDependency
 import org.gradle.api.provider.Provider
+import org.gradle.util.internal.ConfigureUtil
 
 interface GuardScope {
 
     fun deny(
         dependencyPath: String,
-        action: Action<DenyScope>,
+        action: Action<DenyScope> = Action<DenyScope> { },
     )
 
     fun deny(
+        dependencyDelegation: DelegatingProjectDependency,
+        action: Action<DenyScope> = Action<DenyScope> { },
+    ) = deny(dependencyPath = dependencyDelegation.path, action = action)
+
+    fun deny(
         provider: Provider<MinimalExternalModuleDependency>,
-        action: Action<DenyScope>,
+        action: Action<DenyScope> = Action<DenyScope> { },
     )
 
     // Required for groovy compatibility
     fun deny(
         dependencyPath: String,
+        closure: Closure<DenyScope>
     ) {
-        deny(dependencyPath, defaultDenyScope)
+        deny(dependencyPath, ConfigureUtil.configureUsing(closure))
     }
 
     // Required for groovy compatibility
     fun deny(
         provider: Provider<MinimalExternalModuleDependency>,
+        closure: Closure<DenyScope>
     ) {
-        deny(provider, defaultDenyScope)
+        deny(provider, ConfigureUtil.configureUsing(closure))
     }
 
     fun applyRule(rule: GuardRule)
-
-    companion object {
-        internal val defaultDenyScope = Action<DenyScope> { }
-    }
 }
