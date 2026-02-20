@@ -48,16 +48,15 @@ class PluginRunner(
         lastResult = result
     }
 
-    fun assertCheckFailureContains(module: String, message: String) {
-        assertCheckFails(module)
-        assertThat(lastResult!!.output).contains(message)
-    }
-
     fun assertCheckSucceeds(module: String) {
         val task = createCheckTask(module)
         val result = gradleRunner.withArguments(task).build()
         assertThat(result.task(task)!!.outcome).isEqualTo(TaskOutcome.SUCCESS)
         lastResult = result
+    }
+
+    fun assertTaskOutputContains(message: String){
+        assertThat(lastResult!!.output).contains(message)
     }
 
     fun addDependency(from: String, to: String, configuration: String = "implementation") {

@@ -14,14 +14,15 @@ public final class com/rubensousa/projectguard/plugin/GuardRule {
 
 public abstract interface class com/rubensousa/projectguard/plugin/GuardScope {
 	public abstract fun applyRule (Lcom/rubensousa/projectguard/plugin/GuardRule;)V
+	public fun deny (Ljava/lang/String;)V
 	public fun deny (Ljava/lang/String;Lgroovy/lang/Closure;)V
 	public abstract fun deny (Ljava/lang/String;Lorg/gradle/api/Action;)V
+	public fun deny (Lorg/gradle/api/internal/catalog/DelegatingProjectDependency;)V
+	public fun deny (Lorg/gradle/api/internal/catalog/DelegatingProjectDependency;Lgroovy/lang/Closure;)V
 	public fun deny (Lorg/gradle/api/internal/catalog/DelegatingProjectDependency;Lorg/gradle/api/Action;)V
+	public fun deny (Lorg/gradle/api/provider/Provider;)V
 	public fun deny (Lorg/gradle/api/provider/Provider;Lgroovy/lang/Closure;)V
 	public abstract fun deny (Lorg/gradle/api/provider/Provider;Lorg/gradle/api/Action;)V
-	public static synthetic fun deny$default (Lcom/rubensousa/projectguard/plugin/GuardScope;Ljava/lang/String;Lorg/gradle/api/Action;ILjava/lang/Object;)V
-	public static synthetic fun deny$default (Lcom/rubensousa/projectguard/plugin/GuardScope;Lorg/gradle/api/internal/catalog/DelegatingProjectDependency;Lorg/gradle/api/Action;ILjava/lang/Object;)V
-	public static synthetic fun deny$default (Lcom/rubensousa/projectguard/plugin/GuardScope;Lorg/gradle/api/provider/Provider;Lorg/gradle/api/Action;ILjava/lang/Object;)V
 }
 
 public abstract interface class com/rubensousa/projectguard/plugin/ModuleRestrictionScope {
