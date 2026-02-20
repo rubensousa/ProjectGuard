@@ -16,8 +16,8 @@ projectGuard {
         deny(":legacy")
     }
     restrictModule(":android") {
-        // Test dependencies are fine
-        allow(libs.junit)
+        // All external libraries are fine for android modules
+        allowExternalLibraries()
     }
     restrictModule(":domain") {
         reason("Domain modules should not depend on other modules")
