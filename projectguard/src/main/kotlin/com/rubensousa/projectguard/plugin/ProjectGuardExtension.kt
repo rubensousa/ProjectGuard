@@ -26,6 +26,7 @@ import com.rubensousa.projectguard.plugin.internal.ProjectGuardSpec
 import com.rubensousa.projectguard.plugin.internal.getDependencyPath
 import org.gradle.api.Action
 import org.gradle.api.artifacts.MinimalExternalModuleDependency
+import org.gradle.api.internal.catalog.DelegatingProjectDependency
 import org.gradle.api.model.ObjectFactory
 import org.gradle.api.provider.Provider
 import org.gradle.kotlin.dsl.listProperty

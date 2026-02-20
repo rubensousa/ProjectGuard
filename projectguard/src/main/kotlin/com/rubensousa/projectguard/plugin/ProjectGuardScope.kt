@@ -16,9 +16,12 @@
 
 package com.rubensousa.projectguard.plugin
 
+import groovy.lang.Closure
 import org.gradle.api.Action
 import org.gradle.api.artifacts.MinimalExternalModuleDependency
+import org.gradle.api.internal.catalog.DelegatingProjectDependency
 import org.gradle.api.provider.Provider
+import org.gradle.util.internal.ConfigureUtil
 
 interface ProjectGuardScope {
 
@@ -52,12 +55,29 @@ interface ProjectGuardScope {
      */
     fun restrictModule(
         modulePath: String,
-        action: Action<ModuleRestrictionScope>,
+        action: Action<ModuleRestrictionScope> = Action<ModuleRestrictionScope> { },
     )
 
+    /**
+     * Example:
+     *
+     * Prevent a module from depending on all other dependencies
+     *
+     * ```
+     * restrictModule(projects.domain) {
+     *      // Domain modules can only depend on another domain modules
+     *      allow(":domain")
+     * }
+     * ```
+     */
+    fun restrictModule(
+        moduleDelegation: DelegatingProjectDependency,
+        action: Action<ModuleRestrictionScope> = Action<ModuleRestrictionScope> { }
+    ) = restrictModule(modulePath = moduleDelegation.path, action = action)
+
     // Just here for groovy support
-    fun restrictModule(modulePath: String) {
-        restrictModule(modulePath, defaultModuleRestrictionScope)
+    fun restrictModule(modulePath: String, closure: Closure<ModuleRestrictionScope>) {
+        restrictModule(modulePath, ConfigureUtil.configureUsing(closure))
     }
 
     /**
@@ -94,6 +114,21 @@ interface ProjectGuardScope {
      * Example:
      *
      * ```
+     * guard(projects.domain) {
+     *      // Domain modules should not depend on UI modules
+     *      deny(":ui")
+     * }
+     * ```
+     */
+    fun guard(
+        moduleDelegation: DelegatingProjectDependency,
+        action: Action<GuardScope>
+    ) = guard(modulePath = moduleDelegation.path, action = action)
+
+    /**
+     * Example:
+     *
+     * ```
      * val allowLegacyConsumers = restrictDependencyRule {
      *    allow(":legacy")
      *    allow(":old-feature")
@@ -117,8 +152,23 @@ interface ProjectGuardScope {
      */
     fun restrictDependency(
         dependencyPath: String,
-        action: Action<DependencyRestrictionScope>,
+        action: Action<DependencyRestrictionScope> = Action<DependencyRestrictionScope> { },
     )
+
+    /**
+     * Example:
+     *
+     * ```
+     * restrictDependency(projects.legacy) {
+     *      // Only legacy modules are allowed to depend on other legacy modules
+     *      allow(":legacy")
+     * }
+     * ```
+     */
+    fun restrictDependency(
+        dependencyDelegation: DelegatingProjectDependency,
+        action: Action<DependencyRestrictionScope> = Action<DependencyRestrictionScope> { }
+    ) = restrictDependency(dependencyPath = dependencyDelegation.path, action = action)
 
     /**
      * Example:
@@ -132,22 +182,22 @@ interface ProjectGuardScope {
      */
     fun restrictDependency(
         provider: Provider<MinimalExternalModuleDependency>,
-        action: Action<DependencyRestrictionScope>,
+        action: Action<DependencyRestrictionScope> = Action<DependencyRestrictionScope> { },
     )
 
     // Just here for groovy support
-    fun restrictDependency(dependencyPath: String) {
-        restrictDependency(dependencyPath, defaultDependencyRestrictionScope)
+    fun restrictDependency(
+        dependencyPath: String,
+        closure: Closure<DependencyRestrictionScope>
+    ) {
+        restrictDependency(dependencyPath, ConfigureUtil.configureUsing(closure))
     }
 
     // Just here for groovy support
-    fun restrictDependency(provider: Provider<MinimalExternalModuleDependency>) {
-        restrictDependency(provider, defaultDependencyRestrictionScope)
-    }
-
-    companion object {
-        private val defaultDependencyRestrictionScope = Action<DependencyRestrictionScope> {}
-        private val defaultModuleRestrictionScope = Action<ModuleRestrictionScope> {}
-
+    fun restrictDependency(
+        provider: Provider<MinimalExternalModuleDependency>,
+        closure: Closure<DependencyRestrictionScope>
+    ) {
+        restrictDependency(provider, ConfigureUtil.configureUsing(closure))
     }
 }
