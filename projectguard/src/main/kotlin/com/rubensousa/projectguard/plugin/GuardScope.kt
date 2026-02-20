@@ -23,38 +23,63 @@ import org.gradle.api.internal.catalog.DelegatingProjectDependency
 import org.gradle.api.provider.Provider
 import org.gradle.util.internal.ConfigureUtil
 
+private val emptyDenyScope = Action<DenyScope> { }
+
 interface GuardScope {
 
     fun deny(
         dependencyPath: String,
-        action: Action<DenyScope> = Action<DenyScope> { },
+        action: Action<DenyScope>,
     )
-
-    fun deny(
-        dependencyDelegation: DelegatingProjectDependency,
-        action: Action<DenyScope> = Action<DenyScope> { },
-    ) = deny(dependencyPath = dependencyDelegation.path, action = action)
 
     fun deny(
         provider: Provider<MinimalExternalModuleDependency>,
-        action: Action<DenyScope> = Action<DenyScope> { },
+        action: Action<DenyScope>,
     )
 
+    fun applyRule(rule: GuardRule)
+
+    fun deny(
+        dependencyDelegation: DelegatingProjectDependency,
+        action: Action<DenyScope>,
+    ) {
+        deny(dependencyPath = dependencyDelegation.path, action = action)
+    }
+
     // Required for groovy compatibility
+    fun deny(dependencyPath: String) {
+        deny(dependencyPath, emptyDenyScope)
+    }
+
+    fun deny(dependencyDelegation: DelegatingProjectDependency) {
+        deny(dependencyDelegation.path, emptyDenyScope)
+    }
+
+    fun deny(
+        provider: Provider<MinimalExternalModuleDependency>,
+    ) {
+        deny(provider, emptyDenyScope)
+    }
+
+    fun deny(
+        dependencyDelegation: DelegatingProjectDependency,
+        closure: Closure<DenyScope>,
+    ) {
+        deny(dependencyDelegation.path, ConfigureUtil.configureUsing(closure))
+    }
+
     fun deny(
         dependencyPath: String,
-        closure: Closure<DenyScope>
+        closure: Closure<DenyScope>,
     ) {
         deny(dependencyPath, ConfigureUtil.configureUsing(closure))
     }
 
-    // Required for groovy compatibility
     fun deny(
         provider: Provider<MinimalExternalModuleDependency>,
-        closure: Closure<DenyScope>
+        closure: Closure<DenyScope>,
     ) {
         deny(provider, ConfigureUtil.configureUsing(closure))
     }
 
-    fun applyRule(rule: GuardRule)
 }

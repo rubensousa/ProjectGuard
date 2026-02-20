@@ -16,10 +16,6 @@
 
 package com.rubensousa.projectguard.plugin
 
-import com.google.common.truth.Truth.assertThat
-import org.gradle.testkit.runner.BuildResult
-import org.gradle.testkit.runner.GradleRunner
-import org.gradle.testkit.runner.TaskOutcome
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -31,19 +27,12 @@ class PluginIntegrationTest {
     @get:Rule
     val temporaryFolder = TemporaryFolder()
 
+    private val pluginRunner = PluginRunner(temporaryFolder)
     private lateinit var rootBuildFile: File
-    private lateinit var settingsFile: File
-    private lateinit var gradleRunner: GradleRunner
-    private val checkTask = ":consumer:projectGuardCheck"
 
     @Before
     fun setup() {
-        settingsFile = temporaryFolder.newFile("settings.gradle.kts")
         rootBuildFile = temporaryFolder.newFile("build.gradle.kts")
-        gradleRunner = GradleRunner.create()
-            .withProjectDir(temporaryFolder.root)
-            .withPluginClasspath()
-            .withGradleVersion("8.13")
         rootBuildFile.writeText(
             """
             plugins {
@@ -61,9 +50,9 @@ class PluginIntegrationTest {
     @Test
     fun `transitive dependencies are found and cause check to fail`() {
         // given
-        createModule("consumer")
-        createModule("libraryA")
-        createModule("libraryB")
+        pluginRunner.createModule("consumer")
+        pluginRunner.createModule("libraryA")
+        pluginRunner.createModule("libraryB")
 
         rootBuildFile.appendText(
             """
@@ -75,21 +64,19 @@ class PluginIntegrationTest {
             """.trimIndent()
         )
 
-        addDependency(from = "consumer", to = "libraryA")
-        addDependency(from = "libraryA", to = "libraryB")
-
         // when
-        val result = runCheckTask(expectSuccess = false)
+        pluginRunner.addDependency(from = "consumer", to = "libraryA")
+        pluginRunner.addDependency(from = "libraryA", to = "libraryB")
 
         // then
-        assertThat(result.task(checkTask)?.outcome!!).isEqualTo(TaskOutcome.FAILED)
+        pluginRunner.assertCheckFails("consumer")
     }
 
     @Test
     fun `direct dependencies are found and cause check to fail`() {
         // given
-        createModule("consumer")
-        createModule("library")
+        pluginRunner.createModule("consumer")
+        pluginRunner.createModule("library")
 
         rootBuildFile.appendText(
             """
@@ -99,20 +86,18 @@ class PluginIntegrationTest {
             """.trimIndent()
         )
 
-        addDependency(from = "consumer", to = "library")
-
         // when
-        val result = runCheckTask(expectSuccess = false)
+        pluginRunner.addDependency(from = "consumer", to = "library")
 
         // then
-        assertThat(result.task(checkTask)?.outcome!!).isEqualTo(TaskOutcome.FAILED)
+        pluginRunner.assertCheckFails("consumer")
     }
 
     @Test
     fun `check task succeeds when no matches are found`() {
         // given
-        createModule("consumer")
-        createModule("library")
+        pluginRunner.createModule("consumer")
+        pluginRunner.createModule("library")
 
         rootBuildFile.appendText(
             """
@@ -122,38 +107,10 @@ class PluginIntegrationTest {
             """.trimIndent()
         )
 
-        addDependency(from = "consumer", to = "library")
-
         // when
-        val result = runCheckTask(expectSuccess = true)
+        pluginRunner.addDependency(from = "consumer", to = "library")
 
         // then
-        assertThat(result.task(checkTask)!!.outcome).isEqualTo(TaskOutcome.SUCCESS)
+        pluginRunner.assertCheckSucceeds("consumer")
     }
-
-    private fun runCheckTask(expectSuccess: Boolean): BuildResult {
-        val runner = gradleRunner.withArguments(checkTask)
-        return if (expectSuccess) {
-            runner.build()
-        } else {
-            runner.buildAndFail()
-        }
-    }
-
-    private fun createModule(name: String) {
-        temporaryFolder.newFolder(name)
-        temporaryFolder.newFile("$name/build.gradle.kts")
-        settingsFile.appendText("\ninclude(\":$name\")")
-    }
-
-    private fun addDependency(from: String, to: String, configuration: String = "implementation") {
-        temporaryFolder.getRoot().resolve("$from/build.gradle.kts").appendText(
-            """
-            dependencies {
-                $configuration(project(":$to"))
-            }
-            """.trimIndent()
-        )
-    }
-
 }
