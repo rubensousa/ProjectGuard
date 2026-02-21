@@ -1,6 +1,14 @@
 
 # CHANGELOG
 
+## 1.0.0-beta02 (2026-02-22)
+
+- `allow` now supports multiple modules. Contributed by @DatL4g.
+- `allow` can be used with type-safe project accessors. Contributed by @DatL4g.
+- Groovy support improvements. Contributed by @DatL4g.
+- `allowExternalLibraries` is now available within `restrictModule`. 
+- Libraries can now be displayed in the html graph report via `report { showLibrariesInGraph = true }`
+
 ## 1.0.0-beta01 (2026-02-19)
 
 - Added support for KMP
