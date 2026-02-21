@@ -17,10 +17,12 @@
 package com.rubensousa.projectguard.plugin.internal.report
 
 import com.rubensousa.projectguard.plugin.internal.DependencyConfiguration
+import com.rubensousa.projectguard.plugin.internal.ReportSpec
 import com.rubensousa.projectguard.plugin.internal.SuppressionMap
 
 internal class VerificationReportBuilder(
     private val suppressionMap: SuppressionMap,
+    private val reportSpec: ReportSpec,
 ) {
 
     fun build(
@@ -78,8 +80,12 @@ internal class VerificationReportBuilder(
                 //  filter out test dependencies from the graph reports
                 val moduleDependencies = graph.getOrPut(report.module) { mutableSetOf() }
                 if (DependencyConfiguration.isReleaseConfiguration(configuration.id)) {
-                    moduleDependencies.addAll(configuration.dependencies.map { dependency ->
-                        DependencyReferenceDump(dependency.id, dependency.isLibrary)
+                    moduleDependencies.addAll(configuration.dependencies.mapNotNull { dependency ->
+                        if (reportSpec.showLibrariesInGraph || !dependency.isLibrary) {
+                            DependencyReferenceDump(dependency.id, dependency.isLibrary)
+                        } else {
+                            null
+                        }
                     })
                 }
             }

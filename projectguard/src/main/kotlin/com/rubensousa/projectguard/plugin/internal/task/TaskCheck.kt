@@ -17,6 +17,7 @@
 package com.rubensousa.projectguard.plugin.internal.task
 
 import com.rubensousa.projectguard.plugin.internal.BaselineConfiguration
+import com.rubensousa.projectguard.plugin.internal.ReportSpec
 import com.rubensousa.projectguard.plugin.internal.SuppressionMap
 import com.rubensousa.projectguard.plugin.internal.YamlProcessor
 import com.rubensousa.projectguard.plugin.internal.report.DependencyGraphDump
@@ -51,6 +52,9 @@ internal abstract class TaskCheck : DefaultTask() {
     @get:Input
     internal abstract val reportFilePath: Property<String>
 
+    @get:Input
+    internal abstract val reportSpec: Property<ReportSpec>
+
     @get:OutputDirectory
     abstract val outputDir: DirectoryProperty
 
@@ -61,7 +65,8 @@ internal abstract class TaskCheck : DefaultTask() {
             restrictionDumpFile = restrictionDumpFile.get().asFile,
             dependenciesFile = dependenciesFile.get().asFile,
             reportDir = outputDir.get().asFile,
-            reportFilePath = reportFilePath.get()
+            reportFilePath = reportFilePath.get(),
+            reportSpec = reportSpec.get()
         )
         executor.execute().getOrThrow()
     }
@@ -73,6 +78,7 @@ internal class CheckExecutor(
     private val restrictionDumpFile: File,
     private val dependenciesFile: File,
     private val reportDir: File,
+    private val reportSpec: ReportSpec,
     private val reportFilePath: String = "",
 ) {
 
@@ -88,7 +94,7 @@ internal class CheckExecutor(
             println("Skipping baseline since it could not be found or was improperly structured!")
         }
         val restrictionDump = Json.decodeFromString<RestrictionDump>(restrictionDumpFile.readText())
-        val reportBuilder = VerificationReportBuilder(suppressionMap)
+        val reportBuilder = VerificationReportBuilder(suppressionMap, reportSpec)
         val report = reportBuilder.build(dependencyGraphDump, restrictionDump)
         val fatalMatches = report.modules.flatMap { it.fatal }
         val suppressedMatches = report.modules.flatMap { it.suppressed }

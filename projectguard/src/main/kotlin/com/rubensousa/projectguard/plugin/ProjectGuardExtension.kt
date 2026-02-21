@@ -23,10 +23,11 @@ import com.rubensousa.projectguard.plugin.internal.GuardSpec
 import com.rubensousa.projectguard.plugin.internal.ModuleRestrictionScopeImpl
 import com.rubensousa.projectguard.plugin.internal.ModuleRestrictionSpec
 import com.rubensousa.projectguard.plugin.internal.ProjectGuardSpec
+import com.rubensousa.projectguard.plugin.internal.ReportScopeImpl
+import com.rubensousa.projectguard.plugin.internal.ReportSpec
 import com.rubensousa.projectguard.plugin.internal.getDependencyPath
 import org.gradle.api.Action
 import org.gradle.api.artifacts.MinimalExternalModuleDependency
-import org.gradle.api.internal.catalog.DelegatingProjectDependency
 import org.gradle.api.model.ObjectFactory
 import org.gradle.api.provider.Provider
 import org.gradle.kotlin.dsl.listProperty
@@ -39,6 +40,7 @@ abstract class ProjectGuardExtension @Inject constructor(
     private val guardSpecs = objects.listProperty<GuardSpec>()
     private val moduleRestrictionSpecs = objects.listProperty<ModuleRestrictionSpec>()
     private val dependencyRestrictionSpecs = objects.listProperty<DependencyRestrictionSpec>()
+    private var reportSpec = ReportSpec(showLibrariesInGraph = false)
 
     override fun restrictModule(modulePath: String, action: Action<ModuleRestrictionScope>) {
         val scope = ModuleRestrictionScopeImpl()
@@ -117,11 +119,20 @@ abstract class ProjectGuardExtension @Inject constructor(
         return rule
     }
 
+    override fun report(action: Action<ReportScope>) {
+        val scope = ReportScopeImpl()
+        action.execute(scope)
+        reportSpec = reportSpec.copy(
+            showLibrariesInGraph = scope.showLibrariesInGraph
+        )
+    }
+
     internal fun getSpec(): ProjectGuardSpec {
         return ProjectGuardSpec(
             guardSpecs = guardSpecs.get(),
             moduleRestrictionSpecs = moduleRestrictionSpecs.get(),
-            dependencyRestrictionSpecs = dependencyRestrictionSpecs.get()
+            dependencyRestrictionSpecs = dependencyRestrictionSpecs.get(),
+            reportSpec = reportSpec
         )
     }
 

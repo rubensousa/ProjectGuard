@@ -16,11 +16,10 @@
 
 package com.rubensousa.projectguard.plugin.internal
 
-import java.io.Serializable
+import com.rubensousa.projectguard.plugin.ReportScope
 
-internal data class ProjectGuardSpec(
-    val guardSpecs: List<GuardSpec>,
-    val moduleRestrictionSpecs: List<ModuleRestrictionSpec>,
-    val dependencyRestrictionSpecs: List<DependencyRestrictionSpec>,
-    val reportSpec: ReportSpec,
-) : Serializable
+internal class ReportScopeImpl : ReportScope {
+
+    override var showLibrariesInGraph: Boolean = false
+
+}

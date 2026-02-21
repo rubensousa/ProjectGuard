@@ -18,6 +18,7 @@ package com.rubensousa.projectguard.plugin
 
 import com.rubensousa.projectguard.plugin.internal.DependencyGraph
 import com.rubensousa.projectguard.plugin.internal.ProjectGuardSpec
+import com.rubensousa.projectguard.plugin.internal.ReportSpec
 import com.rubensousa.projectguard.plugin.internal.task.AggregateDependencyDumpExecutor
 import com.rubensousa.projectguard.plugin.internal.task.AggregateRestrictionDumpExecutor
 import com.rubensousa.projectguard.plugin.internal.task.BaselineExecutor
@@ -30,6 +31,8 @@ import java.io.File
 internal class DependencyPluginSimulator(
     private val temporaryFolder: TemporaryFolder,
 ) {
+
+    private var reportSpec = ReportSpec(showLibrariesInGraph = false)
 
     fun dumpDependencies(
         moduleId: String,
@@ -78,6 +81,7 @@ internal class DependencyPluginSimulator(
             dependenciesFile = dependenciesFile,
             spec = spec
         )
+        reportSpec = spec.reportSpec
         executor.execute()
         return outputFile
     }
@@ -121,7 +125,8 @@ internal class DependencyPluginSimulator(
             baselineFile = getBaselineFile(),
             dependenciesFile = getAggregateDependenciesFile(),
             restrictionDumpFile = getAggregateRestrictionsFile(),
-            reportDir = outputDir
+            reportDir = outputDir,
+            reportSpec = reportSpec,
         )
         return executor.execute().map { outputDir }
     }
@@ -132,7 +137,8 @@ internal class DependencyPluginSimulator(
             baselineFile = getBaselineFile(),
             dependenciesFile = getAggregateDependenciesFile(),
             restrictionDumpFile = getRestrictionsFile(moduleId),
-            reportDir = outputDir
+            reportDir = outputDir,
+            reportSpec = reportSpec,
         )
         return executor.execute().map { outputDir }
     }
