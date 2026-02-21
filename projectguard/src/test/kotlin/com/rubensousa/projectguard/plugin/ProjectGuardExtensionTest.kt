@@ -184,6 +184,30 @@ class ProjectGuardExtensionTest {
         assertThat(restrictions.first().allowed.first().modulePath).isEqualTo("old-feature")
     }
 
+    @Test
+    fun `show libraries in graph is false by default`() {
+        // given
+        val extension = createExtension()
+
+        // then
+        assertThat(extension.getSpec().reportSpec.showLibrariesInGraph).isFalse()
+    }
+
+    @Test
+    fun `show libraries in graph is included`() {
+        // given
+        val extension = createExtension()
+
+        // when
+        extension.report {
+            showLibrariesInGraph = true
+        }
+
+        // then
+        val spec = extension.getSpec()
+        assertThat(spec.reportSpec.showLibrariesInGraph).isTrue()
+    }
+
     private fun createExtension(): ProjectGuardExtension {
         val project = ProjectBuilder.builder().build()
         return project.extensions.create(

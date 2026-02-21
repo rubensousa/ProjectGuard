@@ -109,4 +109,44 @@ class TaskCheckTest {
         assertThat(File(outputDir, "style.css").exists()).isTrue()
     }
 
+    @Test
+    fun `html report does not contain libraries in the graph by default`() {
+        // given
+        val moduleId = ":domain"
+        val fatalDependency = "com.forbidden.dependency"
+        plugin.dumpDependencies(moduleId) { addLibraryDependency(moduleId, fatalDependency) }
+        plugin.dumpAggregateDependencies()
+        val spec = projectGuard {}
+        plugin.dumpRestrictions(moduleId, spec)
+
+        // when
+        val outputDir = plugin.check(moduleId).getOrThrow()
+
+        // then
+        val htmlFileContent = File(outputDir, "index.html").readText()
+        assertThat(htmlFileContent.contains(fatalDependency)).isFalse()
+    }
+
+    @Test
+    fun `html report contains libraries in the graph`() {
+        // given
+        val moduleId = ":domain"
+        val fatalDependency = "com.forbidden.dependency"
+        plugin.dumpDependencies(moduleId) { addLibraryDependency(moduleId, fatalDependency) }
+        plugin.dumpAggregateDependencies()
+        val spec = projectGuard {
+            report {
+                showLibrariesInGraph = true
+            }
+        }
+        plugin.dumpRestrictions(moduleId, spec)
+
+        // when
+        val outputDir = plugin.check(moduleId).getOrThrow()
+
+        // then
+        val htmlFileContent = File(outputDir, "index.html").readText()
+        assertThat(htmlFileContent.contains(fatalDependency)).isTrue()
+    }
+
 }

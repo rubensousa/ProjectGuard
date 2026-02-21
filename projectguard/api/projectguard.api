@@ -38,6 +38,7 @@ public abstract class com/rubensousa/projectguard/plugin/ProjectGuardExtension :
 	public fun <init> (Lorg/gradle/api/model/ObjectFactory;)V
 	public fun guard (Ljava/lang/String;Lorg/gradle/api/Action;)V
 	public fun guardRule (Lorg/gradle/api/Action;)Lcom/rubensousa/projectguard/plugin/GuardRule;
+	public fun report (Lorg/gradle/api/Action;)V
 	public fun restrictDependency (Ljava/lang/String;Lorg/gradle/api/Action;)V
 	public fun restrictDependency (Lorg/gradle/api/provider/Provider;Lorg/gradle/api/Action;)V
 	public fun restrictDependencyRule (Lorg/gradle/api/Action;)Lcom/rubensousa/projectguard/plugin/RestrictDependencyRule;
@@ -55,6 +56,8 @@ public abstract interface class com/rubensousa/projectguard/plugin/ProjectGuardS
 	public abstract fun guard (Ljava/lang/String;Lorg/gradle/api/Action;)V
 	public fun guard (Lorg/gradle/api/internal/catalog/DelegatingProjectDependency;Lorg/gradle/api/Action;)V
 	public abstract fun guardRule (Lorg/gradle/api/Action;)Lcom/rubensousa/projectguard/plugin/GuardRule;
+	public fun report (Lgroovy/lang/Closure;)V
+	public abstract fun report (Lorg/gradle/api/Action;)V
 	public fun restrictDependency (Ljava/lang/String;Lgroovy/lang/Closure;)V
 	public abstract fun restrictDependency (Ljava/lang/String;Lorg/gradle/api/Action;)V
 	public fun restrictDependency (Lorg/gradle/api/internal/catalog/DelegatingProjectDependency;Lorg/gradle/api/Action;)V
@@ -70,6 +73,11 @@ public abstract interface class com/rubensousa/projectguard/plugin/ProjectGuardS
 	public static synthetic fun restrictModule$default (Lcom/rubensousa/projectguard/plugin/ProjectGuardScope;Ljava/lang/String;Lorg/gradle/api/Action;ILjava/lang/Object;)V
 	public static synthetic fun restrictModule$default (Lcom/rubensousa/projectguard/plugin/ProjectGuardScope;Lorg/gradle/api/internal/catalog/DelegatingProjectDependency;Lorg/gradle/api/Action;ILjava/lang/Object;)V
 	public abstract fun restrictModuleRule (Lorg/gradle/api/Action;)Lcom/rubensousa/projectguard/plugin/RestrictModuleRule;
+}
+
+public abstract interface class com/rubensousa/projectguard/plugin/ReportScope {
+	public abstract fun getShowLibrariesInGraph ()Z
+	public abstract fun setShowLibrariesInGraph (Z)V
 }
 
 public final class com/rubensousa/projectguard/plugin/RestrictDependencyRule {

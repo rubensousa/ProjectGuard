@@ -72,7 +72,7 @@ interface ProjectGuardScope {
      */
     fun restrictModule(
         moduleDelegation: DelegatingProjectDependency,
-        action: Action<ModuleRestrictionScope> = Action<ModuleRestrictionScope> { }
+        action: Action<ModuleRestrictionScope> = Action<ModuleRestrictionScope> { },
     ) = restrictModule(modulePath = moduleDelegation.path, action = action)
 
     // Just here for groovy support
@@ -122,7 +122,7 @@ interface ProjectGuardScope {
      */
     fun guard(
         moduleDelegation: DelegatingProjectDependency,
-        action: Action<GuardScope>
+        action: Action<GuardScope>,
     ) = guard(modulePath = moduleDelegation.path, action = action)
 
     /**
@@ -167,7 +167,7 @@ interface ProjectGuardScope {
      */
     fun restrictDependency(
         dependencyDelegation: DelegatingProjectDependency,
-        action: Action<DependencyRestrictionScope> = Action<DependencyRestrictionScope> { }
+        action: Action<DependencyRestrictionScope> = Action<DependencyRestrictionScope> { },
     ) = restrictDependency(dependencyPath = dependencyDelegation.path, action = action)
 
     /**
@@ -188,7 +188,7 @@ interface ProjectGuardScope {
     // Just here for groovy support
     fun restrictDependency(
         dependencyPath: String,
-        closure: Closure<DependencyRestrictionScope>
+        closure: Closure<DependencyRestrictionScope>,
     ) {
         restrictDependency(dependencyPath, ConfigureUtil.configureUsing(closure))
     }
@@ -196,8 +196,15 @@ interface ProjectGuardScope {
     // Just here for groovy support
     fun restrictDependency(
         provider: Provider<MinimalExternalModuleDependency>,
-        closure: Closure<DependencyRestrictionScope>
+        closure: Closure<DependencyRestrictionScope>,
     ) {
         restrictDependency(provider, ConfigureUtil.configureUsing(closure))
     }
+
+    fun report(action: Action<ReportScope>)
+
+    fun report(closure: Closure<ReportScope>) {
+        report(ConfigureUtil.configureUsing(closure))
+    }
+
 }

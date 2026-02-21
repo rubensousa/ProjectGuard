@@ -546,10 +546,8 @@ function getModuleDependencyGraph(module, projectDependencies) {
         const list = [];
         nextDependencies = projectMap.get(dependency);
         nextDependencies?.forEach((nextDependency) => {
-            if (!nextDependency.isLibrary) {
-                list.push(nextDependency.id)
-                stack.push(nextDependency.id)
-            }
+            list.push(nextDependency.id)
+            stack.push(nextDependency.id)
         })
         nodeMap.set(dependency, list);
     }

@@ -18,9 +18,6 @@ package com.rubensousa.projectguard.plugin.internal
 
 import java.io.Serializable
 
-internal data class ProjectGuardSpec(
-    val guardSpecs: List<GuardSpec>,
-    val moduleRestrictionSpecs: List<ModuleRestrictionSpec>,
-    val dependencyRestrictionSpecs: List<DependencyRestrictionSpec>,
-    val reportSpec: ReportSpec,
+internal data class ReportSpec(
+    val showLibrariesInGraph: Boolean,
 ) : Serializable

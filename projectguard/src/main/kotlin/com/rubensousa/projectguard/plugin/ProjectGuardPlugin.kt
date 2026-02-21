@@ -61,7 +61,7 @@ class ProjectGuardPlugin : Plugin<Project> {
             return
         }
         val extension = getExtension(rootProject)
-        val aggregationTasks = createAggregationTasks(rootProject)
+        val aggregationTasks = createAggregationTasks(rootProject, extension)
         val individualModuleTasks = mutableListOf<ModuleTasks>()
         rootProject.subprojects.forEach { targetProject ->
             val moduleTasks = createModuleTasks(
@@ -166,13 +166,14 @@ class ProjectGuardPlugin : Plugin<Project> {
 
     private fun createAggregationTasks(
         rootProject: Project,
+        extension: ProjectGuardExtension,
     ): AggregationTasks {
         return AggregationTasks(
             dependencyDump = createAggregateDependencyDumpTask(rootProject),
             restrictionDump = createAggregateRestrictionTask(rootProject),
             baselineDump = createBaselineTask(rootProject),
             baselineCreate = createBaselineReferenceTask(rootProject),
-            check = createAggregateCheckTask(rootProject)
+            check = createAggregateCheckTask(rootProject, extension)
         )
     }
 
@@ -233,30 +234,38 @@ class ProjectGuardPlugin : Plugin<Project> {
         extension: ProjectGuardExtension,
     ): ModuleTasks {
         return ModuleTasks(
-            check = createCheckTask(targetProject),
+            check = createCheckTask(targetProject, extension),
             restrictionDump = createModuleRestrictionTask(targetProject, extension),
             dependencyDump = createDependencyDumpTask(targetProject)
         )
     }
 
-    private fun createCheckTask(project: Project): TaskProvider<TaskCheck> {
+    private fun createCheckTask(
+        project: Project,
+        extension: ProjectGuardExtension,
+    ): TaskProvider<TaskCheck> {
         return project.tasks.register(
             "projectGuardCheck",
             TaskCheck::class.java
         ) {
             group = "verification"
             description = "Verifies if there are any dependency restrictions"
+            reportSpec.set(extension.getSpec().reportSpec)
             outputs.upToDateWhen { false }
         }
     }
 
-    private fun createAggregateCheckTask(project: Project): TaskProvider<TaskCheck> {
+    private fun createAggregateCheckTask(
+        project: Project,
+        extension: ProjectGuardExtension,
+    ): TaskProvider<TaskCheck> {
         return project.tasks.register(
             "projectGuardAggregateCheck",
             TaskCheck::class.java
         ) {
             group = "verification"
             description = "Verifies if there are any dependency restrictions"
+            reportSpec.set(extension.getSpec().reportSpec)
             outputs.upToDateWhen { false }
         }
     }

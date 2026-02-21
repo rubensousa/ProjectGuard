@@ -133,6 +133,18 @@ projectGuard {
 - `./gradlew projectGuardCheck`: Runs the dependency analysis on individual modules and generates a html report under `module/build/reports/projectguard/index.html`.
 - `./gradlew projectGuardBaseline`: Creates a `projectguard-baseline.yml` file with all current restrictions. This allows you to start enforcing rules on new code without having to fix all existing issues first.
 
+
+## Report configuration options
+
+```kotlin
+projectGuard {
+    report {
+        // Default is false. When true, libraries are displayed in the dependency graph section
+        showLibrariesInGraph = true
+    }
+}
+```
+
 ## License
 
     Copyright 2026 Rúben Sousa

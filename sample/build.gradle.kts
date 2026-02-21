@@ -12,6 +12,9 @@ plugins {
 }
 
 projectGuard {
+    report {
+        showLibrariesInGraph = true
+    }
     guard(":data") {
         deny(":legacy")
     }

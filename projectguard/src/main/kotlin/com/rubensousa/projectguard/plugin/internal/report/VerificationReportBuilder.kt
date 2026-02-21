@@ -17,16 +17,27 @@
 package com.rubensousa.projectguard.plugin.internal.report
 
 import com.rubensousa.projectguard.plugin.internal.DependencyConfiguration
+import com.rubensousa.projectguard.plugin.internal.ReportSpec
 import com.rubensousa.projectguard.plugin.internal.SuppressionMap
 
 internal class VerificationReportBuilder(
     private val suppressionMap: SuppressionMap,
+    private val reportSpec: ReportSpec,
 ) {
 
     fun build(
         dependencyGraphDump: DependencyGraphDump,
         restrictionDump: RestrictionDump,
     ): VerificationReport {
+        return VerificationReport(
+            modules = buildVerificationReports(restrictionDump),
+            dependencyGraph = buildDependencyGraph(dependencyGraphDump)
+        )
+    }
+
+    private fun buildVerificationReports(
+        restrictionDump: RestrictionDump,
+    ): List<VerificationModuleReport> {
         val totalFatalMatches = mutableMapOf<String, MutableList<FatalMatch>>()
         val totalSuppressedMatches = mutableMapOf<String, MutableList<SuppressedMatch>>()
         val reports = mutableSetOf<String>()
@@ -63,7 +74,7 @@ internal class VerificationReportBuilder(
                 reports.add(moduleReport.module)
             }
         }
-        val sortedReports = reports.sortedBy { it }
+        return reports.sorted()
             .map { moduleId ->
                 VerificationModuleReport(
                     module = moduleId,
@@ -71,6 +82,11 @@ internal class VerificationReportBuilder(
                     suppressed = totalSuppressedMatches[moduleId]?.sortedBy { it.dependency } ?: emptyList(),
                 )
             }
+    }
+
+    private fun buildDependencyGraph(
+        dependencyGraphDump: DependencyGraphDump,
+    ): Map<String, List<DependencyReferenceDump>> {
         val graph = mutableMapOf<String, MutableSet<DependencyReferenceDump>>()
         dependencyGraphDump.modules.forEach { report ->
             report.configurations.forEach { configuration ->
@@ -78,15 +94,19 @@ internal class VerificationReportBuilder(
                 //  filter out test dependencies from the graph reports
                 val moduleDependencies = graph.getOrPut(report.module) { mutableSetOf() }
                 if (DependencyConfiguration.isReleaseConfiguration(configuration.id)) {
-                    moduleDependencies.addAll(configuration.dependencies.map { dependency ->
-                        DependencyReferenceDump(dependency.id, dependency.isLibrary)
+                    moduleDependencies.addAll(configuration.dependencies.mapNotNull { dependency ->
+                        if (reportSpec.showLibrariesInGraph || !dependency.isLibrary) {
+                            DependencyReferenceDump(dependency.id, dependency.isLibrary)
+                        } else {
+                            null
+                        }
                     })
                 }
             }
         }
-        return VerificationReport(sortedReports, graph.mapValues { entry ->
+        return graph.mapValues { entry ->
             entry.value.sortedBy { it.id }
-        })
+        }
     }
 
 }
