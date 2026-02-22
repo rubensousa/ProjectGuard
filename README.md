@@ -2,6 +2,12 @@
 
 A Gradle plugin that acts as a powerful gatekeeper for your project's dependencies. It helps you enforce architectural rules, prevent unwanted dependencies, and keep your module graph clean and maintainable as your project scales.
 
+[![Maven Central](https://img.shields.io/maven-central/v/com.rubensousa.projectguard/projectguard-gradle-plugin.svg)](https://github.com/rubensousa/ProjectGuard/releases)
+![Plugin](https://img.shields.io/badge/gradle-plugin-green)
+![Report](https://img.shields.io/badge/Kotlin-white?logo=Kotlin)
+![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/rubensousa/ProjectGuard/push.yml?label=Build)
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://www.apache.org/licenses/LICENSE-2.0)
+
 ![ProjectGuard Module Report](example_report_modules.png)
 
 ![ProjectGuard Graph Report](example_report_graph.png)
