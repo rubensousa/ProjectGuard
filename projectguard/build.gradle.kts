@@ -2,8 +2,8 @@ plugins {
     `kotlin-dsl`
     `java-gradle-plugin`
     alias(libs.plugins.kotlin.serialization)
-    alias(libs.plugins.kover)
     alias(libs.plugins.maven.publish)
+    alias(libs.plugins.kover)
 }
 
 java {
@@ -46,4 +46,15 @@ dependencies {
     testImplementation(libs.kotlin.test)
     testImplementation(libs.truth)
     testImplementation(libs.junit)
+}
+
+kover {
+    reports {
+        filters {
+            excludes {
+                // Cannot be included in coverage for now: https://github.com/Kotlin/kotlinx-kover/issues/779
+                classes("com.rubensousa.projectguard.plugin.ProjectGuardPlugin*")
+            }
+        }
+    }
 }
