@@ -28,7 +28,7 @@ jobs:
         run: ./gradlew --build-cache checkLegacyAbi
 
       - name: Check and build plugin
-        run: ./gradlew --build-cache check assemble --stacktrace
+        run: ./gradlew --build-cache check assemble koverXmlReport --stacktrace
 
       - name: Upload coverage reports to Codecov
         uses: codecov/codecov-action@v5
