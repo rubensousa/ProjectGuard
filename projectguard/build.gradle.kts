@@ -47,3 +47,7 @@ dependencies {
     testImplementation(libs.truth)
     testImplementation(libs.junit)
 }
+
+kover {
+    useJacoco("0.8.14")
+}
