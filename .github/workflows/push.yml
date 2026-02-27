@@ -20,5 +20,10 @@ jobs:
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
 
-      - name: Check and build plugin
-        run: ./gradlew --build-cache check assemble --stacktrace
+      - name: Generate coverage report
+        run: ./gradlew --build-cache check koverXmlReport --stacktrace
+
+      - name: Upload coverage reports to Codecov
+        uses: codecov/codecov-action@v5
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
