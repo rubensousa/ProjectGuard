@@ -37,6 +37,7 @@ class GroovyIntegrationTest {
             """
             plugins {
                 id 'com.rubensousa.projectguard'
+                id 'jacoco-testkit-coverage'
             }
             subprojects {
                 apply plugin: 'java-library'

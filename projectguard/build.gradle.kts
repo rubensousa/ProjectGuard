@@ -1,9 +1,10 @@
 plugins {
     `kotlin-dsl`
     `java-gradle-plugin`
+    id("jacoco")
     alias(libs.plugins.kotlin.serialization)
-    alias(libs.plugins.kover)
     alias(libs.plugins.maven.publish)
+    alias(libs.plugins.gradle.jacoco)
 }
 
 java {
@@ -48,6 +49,17 @@ dependencies {
     testImplementation(libs.junit)
 }
 
-kover {
-    useJacoco("0.8.14")
+jacoco {
+    toolVersion = "0.8.14"
+}
+
+tasks.jacocoTestReport {
+    reports {
+        xml.required = true
+        html.required = true
+    }
+}
+
+tasks.test {
+    finalizedBy(tasks.jacocoTestReport)
 }

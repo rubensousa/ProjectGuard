@@ -37,6 +37,7 @@ class PluginIntegrationTest {
             """
             plugins {
                 id("com.rubensousa.projectguard") apply true
+                id("jacoco-testkit-coverage") apply true
             }
             subprojects {
                 apply(plugin = "java-library")
