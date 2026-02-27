@@ -1,10 +1,9 @@
 plugins {
     `kotlin-dsl`
     `java-gradle-plugin`
-    id("jacoco")
     alias(libs.plugins.kotlin.serialization)
     alias(libs.plugins.maven.publish)
-    alias(libs.plugins.gradle.jacoco)
+    alias(libs.plugins.kover)
 }
 
 java {
@@ -49,17 +48,13 @@ dependencies {
     testImplementation(libs.junit)
 }
 
-jacoco {
-    toolVersion = "0.8.14"
-}
-
-tasks.jacocoTestReport {
+kover {
     reports {
-        xml.required = true
-        html.required = true
+        filters {
+            excludes {
+                // Cannot be included in coverage for now: https://github.com/Kotlin/kotlinx-kover/issues/779
+                classes("com.rubensousa.projectguard.plugin.ProjectGuardPlugin*")
+            }
+        }
     }
-}
-
-tasks.test {
-    finalizedBy(tasks.jacocoTestReport)
 }
