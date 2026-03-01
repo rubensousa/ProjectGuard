@@ -22,6 +22,7 @@ import org.junit.Test
 class SuppressionMapTest {
 
     private val suppressionMap = SuppressionMap()
+    private val dependencyGraph = DependencyGraph()
 
     @Test
     fun `getSuppression returns null if dependency is not suppressed`() {
@@ -115,6 +116,36 @@ class SuppressionMapTest {
         val newLibSuppression = suppressionMap.getSuppression(":lib", ":feature1")
         assertThat(newLibSuppression).isNotNull()
         assertThat(newLibSuppression?.reason).isEqualTo("AnotherReason")
+    }
+
+    @Test
+    fun `isOutdated returns false for empty suppressions`() {
+        // given
+        dependencyGraph.addInternalDependency(module = ":domain", dependency = ":legacy")
+
+        // then
+        assertThat(suppressionMap.isOutdated(dependencyGraph)).isFalse()
+    }
+
+    @Test
+    fun `isOutdated returns false for dependencies that still exist`() {
+        // given
+        dependencyGraph.addInternalDependency(module = ":domain", dependency = ":legacy")
+
+        // when
+        suppressionMap.add(module = ":domain", dependency = ":legacy")
+
+        // then
+        assertThat(suppressionMap.isOutdated(dependencyGraph)).isFalse()
+    }
+
+    @Test
+    fun `isOutdated returns true for dependencies that no longer exist`() {
+        // given
+        suppressionMap.add(module = ":domain", dependency = ":legacy")
+
+        // then
+        assertThat(suppressionMap.isOutdated(dependencyGraph)).isTrue()
     }
 
 }

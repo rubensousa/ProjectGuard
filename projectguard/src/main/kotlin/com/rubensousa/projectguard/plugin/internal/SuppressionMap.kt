@@ -31,6 +31,20 @@ internal class SuppressionMap {
         }
     }
 
+    fun isOutdated(graph: DependencyGraph): Boolean {
+        suppressions.forEach { (module, suppressions) ->
+            val graphDependencies = graph.getDependencies(module)
+                .associateBy { dependency -> dependency.id }
+                .keys
+            suppressions.forEach { (dependency, _) ->
+                if (!graphDependencies.contains(dependency)) {
+                    return true
+                }
+            }
+        }
+        return false
+    }
+
     fun add(module: String, dependency: String, reason: String = UNSPECIFIED_REASON) {
         add(module, DependencySuppression(dependency, reason))
     }
