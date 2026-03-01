@@ -55,8 +55,14 @@ class PluginRunner(
         lastResult = result
     }
 
-    fun assertTaskOutputContains(message: String){
+    fun assertTaskOutputContains(message: String) {
         assertThat(lastResult!!.output).contains(message)
+    }
+
+    fun runTask(task: String): TaskOutcome {
+        val result = gradleRunner.withArguments(task).build()
+        lastResult = result
+        return result.task(task)!!.outcome
     }
 
     fun addDependency(from: String, to: String, configuration: String = "implementation") {

@@ -113,4 +113,5 @@ class PluginIntegrationTest {
         // then
         pluginRunner.assertCheckSucceeds("consumer")
     }
+
 }
