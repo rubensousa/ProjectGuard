@@ -166,4 +166,103 @@ class PluginCacheTest {
         // then
         assertThat(pluginRunner.runTask(task)).isEqualTo(TaskOutcome.SUCCESS)
     }
+
+    @Test
+    fun `outputs from projectGuardAggregateRestrictionDump are re-used if nothing changed`() {
+        // given
+        pluginRunner.createModule("a")
+        pluginRunner.createModule("b")
+        pluginRunner.addDependency(from = "a", to = "b")
+        val task = ":projectGuardAggregateRestrictionDump"
+
+        // when
+        pluginRunner.runTask(task)
+
+        // then
+        assertThat(pluginRunner.runTask(task)).isEqualTo(TaskOutcome.UP_TO_DATE)
+    }
+
+    @Test
+    fun `outputs from projectGuardAggregateRestrictionDump are re-used if dependencies changed but there are no restrictions`() {
+        // given
+        pluginRunner.createModule("a")
+        pluginRunner.createModule("b")
+        pluginRunner.createModule("c")
+        pluginRunner.addDependency(from = "a", to = "b")
+        val task = ":projectGuardAggregateRestrictionDump"
+        pluginRunner.runTask(task)
+
+        // when
+        pluginRunner.addDependency(from = "b", to = "c")
+
+        // then
+        assertThat(pluginRunner.runTask(task)).isEqualTo(TaskOutcome.UP_TO_DATE)
+    }
+
+    @Test
+    fun `outputs from projectGuardAggregateRestrictionDump are re-used if rules changed but there are not restrictions`() {
+        // given
+        pluginRunner.createModule("a")
+        pluginRunner.createModule("b")
+        pluginRunner.addDependency(from = "a", to = "b")
+        val task = ":projectGuardAggregateRestrictionDump"
+        pluginRunner.runTask(task)
+
+        // when
+        rootBuildFile.appendText(
+            """
+            projectGuard {
+                restrictDependency(":a")
+            }
+            """.trimIndent()
+        )
+
+        // then
+        assertThat(pluginRunner.runTask(task)).isEqualTo(TaskOutcome.UP_TO_DATE)
+    }
+
+    @Test
+    fun `outputs from projectGuardAggregateRestrictionDump are not re-used if new rules trigger new restrictions`() {
+        // given
+        pluginRunner.createModule("a")
+        pluginRunner.createModule("b")
+        pluginRunner.addDependency(from = "a", to = "b")
+        val task = ":projectGuardAggregateRestrictionDump"
+        pluginRunner.runTask(task)
+
+        // when
+        rootBuildFile.appendText(
+            """
+            projectGuard {
+                restrictDependency(":b")
+            }
+            """.trimIndent()
+        )
+
+        // then
+        assertThat(pluginRunner.runTask(task)).isEqualTo(TaskOutcome.SUCCESS)
+    }
+
+    @Test
+    fun `outputs from projectGuardAggregateRestrictionDump are not re-used if new dependencies trigger new restrictions`() {
+        // given
+        pluginRunner.createModule("a")
+        pluginRunner.createModule("b")
+        val task = ":projectGuardAggregateRestrictionDump"
+        rootBuildFile.appendText(
+            """
+            projectGuard {
+                restrictDependency(":b")
+            }
+            """.trimIndent()
+        )
+        pluginRunner.runTask(task)
+
+        // when
+        pluginRunner.addDependency(from = "a", to = "b")
+
+        // then
+        assertThat(pluginRunner.runTask(task)).isEqualTo(TaskOutcome.SUCCESS)
+    }
+
 }

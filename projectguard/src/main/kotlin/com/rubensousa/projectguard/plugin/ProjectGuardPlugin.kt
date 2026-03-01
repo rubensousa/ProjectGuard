@@ -193,7 +193,6 @@ class ProjectGuardPlugin : Plugin<Project> {
         ) {
             group = "other"
             description = "Generates an aggregate JSON report of all dependency matches."
-            outputs.upToDateWhen { false }
         }
     }
 
