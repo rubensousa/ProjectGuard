@@ -47,17 +47,14 @@ internal class SuppressionMap {
 
     fun getBaseline(): BaselineConfiguration {
         val output = mutableMapOf<String, List<DependencySuppression>>()
-        suppressions.keys.sorted().forEach { module ->
-            suppressions[module]?.let { suppressions ->
+        suppressions.entries.sortedBy { entry -> entry.key }
+            .forEach { entry ->
+                val suppressions = entry.value
                 val outputList = mutableListOf<DependencySuppression>()
-                suppressions.keys.sorted().forEach { dependency ->
-                    suppressions[dependency]?.let { suppression ->
-                        outputList.add(suppression)
-                    }
-                }
-                output[module] = outputList
+                outputList.addAll(suppressions.values)
+                outputList.sortBy { suppression -> suppression.dependency }
+                output[entry.key] = outputList
             }
-        }
         return BaselineConfiguration(output)
     }
 
