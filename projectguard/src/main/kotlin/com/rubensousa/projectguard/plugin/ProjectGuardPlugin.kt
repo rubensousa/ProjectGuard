@@ -142,11 +142,6 @@ class ProjectGuardPlugin : Plugin<Project> {
             outputFile.set(rootProject.layout.buildDirectory.file(jsonReportFilePath))
         }
 
-        // Aggregate dependency dump must take the individual module contribution
-        aggregationTasks.dependencyDump.configure {
-            outputFile.set(rootProject.layout.buildDirectory.file(dependenciesFilePath))
-        }
-
         aggregationTasks.check.configure {
             restrictionDumpFile.set(aggregationTasks.restrictionDump.flatMap { task -> task.outputFile })
             baselineFile.set(aggregationTasks.baselineCreate.flatMap { task -> task.baselineFile })
@@ -186,7 +181,6 @@ class ProjectGuardPlugin : Plugin<Project> {
         ) {
             group = "other"
             description = "Generates an aggregate JSON report of all dependencies of this project."
-            outputs.upToDateWhen { false }
         }
     }
 

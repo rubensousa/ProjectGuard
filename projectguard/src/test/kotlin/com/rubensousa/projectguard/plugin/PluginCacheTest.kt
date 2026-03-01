@@ -80,4 +80,36 @@ class PluginCacheTest {
         // then
         assertThat(pluginRunner.runTask(libraryDependencyTask)).isEqualTo(TaskOutcome.SUCCESS)
     }
+
+    @Test
+    fun `outputs from projectGuardAggregateDependencyDump are re-used`() {
+        // given
+        pluginRunner.createModule("a")
+        pluginRunner.createModule("b")
+        pluginRunner.addDependency(from = "a", to = "b")
+        val task = ":projectGuardAggregateDependencyDump"
+
+        // when
+        pluginRunner.runTask(task)
+
+        // then
+        assertThat(pluginRunner.runTask(task)).isEqualTo(TaskOutcome.UP_TO_DATE)
+    }
+
+    @Test
+    fun `outputs from projectGuardAggregateDependencyDump are not re-used if dependencies changed`() {
+        // given
+        pluginRunner.createModule("a")
+        pluginRunner.createModule("b")
+        pluginRunner.createModule("c")
+        pluginRunner.addDependency(from = "a", to = "b")
+        val task = ":projectGuardAggregateDependencyDump"
+        pluginRunner.runTask(task)
+
+        // when
+        pluginRunner.addDependency(from = "b", to = "c")
+
+        // then
+        assertThat(pluginRunner.runTask(task)).isEqualTo(TaskOutcome.SUCCESS)
+    }
 }
