@@ -7,6 +7,7 @@ A Gradle plugin that acts as a powerful gatekeeper for your project's dependenci
 ![Report](https://img.shields.io/badge/Kotlin-white?logo=Kotlin)
 ![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/rubensousa/ProjectGuard/push.yml?label=Build)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://www.apache.org/licenses/LICENSE-2.0)
+[![AndroidWeekly](https://androidweekly.net/issues/issue-716/badge)](https://androidweekly.net/issues/issue-716)
 
 ![ProjectGuard Module Report](example_report_modules.png)
 
