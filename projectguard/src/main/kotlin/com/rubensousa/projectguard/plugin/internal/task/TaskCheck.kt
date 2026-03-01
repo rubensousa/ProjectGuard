@@ -113,8 +113,9 @@ internal class CheckExecutor(
         htmlReportGenerator.generate(report, reportDir)
         if (fatalMatches.isNotEmpty()) {
             throw VerificationException(
-                "${fatalMatches.take(10).joinToString("\n\n") { it.getDescription() }} \n " +
-                        "Found ${fatalMatches.size} fatal match(es). See full report at file:///$reportFilePath"
+                "${fatalMatches.take(10).joinToString("\n\n") { it.getDescription() }} \n\n " +
+                        "Found ${fatalMatches.size} fatal match(es). See full report at file:///$reportFilePath\n\n" +
+                        "Consider updating the baseline with the task projectGuardBaseline if these matches are acceptable."
             )
         } else {
             println("No fatal matches found. See report at file:///$reportFilePath")
