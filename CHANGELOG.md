@@ -1,6 +1,11 @@
 
 # CHANGELOG
 
+## UNRELEASED (1.0.0-beta03)
+
+- Most of the tasks of the plugin are now cacheable
+- `projectGuardAggregateCheck` will now fail if the baseline is outdated. This ensures that the baseline needs to reflect the latest dependency graph
+
 ## 1.0.0-beta02 (2026-02-22)
 
 - `allow` now supports multiple modules. Contributed by @DatL4g.
