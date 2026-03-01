@@ -17,6 +17,7 @@
 package com.rubensousa.projectguard.plugin.internal.task
 
 import com.rubensousa.projectguard.plugin.internal.BaselineConfiguration
+import com.rubensousa.projectguard.plugin.internal.DependencyGraphBuilder
 import com.rubensousa.projectguard.plugin.internal.ReportSpec
 import com.rubensousa.projectguard.plugin.internal.SuppressionMap
 import com.rubensousa.projectguard.plugin.internal.YamlProcessor
@@ -84,6 +85,7 @@ internal class CheckExecutor(
 
     fun execute(): Result<Unit> = runCatching {
         val dependencyGraphDump = Json.decodeFromString<DependencyGraphDump>(dependenciesFile.readText())
+        val graph = DependencyGraphBuilder().buildFromDump(dependencyGraphDump)
         val yamlProcessor = YamlProcessor()
         val suppressionMap = SuppressionMap()
         runCatching {
@@ -92,6 +94,12 @@ internal class CheckExecutor(
             suppressionMap.set(config)
         }.onFailure {
             println("Skipping baseline since it could not be found or was improperly structured!")
+        }
+        if (suppressionMap.isOutdated(graph)) {
+            throw VerificationException(
+                "Baseline contains dependencies that are no longer relevant, " +
+                        "you need to update it with the task projectGuardBaseline"
+            )
         }
         val restrictionDump = Json.decodeFromString<RestrictionDump>(restrictionDumpFile.readText())
         val reportBuilder = VerificationReportBuilder(suppressionMap, reportSpec)

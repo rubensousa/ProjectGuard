@@ -17,6 +17,9 @@
 package com.rubensousa.projectguard.plugin
 
 import com.google.common.truth.Truth.assertThat
+import com.rubensousa.projectguard.plugin.internal.BaselineConfiguration
+import com.rubensousa.projectguard.plugin.internal.DependencySuppression
+import com.rubensousa.projectguard.plugin.internal.YamlProcessor
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
@@ -147,6 +150,38 @@ class TaskCheckTest {
         // then
         val htmlFileContent = File(outputDir, "index.html").readText()
         assertThat(htmlFileContent.contains(fatalDependency)).isTrue()
+    }
+
+    @Test
+    fun `task fails if baseline contains outdated references no longer part of the graph`() {
+        // given
+        val yamlProcessor = YamlProcessor()
+        val moduleId = ":domain"
+        val fatalModuleId = ":legacy"
+        val baselineFile = plugin.getBaselineFile()
+        val currentBaseline = BaselineConfiguration(
+            suppressions = mapOf(
+                moduleId to listOf(DependencySuppression(dependency = fatalModuleId)),
+            )
+        )
+        yamlProcessor.write(baselineFile, currentBaseline)
+        plugin.dumpDependencies(moduleId) {
+            addInternalDependency(moduleId, fatalModuleId)
+        }
+        plugin.dumpAggregateDependencies()
+        val spec = projectGuard { restrictDependency(fatalModuleId) }
+        plugin.dumpRestrictions(moduleId, spec)
+        plugin.dumpAggregateRestrictions()
+        plugin.generateBaseline()
+
+        // when
+        plugin.dumpDependencies(moduleId) {}
+        plugin.dumpAggregateDependencies()
+        plugin.dumpRestrictions(moduleId, spec)
+
+        // then
+        val result = plugin.check(moduleId)
+        assertThat(result.isFailure).isTrue()
     }
 
 }
