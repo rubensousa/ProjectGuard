@@ -31,6 +31,20 @@ internal class SuppressionMap {
         }
     }
 
+    fun isOutdated(graph: DependencyGraph): Boolean {
+        suppressions.forEach { (module, suppressions) ->
+            val graphDependencies = graph.getDependencies(module)
+                .associateBy { dependency -> dependency.id }
+                .keys
+            suppressions.forEach { (dependency, _) ->
+                if (!graphDependencies.contains(dependency)) {
+                    return true
+                }
+            }
+        }
+        return false
+    }
+
     fun add(module: String, dependency: String, reason: String = UNSPECIFIED_REASON) {
         add(module, DependencySuppression(dependency, reason))
     }
@@ -47,17 +61,14 @@ internal class SuppressionMap {
 
     fun getBaseline(): BaselineConfiguration {
         val output = mutableMapOf<String, List<DependencySuppression>>()
-        suppressions.keys.sorted().forEach { module ->
-            suppressions[module]?.let { suppressions ->
+        suppressions.entries.sortedBy { entry -> entry.key }
+            .forEach { entry ->
+                val suppressions = entry.value
                 val outputList = mutableListOf<DependencySuppression>()
-                suppressions.keys.sorted().forEach { dependency ->
-                    suppressions[dependency]?.let { suppression ->
-                        outputList.add(suppression)
-                    }
-                }
-                output[module] = outputList
+                outputList.addAll(suppressions.values)
+                outputList.sortBy { suppression -> suppression.dependency }
+                output[entry.key] = outputList
             }
-        }
         return BaselineConfiguration(output)
     }
 
