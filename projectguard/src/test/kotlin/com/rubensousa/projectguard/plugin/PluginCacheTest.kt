@@ -112,4 +112,58 @@ class PluginCacheTest {
         // then
         assertThat(pluginRunner.runTask(task)).isEqualTo(TaskOutcome.SUCCESS)
     }
+
+    @Test
+    fun `outputs from projectGuardRestrictionDump are re-used if nothing changed`() {
+        // given
+        pluginRunner.createModule("a")
+        pluginRunner.createModule("b")
+        pluginRunner.addDependency(from = "a", to = "b")
+        val task = ":a:projectGuardRestrictionDump"
+
+        // when
+        pluginRunner.runTask(task)
+
+        // then
+        assertThat(pluginRunner.runTask(task)).isEqualTo(TaskOutcome.UP_TO_DATE)
+    }
+
+    @Test
+    fun `outputs from projectGuardRestrictionDump are not re-used if dependencies changed`() {
+        // given
+        pluginRunner.createModule("a")
+        pluginRunner.createModule("b")
+        pluginRunner.createModule("c")
+        pluginRunner.addDependency(from = "a", to = "b")
+        val task = ":b:projectGuardRestrictionDump"
+        pluginRunner.runTask(task)
+
+        // when
+        pluginRunner.addDependency(from = "b", to = "c")
+
+        // then
+        assertThat(pluginRunner.runTask(task)).isEqualTo(TaskOutcome.SUCCESS)
+    }
+
+    @Test
+    fun `outputs from projectGuardRestrictionDump are not re-used if rules changed`() {
+        // given
+        pluginRunner.createModule("a")
+        pluginRunner.createModule("b")
+        pluginRunner.addDependency(from = "a", to = "b")
+        val task = ":b:projectGuardRestrictionDump"
+        pluginRunner.runTask(task)
+
+        // when
+        rootBuildFile.appendText(
+            """
+            projectGuard {
+                restrictDependency(":a")
+            }
+            """.trimIndent()
+        )
+
+        // then
+        assertThat(pluginRunner.runTask(task)).isEqualTo(TaskOutcome.SUCCESS)
+    }
 }

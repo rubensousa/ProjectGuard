@@ -30,14 +30,16 @@ import kotlinx.serialization.json.Json
 import org.gradle.api.DefaultTask
 import org.gradle.api.file.RegularFileProperty
 import org.gradle.api.provider.Property
+import org.gradle.api.tasks.CacheableTask
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.InputFile
 import org.gradle.api.tasks.OutputFile
+import org.gradle.api.tasks.PathSensitive
+import org.gradle.api.tasks.PathSensitivity
 import org.gradle.api.tasks.TaskAction
-import org.gradle.work.DisableCachingByDefault
 import java.io.File
 
-@DisableCachingByDefault(because = "Dump should always be generated")
+@CacheableTask
 internal abstract class TaskRestrictionDump : DefaultTask() {
 
     @get:Input
@@ -47,6 +49,7 @@ internal abstract class TaskRestrictionDump : DefaultTask() {
     internal abstract val specProperty: Property<ProjectGuardSpec>
 
     @get:InputFile
+    @get:PathSensitive(PathSensitivity.RELATIVE)
     internal abstract val dependenciesFile: RegularFileProperty
 
     @get:OutputFile

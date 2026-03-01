@@ -279,7 +279,6 @@ class ProjectGuardPlugin : Plugin<Project> {
             outputFile.set(
                 project.layout.buildDirectory.file(jsonReportFilePath)
             )
-            outputs.upToDateWhen { false }
         }
     }
 
