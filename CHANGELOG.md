@@ -1,10 +1,10 @@
 
 # CHANGELOG
 
-## UNRELEASED (1.0.0-beta03)
+## 1.0.0-beta03 (2026-03-03)
 
-- Most of the tasks of the plugin are now cacheable
-- `projectGuardAggregateCheck` will now fail if the baseline is outdated. This ensures that the baseline needs to reflect the latest dependency graph
+- Most of plugin's tasks are now cacheable
+- `projectGuardAggregateCheck` will now fail if the baseline is outdated. This ensures that the baseline reflects the latest dependency graph, avoiding silent regressions
 
 ## 1.0.0-beta02 (2026-02-22)
 
