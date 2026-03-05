@@ -14,14 +14,9 @@
  * limitations under the License.
  */
 
-package com.rubensousa.projectguard.plugin.internal
+package com.rubensousa.projectguard.plugin
 
-import java.io.Serializable
-
-internal data class ProjectGuardSpec(
-    val guardSpecs: List<GuardSpec>,
-    val moduleRestrictionSpecs: List<ModuleRestrictionSpec>,
-    val dependencyRestrictionSpecs: List<DependencyRestrictionSpec>,
-    val reportSpec: ReportSpec,
-    val options: PluginOptions,
-) : Serializable
+enum class LifecycleTask {
+    ASSEMBLE,
+    CHECK
+}

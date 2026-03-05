@@ -207,4 +207,10 @@ interface ProjectGuardScope {
         report(ConfigureUtil.configureUsing(closure))
     }
 
+    fun options(action: Action<OptionScope>)
+
+    fun options(closure: Closure<OptionScope>) {
+        options(ConfigureUtil.configureUsing(closure))
+    }
+
 }

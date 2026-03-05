@@ -16,12 +16,9 @@
 
 package com.rubensousa.projectguard.plugin.internal
 
+import com.rubensousa.projectguard.plugin.LifecycleTask
 import java.io.Serializable
 
-internal data class ProjectGuardSpec(
-    val guardSpecs: List<GuardSpec>,
-    val moduleRestrictionSpecs: List<ModuleRestrictionSpec>,
-    val dependencyRestrictionSpecs: List<DependencyRestrictionSpec>,
-    val reportSpec: ReportSpec,
-    val options: PluginOptions,
-) : Serializable
+internal data class PluginOptions(
+    val lifecycleTask: LifecycleTask?
+): Serializable
