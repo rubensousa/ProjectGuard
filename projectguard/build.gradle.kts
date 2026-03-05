@@ -42,6 +42,7 @@ dependencies {
     implementation(libs.kotlin.serialization.json)
     implementation(libs.jackson.yaml)
     implementation(libs.jackson.kotlin)
+    implementation(libs.gradle.android)
     testImplementation(gradleTestKit())
     testImplementation(libs.kotlin.test)
     testImplementation(libs.truth)

@@ -35,6 +35,7 @@ class PluginIntegrationTest {
         rootBuildFile = temporaryFolder.newFile("build.gradle.kts")
         rootBuildFile.writeText(
             """
+            import com.rubensousa.projectguard.plugin.LifecycleTask
             plugins {
                 id("com.rubensousa.projectguard") apply true
             }
@@ -69,7 +70,7 @@ class PluginIntegrationTest {
         pluginRunner.addDependency(from = "libraryA", to = "libraryB")
 
         // then
-        pluginRunner.assertCheckFails("consumer")
+        pluginRunner.assertProjectGuardCheckFails("consumer")
     }
 
     @Test
@@ -90,7 +91,7 @@ class PluginIntegrationTest {
         pluginRunner.addDependency(from = "consumer", to = "library")
 
         // then
-        pluginRunner.assertCheckFails("consumer")
+        pluginRunner.assertProjectGuardCheckFails("consumer")
     }
 
     @Test
@@ -111,7 +112,53 @@ class PluginIntegrationTest {
         pluginRunner.addDependency(from = "consumer", to = "library")
 
         // then
-        pluginRunner.assertCheckSucceeds("consumer")
+        pluginRunner.assertProjectGuardCheckSucceeds("consumer")
+    }
+
+    @Test
+    fun `assemble fails if there are restrictions and plugin is configured to attach to lifecycle task`() {
+        pluginRunner.createModule("consumer")
+        pluginRunner.createModule("library")
+
+        rootBuildFile.appendText(
+            """
+            projectGuard {
+                options {
+                    lifecycleTask = LifecycleTask.ASSEMBLE
+                }
+                restrictDependency(":library")
+            }
+            """.trimIndent()
+        )
+
+        // when
+        pluginRunner.addDependency(from = "consumer", to = "library")
+
+        // then
+        pluginRunner.assertAssembleTaskFails("consumer")
+    }
+
+    @Test
+    fun `check fails if there are restrictions and plugin is configured to attach to lifecycle task`() {
+        pluginRunner.createModule("consumer")
+        pluginRunner.createModule("library")
+
+        rootBuildFile.appendText(
+            """
+            projectGuard {
+                options {
+                    lifecycleTask = LifecycleTask.CHECK
+                }
+                restrictDependency(":library")
+            }
+            """.trimIndent()
+        )
+
+        // when
+        pluginRunner.addDependency(from = "consumer", to = "library")
+
+        // then
+        pluginRunner.assertCheckTaskFails("consumer")
     }
 
 }
