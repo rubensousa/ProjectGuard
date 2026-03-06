@@ -34,11 +34,24 @@ class PluginRunner(
             .withGradleVersion("8.13")
     }
     private var lastResult: BuildResult? = null
+    private val modules = mutableListOf<String>()
 
     fun createModule(name: String) {
         temporaryFolder.newFolder(name)
         temporaryFolder.newFile("$name/build.gradle.kts")
         settingsFile.appendText("\ninclude(\":$name\")")
+        modules.add(name)
+    }
+
+    fun deleteBuildDirs() {
+        modules.forEach { module ->
+            temporaryFolder.getRoot()
+                .resolve("$module/build/")
+                .deleteRecursively()
+        }
+        temporaryFolder.getRoot()
+            .resolve("build")
+            .deleteRecursively()
     }
 
     fun assertProjectGuardCheckFails(module: String) {
@@ -72,7 +85,7 @@ class PluginRunner(
     }
 
     fun runTask(task: String): TaskOutcome {
-        val result = gradleRunner.withArguments(task).build()
+        val result = gradleRunner.withArguments("--build-cache", task).build()
         lastResult = result
         return result.task(task)!!.outcome
     }
