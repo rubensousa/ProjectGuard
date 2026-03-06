@@ -33,6 +33,7 @@ import org.gradle.api.artifacts.MinimalExternalModuleDependency
 import org.gradle.api.model.ObjectFactory
 import org.gradle.api.provider.Provider
 import org.gradle.kotlin.dsl.listProperty
+import org.gradle.kotlin.dsl.property
 import javax.inject.Inject
 
 abstract class ProjectGuardExtension @Inject constructor(
@@ -42,10 +43,8 @@ abstract class ProjectGuardExtension @Inject constructor(
     private val guardSpecs = objects.listProperty<GuardSpec>()
     private val moduleRestrictionSpecs = objects.listProperty<ModuleRestrictionSpec>()
     private val dependencyRestrictionSpecs = objects.listProperty<DependencyRestrictionSpec>()
-    private var reportSpec = ReportSpec(showLibrariesInGraph = false)
-    private var options = PluginOptions(
-        lifecycleTask = null
-    )
+    private val reportSpec = objects.property<ReportSpec>().convention(ReportSpec(showLibrariesInGraph = false))
+    private val options = objects.property<PluginOptions>().convention(PluginOptions(lifecycleTask = null))
 
     override fun restrictModule(modulePath: String, action: Action<ModuleRestrictionScope>) {
         val scope = ModuleRestrictionScopeImpl()
@@ -127,17 +126,13 @@ abstract class ProjectGuardExtension @Inject constructor(
     override fun report(action: Action<ReportScope>) {
         val scope = ReportScopeImpl()
         action.execute(scope)
-        reportSpec = reportSpec.copy(
-            showLibrariesInGraph = scope.showLibrariesInGraph
-        )
+        reportSpec.set(ReportSpec(showLibrariesInGraph = scope.showLibrariesInGraph))
     }
 
     override fun options(action: Action<OptionScope>) {
         val scope = OptionScopeImpl()
         action.execute(scope)
-        options = options.copy(
-            lifecycleTask = scope.lifecycleTask,
-        )
+        options.set(PluginOptions(lifecycleTask = scope.lifecycleTask))
     }
 
     internal fun getSpec(): ProjectGuardSpec {
@@ -145,8 +140,8 @@ abstract class ProjectGuardExtension @Inject constructor(
             guardSpecs = guardSpecs.get(),
             moduleRestrictionSpecs = moduleRestrictionSpecs.get(),
             dependencyRestrictionSpecs = dependencyRestrictionSpecs.get(),
-            reportSpec = reportSpec,
-            options = options
+            reportSpec = reportSpec.get(),
+            options = options.get()
         )
     }
 
