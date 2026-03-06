@@ -61,6 +61,25 @@ ProjectGuard protects your project's architecture by enforcing dependency rules 
 
 ## How-to
 
+
+### Decide when you want to validate the rules
+
+```kotlin
+projectGuard {
+    options {
+        // Default behavior: no immediate validation checks.
+        // Use `./gradlew projectGuardAggregateCheck` manually
+        lifecycleTask = null
+        
+        // This will validate the rules during the assemble lifecycle task
+        lifecycleTask = LifecycleTask.ASSEMBLE
+
+        // This will validate the rules during the check lifecycle task
+        lifecycleTask = LifecycleTask.CHECK
+    }
+}
+```
+
 ### `guard`
 
 Denies a set of dependencies for any module that matches the provided path.
@@ -90,6 +109,10 @@ projectGuard {
         reason("Domain modules have restricted dependencies")
         allow(":domain") // Allow depending on other :domain modules
         allow(libs.junit) // Allow JUnit for testing
+    }
+    restrictModule(":feature") {
+        allow(":domain")
+        allowExternalLibraries()
     }
 }
 ```
