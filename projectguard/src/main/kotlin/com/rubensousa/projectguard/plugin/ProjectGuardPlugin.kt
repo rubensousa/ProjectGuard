@@ -292,7 +292,7 @@ class ProjectGuardPlugin : Plugin<Project> {
         ) {
             group = "verification"
             description = "Verifies if there are any dependency restrictions"
-            reportSpec.set(extension.getSpec().reportSpec)
+            pluginSpec.set(project.provider { extension.getSpec() })
             outputs.upToDateWhen { false }
         }
     }
@@ -307,7 +307,7 @@ class ProjectGuardPlugin : Plugin<Project> {
         ) {
             group = "verification"
             description = "Verifies if there are any dependency restrictions"
-            reportSpec.set(extension.getSpec().reportSpec)
+            pluginSpec.set(project.provider { extension.getSpec() })
             outputs.upToDateWhen { false }
         }
     }
@@ -323,7 +323,7 @@ class ProjectGuardPlugin : Plugin<Project> {
             group = "other"
             description = "Generates a JSON report of all dependency restrictions for this module."
             projectPath.set(project.path)
-            specProperty.set(extension.getSpec())
+            specProperty.set(project.provider { extension.getSpec() })
             outputFile.set(
                 project.layout.buildDirectory.file(jsonReportFilePath)
             )
@@ -340,7 +340,7 @@ class ProjectGuardPlugin : Plugin<Project> {
             group = "other"
             description = "Generates a JSON containing the dependencies of this module."
             projectPath.set(project.path)
-            dependencyGraph.set(graphBuilder.buildFromProject(project))
+            dependencyGraph.set(project.provider { graphBuilder.buildFromProject(project) })
             outputFile.set(
                 project.layout.buildDirectory.file(dependenciesFilePath)
             )

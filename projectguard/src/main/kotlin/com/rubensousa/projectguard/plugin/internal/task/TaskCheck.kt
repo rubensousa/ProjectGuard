@@ -18,6 +18,7 @@ package com.rubensousa.projectguard.plugin.internal.task
 
 import com.rubensousa.projectguard.plugin.internal.BaselineConfiguration
 import com.rubensousa.projectguard.plugin.internal.DependencyGraphBuilder
+import com.rubensousa.projectguard.plugin.internal.ProjectGuardSpec
 import com.rubensousa.projectguard.plugin.internal.ReportSpec
 import com.rubensousa.projectguard.plugin.internal.SuppressionMap
 import com.rubensousa.projectguard.plugin.internal.YamlProcessor
@@ -54,7 +55,7 @@ internal abstract class TaskCheck : DefaultTask() {
     internal abstract val reportFilePath: Property<String>
 
     @get:Input
-    internal abstract val reportSpec: Property<ReportSpec>
+    internal abstract val pluginSpec: Property<ProjectGuardSpec>
 
     @get:OutputDirectory
     abstract val outputDir: DirectoryProperty
@@ -67,7 +68,7 @@ internal abstract class TaskCheck : DefaultTask() {
             dependenciesFile = dependenciesFile.get().asFile,
             reportDir = outputDir.get().asFile,
             reportFilePath = reportFilePath.get(),
-            reportSpec = reportSpec.get()
+            reportSpec = pluginSpec.get().reportSpec
         )
         executor.execute().getOrThrow()
     }

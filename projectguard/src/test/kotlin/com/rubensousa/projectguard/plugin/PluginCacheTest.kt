@@ -19,6 +19,7 @@ package com.rubensousa.projectguard.plugin
 import com.google.common.truth.Truth.assertThat
 import org.gradle.testkit.runner.TaskOutcome
 import org.junit.Before
+import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
@@ -50,18 +51,36 @@ class PluginCacheTest {
     }
 
     @Test
-    fun `outputs from projectGuardDependencyDump are re-used`() {
+    fun `outputs from projectGuardDependencyDump are up-to-date on next execution`() {
         // given
         pluginRunner.createModule("a")
         pluginRunner.createModule("b")
         pluginRunner.addDependency(from = "a", to = "b")
         val libraryDependencyTask = ":b:projectGuardDependencyDump"
-
-        // when
         pluginRunner.runTask(libraryDependencyTask)
 
+        // when
+        val nextResult = pluginRunner.runTask(libraryDependencyTask)
+
         // then
-        assertThat(pluginRunner.runTask(libraryDependencyTask)).isEqualTo(TaskOutcome.UP_TO_DATE)
+        assertThat(nextResult).isEqualTo(TaskOutcome.UP_TO_DATE)
+    }
+
+    @Test
+    fun `outputs from projectGuardDependencyDump are re-used from cache`() {
+        // given
+        pluginRunner.createModule("a")
+        pluginRunner.createModule("b")
+        pluginRunner.addDependency(from = "a", to = "b")
+        val libraryDependencyTask = ":b:projectGuardDependencyDump"
+        pluginRunner.runTask(libraryDependencyTask)
+
+        // when
+        pluginRunner.deleteBuildDirs()
+        val result = pluginRunner.runTask(libraryDependencyTask)
+
+        // then
+        assertThat(result).isEqualTo(TaskOutcome.FROM_CACHE)
     }
 
     @Test
@@ -76,24 +95,45 @@ class PluginCacheTest {
 
         // when
         pluginRunner.addDependency(from = "b", to = "c")
+        pluginRunner.deleteBuildDirs()
+        val result = pluginRunner.runTask(libraryDependencyTask)
 
         // then
-        assertThat(pluginRunner.runTask(libraryDependencyTask)).isEqualTo(TaskOutcome.SUCCESS)
+        assertThat(result).isEqualTo(TaskOutcome.SUCCESS)
     }
 
     @Test
-    fun `outputs from projectGuardAggregateDependencyDump are re-used`() {
+    fun `outputs from projectGuardAggregateDependencyDump are up-to-date on next execution`() {
         // given
         pluginRunner.createModule("a")
         pluginRunner.createModule("b")
         pluginRunner.addDependency(from = "a", to = "b")
         val task = ":projectGuardAggregateDependencyDump"
-
-        // when
         pluginRunner.runTask(task)
 
+        // when
+        val result = pluginRunner.runTask(task)
+
         // then
-        assertThat(pluginRunner.runTask(task)).isEqualTo(TaskOutcome.UP_TO_DATE)
+        assertThat(result).isEqualTo(TaskOutcome.UP_TO_DATE)
+    }
+
+    @Ignore("Not working for now")
+    @Test
+    fun `outputs from projectGuardAggregateDependencyDump are re-used from cache`() {
+        // given
+        pluginRunner.createModule("a")
+        pluginRunner.createModule("b")
+        pluginRunner.addDependency(from = "a", to = "b")
+        val task = ":projectGuardAggregateDependencyDump"
+        pluginRunner.runTask(task)
+
+        // when
+        pluginRunner.deleteBuildDirs()
+        val result = pluginRunner.runTask(task)
+
+        // then
+        assertThat(result).isEqualTo(TaskOutcome.FROM_CACHE)
     }
 
     @Test
@@ -114,18 +154,36 @@ class PluginCacheTest {
     }
 
     @Test
-    fun `outputs from projectGuardRestrictionDump are re-used if nothing changed`() {
+    fun `outputs from projectGuardRestrictionDump are up-to-date if nothing changed`() {
         // given
         pluginRunner.createModule("a")
         pluginRunner.createModule("b")
         pluginRunner.addDependency(from = "a", to = "b")
         val task = ":a:projectGuardRestrictionDump"
-
-        // when
         pluginRunner.runTask(task)
 
+        // when
+        val result = pluginRunner.runTask(task)
+
         // then
-        assertThat(pluginRunner.runTask(task)).isEqualTo(TaskOutcome.UP_TO_DATE)
+        assertThat(result).isEqualTo(TaskOutcome.UP_TO_DATE)
+    }
+
+    @Test
+    fun `outputs from projectGuardRestrictionDump are cached`() {
+        // given
+        pluginRunner.createModule("a")
+        pluginRunner.createModule("b")
+        pluginRunner.addDependency(from = "a", to = "b")
+        val task = ":a:projectGuardRestrictionDump"
+        pluginRunner.runTask(task)
+
+        // when
+        pluginRunner.deleteBuildDirs()
+        val result = pluginRunner.runTask(task)
+
+        // then
+        assertThat(result).isEqualTo(TaskOutcome.FROM_CACHE)
     }
 
     @Test
@@ -140,6 +198,7 @@ class PluginCacheTest {
 
         // when
         pluginRunner.addDependency(from = "b", to = "c")
+        pluginRunner.deleteBuildDirs()
 
         // then
         assertThat(pluginRunner.runTask(task)).isEqualTo(TaskOutcome.SUCCESS)
@@ -162,6 +221,7 @@ class PluginCacheTest {
             }
             """.trimIndent()
         )
+        pluginRunner.deleteBuildDirs()
 
         // then
         assertThat(pluginRunner.runTask(task)).isEqualTo(TaskOutcome.SUCCESS)
