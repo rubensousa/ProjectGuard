@@ -1,6 +1,20 @@
 
 # CHANGELOG
 
+## 1.0.0-beta04 (2026-03-06)
+
+- Added option to include `projectGuardCheck` as part of the build tasks with the following:
+
+```kotlin
+projectGuard {
+    options {
+        lifecycleTask = LifecycleTask.ASSEMBLE // Or LifecycleTask.CHECK
+    }
+}
+``` 
+
+- Fixed some tasks not being cached correctly
+
 ## 1.0.0-beta03 (2026-03-03)
 
 - Most of plugin's tasks are now cacheable
