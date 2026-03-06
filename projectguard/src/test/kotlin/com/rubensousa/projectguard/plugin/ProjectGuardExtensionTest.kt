@@ -208,6 +208,31 @@ class ProjectGuardExtensionTest {
         assertThat(spec.reportSpec.showLibrariesInGraph).isTrue()
     }
 
+    @Test
+    fun `lifecycle task is null by default`() {
+        // given
+        val extension = createExtension()
+
+        // then
+        val spec = extension.getSpec()
+        assertThat(spec.options.lifecycleTask).isNull()
+    }
+
+    @Test
+    fun `lifecycle task can be enabled`() {
+        // given
+        val extension = createExtension()
+
+        // when
+        extension.options {
+            lifecycleTask = LifecycleTask.ASSEMBLE
+        }
+
+        // then
+        val spec = extension.getSpec()
+        assertThat(spec.options.lifecycleTask).isEqualTo(LifecycleTask.ASSEMBLE)
+    }
+
     private fun createExtension(): ProjectGuardExtension {
         val project = ProjectBuilder.builder().build()
         return project.extensions.create(

@@ -1,8 +1,10 @@
+import com.rubensousa.projectguard.plugin.LifecycleTask
+
 // Top-level build file where you can add configuration options common to all sub-projects/modules.
 plugins {
     alias(libs.plugins.android.application) apply false
     alias(libs.plugins.kotlin.android) apply false
-    alias(libs.plugins.jetbrains.kotlin.jvm) apply false
+    alias(libs.plugins.kotlin.jvm) apply false
     alias(libs.plugins.maven.publish) apply false
     alias(libs.plugins.android.library) apply false
     alias(libs.plugins.projectguard) apply true
@@ -12,6 +14,13 @@ plugins {
 }
 
 projectGuard {
+    /**
+     * Fail the project build without running the dedicated `projectGuardCheck`
+     */
+    options {
+        lifecycleTask = LifecycleTask.ASSEMBLE
+    }
+
     report {
         showLibrariesInGraph = true
     }

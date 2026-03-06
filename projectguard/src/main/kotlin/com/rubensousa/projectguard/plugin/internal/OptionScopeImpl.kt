@@ -16,12 +16,11 @@
 
 package com.rubensousa.projectguard.plugin.internal
 
-import java.io.Serializable
+import com.rubensousa.projectguard.plugin.LifecycleTask
+import com.rubensousa.projectguard.plugin.OptionScope
 
-internal data class ProjectGuardSpec(
-    val guardSpecs: List<GuardSpec>,
-    val moduleRestrictionSpecs: List<ModuleRestrictionSpec>,
-    val dependencyRestrictionSpecs: List<DependencyRestrictionSpec>,
-    val reportSpec: ReportSpec,
-    val options: PluginOptions,
-) : Serializable
+internal class OptionScopeImpl : OptionScope {
+
+    override var lifecycleTask: LifecycleTask? = null
+
+}

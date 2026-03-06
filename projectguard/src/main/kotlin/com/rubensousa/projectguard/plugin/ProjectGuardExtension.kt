@@ -22,6 +22,8 @@ import com.rubensousa.projectguard.plugin.internal.GuardScopeImpl
 import com.rubensousa.projectguard.plugin.internal.GuardSpec
 import com.rubensousa.projectguard.plugin.internal.ModuleRestrictionScopeImpl
 import com.rubensousa.projectguard.plugin.internal.ModuleRestrictionSpec
+import com.rubensousa.projectguard.plugin.internal.OptionScopeImpl
+import com.rubensousa.projectguard.plugin.internal.PluginOptions
 import com.rubensousa.projectguard.plugin.internal.ProjectGuardSpec
 import com.rubensousa.projectguard.plugin.internal.ReportScopeImpl
 import com.rubensousa.projectguard.plugin.internal.ReportSpec
@@ -41,6 +43,9 @@ abstract class ProjectGuardExtension @Inject constructor(
     private val moduleRestrictionSpecs = objects.listProperty<ModuleRestrictionSpec>()
     private val dependencyRestrictionSpecs = objects.listProperty<DependencyRestrictionSpec>()
     private var reportSpec = ReportSpec(showLibrariesInGraph = false)
+    private var options = PluginOptions(
+        lifecycleTask = null
+    )
 
     override fun restrictModule(modulePath: String, action: Action<ModuleRestrictionScope>) {
         val scope = ModuleRestrictionScopeImpl()
@@ -127,12 +132,21 @@ abstract class ProjectGuardExtension @Inject constructor(
         )
     }
 
+    override fun options(action: Action<OptionScope>) {
+        val scope = OptionScopeImpl()
+        action.execute(scope)
+        options = options.copy(
+            lifecycleTask = scope.lifecycleTask,
+        )
+    }
+
     internal fun getSpec(): ProjectGuardSpec {
         return ProjectGuardSpec(
             guardSpecs = guardSpecs.get(),
             moduleRestrictionSpecs = moduleRestrictionSpecs.get(),
             dependencyRestrictionSpecs = dependencyRestrictionSpecs.get(),
-            reportSpec = reportSpec
+            reportSpec = reportSpec,
+            options = options
         )
     }
 

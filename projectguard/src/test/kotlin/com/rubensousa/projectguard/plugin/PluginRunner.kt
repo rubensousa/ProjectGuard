@@ -41,17 +41,29 @@ class PluginRunner(
         settingsFile.appendText("\ninclude(\":$name\")")
     }
 
-    fun assertCheckFails(module: String) {
-        val task = createCheckTask(module)
+    fun assertProjectGuardCheckFails(module: String) {
+        val task = getProjectGuardCheckTask(module)
         val result = gradleRunner.withArguments(task).buildAndFail()
         assertThat(result.task(task)!!.outcome).isEqualTo(TaskOutcome.FAILED)
         lastResult = result
     }
 
-    fun assertCheckSucceeds(module: String) {
-        val task = createCheckTask(module)
+    fun assertProjectGuardCheckSucceeds(module: String) {
+        val task = getProjectGuardCheckTask(module)
         val result = gradleRunner.withArguments(task).build()
         assertThat(result.task(task)!!.outcome).isEqualTo(TaskOutcome.SUCCESS)
+        lastResult = result
+    }
+
+    fun assertAssembleTaskFails(module: String) {
+        val result = gradleRunner.withArguments(":$module:assemble").buildAndFail()
+        assertThat(result.task(getProjectGuardCheckTask(module))!!.outcome).isEqualTo(TaskOutcome.FAILED)
+        lastResult = result
+    }
+
+    fun assertCheckTaskFails(module: String) {
+        val result = gradleRunner.withArguments(":$module:check").buildAndFail()
+        assertThat(result.task(getProjectGuardCheckTask(module))!!.outcome).isEqualTo(TaskOutcome.FAILED)
         lastResult = result
     }
 
@@ -75,7 +87,7 @@ class PluginRunner(
         )
     }
 
-    private fun createCheckTask(module: String): String {
+    private fun getProjectGuardCheckTask(module: String): String {
         return ":$module:projectGuardCheck"
     }
 

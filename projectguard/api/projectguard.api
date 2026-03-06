@@ -25,6 +25,13 @@ public abstract interface class com/rubensousa/projectguard/plugin/GuardScope {
 	public abstract fun deny (Lorg/gradle/api/provider/Provider;Lorg/gradle/api/Action;)V
 }
 
+public final class com/rubensousa/projectguard/plugin/LifecycleTask : java/lang/Enum {
+	public static final field ASSEMBLE Lcom/rubensousa/projectguard/plugin/LifecycleTask;
+	public static final field CHECK Lcom/rubensousa/projectguard/plugin/LifecycleTask;
+	public static fun valueOf (Ljava/lang/String;)Lcom/rubensousa/projectguard/plugin/LifecycleTask;
+	public static fun values ()[Lcom/rubensousa/projectguard/plugin/LifecycleTask;
+}
+
 public abstract interface class com/rubensousa/projectguard/plugin/ModuleRestrictionScope {
 	public abstract fun allow ([Ljava/lang/String;)V
 	public abstract fun allow ([Lorg/gradle/api/internal/catalog/DelegatingProjectDependency;)V
@@ -34,10 +41,16 @@ public abstract interface class com/rubensousa/projectguard/plugin/ModuleRestric
 	public abstract fun reason (Ljava/lang/String;)V
 }
 
+public abstract interface class com/rubensousa/projectguard/plugin/OptionScope {
+	public abstract fun getLifecycleTask ()Lcom/rubensousa/projectguard/plugin/LifecycleTask;
+	public abstract fun setLifecycleTask (Lcom/rubensousa/projectguard/plugin/LifecycleTask;)V
+}
+
 public abstract class com/rubensousa/projectguard/plugin/ProjectGuardExtension : com/rubensousa/projectguard/plugin/ProjectGuardScope {
 	public fun <init> (Lorg/gradle/api/model/ObjectFactory;)V
 	public fun guard (Ljava/lang/String;Lorg/gradle/api/Action;)V
 	public fun guardRule (Lorg/gradle/api/Action;)Lcom/rubensousa/projectguard/plugin/GuardRule;
+	public fun options (Lorg/gradle/api/Action;)V
 	public fun report (Lorg/gradle/api/Action;)V
 	public fun restrictDependency (Ljava/lang/String;Lorg/gradle/api/Action;)V
 	public fun restrictDependency (Lorg/gradle/api/provider/Provider;Lorg/gradle/api/Action;)V
@@ -56,6 +69,8 @@ public abstract interface class com/rubensousa/projectguard/plugin/ProjectGuardS
 	public abstract fun guard (Ljava/lang/String;Lorg/gradle/api/Action;)V
 	public fun guard (Lorg/gradle/api/internal/catalog/DelegatingProjectDependency;Lorg/gradle/api/Action;)V
 	public abstract fun guardRule (Lorg/gradle/api/Action;)Lcom/rubensousa/projectguard/plugin/GuardRule;
+	public fun options (Lgroovy/lang/Closure;)V
+	public abstract fun options (Lorg/gradle/api/Action;)V
 	public fun report (Lgroovy/lang/Closure;)V
 	public abstract fun report (Lorg/gradle/api/Action;)V
 	public fun restrictDependency (Ljava/lang/String;Lgroovy/lang/Closure;)V

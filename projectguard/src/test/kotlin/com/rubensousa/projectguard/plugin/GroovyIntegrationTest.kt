@@ -71,7 +71,7 @@ class GroovyIntegrationTest {
         pluginRunner.addDependency(from = module, to = dependency)
 
         // then
-        pluginRunner.assertCheckFails(module)
+        pluginRunner.assertProjectGuardCheckFails(module)
         pluginRunner.assertTaskOutputContains(reason)
     }
 
@@ -96,7 +96,7 @@ class GroovyIntegrationTest {
         pluginRunner.addDependency(from = module, to = dependency)
 
         // then
-        pluginRunner.assertCheckSucceeds(module)
+        pluginRunner.assertProjectGuardCheckSucceeds(module)
         pluginRunner.assertTaskOutputContains("No fatal matches found")
     }
 

@@ -16,6 +16,7 @@
 
 package com.rubensousa.projectguard.plugin
 
+import com.android.build.api.variant.AndroidComponentsExtension
 import com.rubensousa.projectguard.plugin.internal.DependencyGraphBuilder
 import com.rubensousa.projectguard.plugin.internal.task.TaskAggregateDependencyDump
 import com.rubensousa.projectguard.plugin.internal.task.TaskAggregateRestrictionDump
@@ -53,6 +54,13 @@ class ProjectGuardPlugin : Plugin<Project> {
     private val dependenciesFilePath = "reports/$pluginId/dependencies.json"
     private val jsonReportFilePath = "reports/$pluginId/report.json"
     private val graphBuilder = DependencyGraphBuilder()
+    private val androidPluginIds = listOf(
+        "com.android.test",
+        "com.android.application",
+        "com.android.library",
+        "com.android.dynamic-feature",
+        "com.android.kotlin.multiplatform.library"
+    )
 
     override fun apply(target: Project) {
         val rootProject = target.rootProject
@@ -71,6 +79,8 @@ class ProjectGuardPlugin : Plugin<Project> {
             individualModuleTasks.add(moduleTasks)
             setupModuleTasks(
                 aggregationTasks = aggregationTasks,
+                project = targetProject,
+                extension = extension,
                 moduleTasks = moduleTasks
             )
         }
@@ -93,6 +103,8 @@ class ProjectGuardPlugin : Plugin<Project> {
     }
 
     private fun setupModuleTasks(
+        project: Project,
+        extension: ProjectGuardExtension,
         aggregationTasks: AggregationTasks,
         moduleTasks: ModuleTasks,
     ) {
@@ -109,6 +121,43 @@ class ProjectGuardPlugin : Plugin<Project> {
             outputDir.set(project.layout.buildDirectory.dir(htmlAggregateReportFilePath))
             reportFilePath.set(getProjectReportFilePath(project))
         }
+
+        project.afterEvaluate {
+            val options = extension.getSpec().options
+            options.lifecycleTask?.let { lifecycleTask ->
+                if (lifecycleTask == LifecycleTask.ASSEMBLE) {
+                    attachToAndroidAssembleTasks(project, moduleTasks.check)
+                    project.tasks.findByName("assemble")?.dependsOn(moduleTasks.check)
+                } else {
+                    project.tasks.findByName("check")?.dependsOn(moduleTasks.check)
+                }
+            }
+        }
+    }
+
+    private fun attachToAndroidAssembleTasks(
+        project: Project,
+        checkTask: TaskProvider<TaskCheck>,
+    ) {
+        androidPluginIds.forEach { pluginId ->
+            if (project.plugins.hasPlugin(pluginId)) {
+                val androidComponents = project.extensions.getByType(AndroidComponentsExtension::class.java)
+                val variantTasks = mutableListOf<String>()
+                androidComponents.onVariants { variant ->
+                    val variantName = capitalizeVariantName(variant.name)
+                    variantTasks.add("assemble$variantName")
+                }
+                project.afterEvaluate {
+                    variantTasks.forEach { variantTask ->
+                        project.tasks.findByName(variantTask)?.dependsOn(checkTask)
+                    }
+                }
+            }
+        }
+    }
+
+    private fun capitalizeVariantName(name: String): String {
+        return name.substring(0, 1).uppercase() + name.substring(1, name.length)
     }
 
     private fun setupAggregationTasks(
