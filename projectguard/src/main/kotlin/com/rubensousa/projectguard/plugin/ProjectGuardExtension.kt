@@ -30,7 +30,6 @@ import com.rubensousa.projectguard.plugin.internal.ReportSpec
 import com.rubensousa.projectguard.plugin.internal.getDependencyPath
 import org.gradle.api.Action
 import org.gradle.api.artifacts.MinimalExternalModuleDependency
-import org.gradle.api.internal.provider.DefaultProvider
 import org.gradle.api.model.ObjectFactory
 import org.gradle.api.provider.Provider
 import org.gradle.kotlin.dsl.listProperty
@@ -46,15 +45,6 @@ abstract class ProjectGuardExtension @Inject constructor(
     private val dependencyRestrictionSpecs = objects.listProperty<DependencyRestrictionSpec>()
     private val reportSpec = objects.property<ReportSpec>().convention(ReportSpec(showLibrariesInGraph = false))
     private val options = objects.property<PluginOptions>().convention(PluginOptions(lifecycleTask = null))
-    private val specProvider = DefaultProvider {
-        ProjectGuardSpec(
-            guardSpecs = guardSpecs.get(),
-            moduleRestrictionSpecs = moduleRestrictionSpecs.get(),
-            dependencyRestrictionSpecs = dependencyRestrictionSpecs.get(),
-            reportSpec = reportSpec.get(),
-            options = options.get()
-        )
-    }
 
     override fun restrictModule(modulePath: String, action: Action<ModuleRestrictionScope>) {
         val scope = ModuleRestrictionScopeImpl()
@@ -146,11 +136,13 @@ abstract class ProjectGuardExtension @Inject constructor(
     }
 
     internal fun getSpec(): ProjectGuardSpec {
-        return getSpecProvider().get()
-    }
-
-    internal fun getSpecProvider(): Provider<ProjectGuardSpec> {
-        return specProvider
+        return ProjectGuardSpec(
+            guardSpecs = guardSpecs.get(),
+            moduleRestrictionSpecs = moduleRestrictionSpecs.get(),
+            dependencyRestrictionSpecs = dependencyRestrictionSpecs.get(),
+            reportSpec = reportSpec.get(),
+            options = options.get()
+        )
     }
 
 }

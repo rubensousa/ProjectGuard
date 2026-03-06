@@ -66,7 +66,6 @@ class PluginCacheTest {
         assertThat(nextResult).isEqualTo(TaskOutcome.UP_TO_DATE)
     }
 
-    @Ignore("Not working at the moment")
     @Test
     fun `outputs from projectGuardDependencyDump are re-used from cache`() {
         // given
@@ -119,7 +118,7 @@ class PluginCacheTest {
         assertThat(result).isEqualTo(TaskOutcome.UP_TO_DATE)
     }
 
-    @Ignore("Not working at the moment")
+    @Ignore("Not working for now")
     @Test
     fun `outputs from projectGuardAggregateDependencyDump are re-used from cache`() {
         // given
@@ -170,7 +169,6 @@ class PluginCacheTest {
         assertThat(result).isEqualTo(TaskOutcome.UP_TO_DATE)
     }
 
-    @Ignore("Not working at the moment")
     @Test
     fun `outputs from projectGuardRestrictionDump are cached`() {
         // given
