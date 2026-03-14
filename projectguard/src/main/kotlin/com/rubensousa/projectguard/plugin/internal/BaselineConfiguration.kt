@@ -17,5 +17,11 @@
 package com.rubensousa.projectguard.plugin.internal
 
 internal data class BaselineConfiguration(
-    val suppressions: Map<String, List<DependencySuppression>>
-)
+    val suppressions: Map<String, List<DependencySuppression>?>
+) {
+
+    fun getModuleSuppressions(moduleId: String): List<DependencySuppression> {
+        return suppressions[moduleId].orEmpty()
+    }
+
+}
