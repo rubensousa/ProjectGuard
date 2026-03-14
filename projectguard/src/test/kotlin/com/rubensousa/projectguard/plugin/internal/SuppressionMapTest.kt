@@ -89,11 +89,15 @@ class SuppressionMapTest {
 
         // then
         val entries = baseline.suppressions.entries.toList()
-        assertThat(entries[0].key).isEqualTo(":app")
-        assertThat(entries[0].value[0].dependency).isEqualTo(":a")
-        assertThat(entries[0].value[1].dependency).isEqualTo(":b")
-        assertThat(entries[1].key).isEqualTo(":lib")
-        assertThat(entries[1].value[0].dependency).isEqualTo(":c")
+        val firstEntry = entries[0]
+        val firstEntryDependencies = baseline.getModuleSuppressions(firstEntry.key)
+        val secondEntry = entries[1]
+        val secondEntryDependencies = baseline.getModuleSuppressions(secondEntry.key)
+        assertThat(firstEntry.key).isEqualTo(":app")
+        assertThat(firstEntryDependencies[0].dependency).isEqualTo(":a")
+        assertThat(firstEntryDependencies[1].dependency).isEqualTo(":b")
+        assertThat(secondEntry.key).isEqualTo(":lib")
+        assertThat(secondEntryDependencies[0].dependency).isEqualTo(":c")
     }
 
     @Test

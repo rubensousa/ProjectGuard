@@ -24,8 +24,7 @@ internal class SuppressionMap {
         suppressions.clear()
         configuration.suppressions.forEach { entry ->
             val moduleId = entry.key
-            val suppressions = entry.value
-            suppressions.forEach { suppression ->
+            configuration.getModuleSuppressions(moduleId).forEach { suppression ->
                 add(moduleId, suppression)
             }
         }

@@ -1,6 +1,10 @@
 
 # CHANGELOG
 
+## 1.0.0-rc01 (2026-03-14)
+
+- Fixed NPE caused by empty module suppressions when the baseline is manually edited 
+
 ## 1.0.0-beta04 (2026-03-06)
 
 - Added option to include `projectGuardCheck` as part of the build tasks with the following:

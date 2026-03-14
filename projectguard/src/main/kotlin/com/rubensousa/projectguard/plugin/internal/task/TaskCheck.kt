@@ -16,12 +16,11 @@
 
 package com.rubensousa.projectguard.plugin.internal.task
 
-import com.rubensousa.projectguard.plugin.internal.BaselineConfiguration
+import com.rubensousa.projectguard.plugin.internal.BaselineProcessor
 import com.rubensousa.projectguard.plugin.internal.DependencyGraphBuilder
 import com.rubensousa.projectguard.plugin.internal.ProjectGuardSpec
 import com.rubensousa.projectguard.plugin.internal.ReportSpec
 import com.rubensousa.projectguard.plugin.internal.SuppressionMap
-import com.rubensousa.projectguard.plugin.internal.YamlProcessor
 import com.rubensousa.projectguard.plugin.internal.report.DependencyGraphDump
 import com.rubensousa.projectguard.plugin.internal.report.HtmlReportGenerator
 import com.rubensousa.projectguard.plugin.internal.report.RestrictionDump
@@ -87,10 +86,10 @@ internal class CheckExecutor(
     fun execute(): Result<Unit> = runCatching {
         val dependencyGraphDump = Json.decodeFromString<DependencyGraphDump>(dependenciesFile.readText())
         val graph = DependencyGraphBuilder().buildFromDump(dependencyGraphDump)
-        val yamlProcessor = YamlProcessor()
+        val baselineProcessor = BaselineProcessor()
         val suppressionMap = SuppressionMap()
         runCatching {
-            yamlProcessor.parse(baselineFile, BaselineConfiguration::class.java)
+            baselineProcessor.parse(baselineFile)
         }.onSuccess { config ->
             suppressionMap.set(config)
         }.onFailure {

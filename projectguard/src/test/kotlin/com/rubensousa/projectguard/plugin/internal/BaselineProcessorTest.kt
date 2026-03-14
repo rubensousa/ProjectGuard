@@ -21,12 +21,12 @@ import org.junit.Rule
 import org.junit.rules.TemporaryFolder
 import kotlin.test.Test
 
-class YamlProcessorTest {
+class BaselineProcessorTest {
 
     @get:Rule
     val temporaryFolder = TemporaryFolder()
 
-    private val yamlProcessor = YamlProcessor()
+    private val baselineProcessor = BaselineProcessor()
 
     @Test
     fun `suppression list is written and parsed back`() {
@@ -38,12 +38,42 @@ class YamlProcessorTest {
         val file = temporaryFolder.newFile("suppressions.yml")
 
         // when
-        yamlProcessor.write(file, configuration)
+        baselineProcessor.write(file, configuration)
 
         // then
-        val parsedConfiguration = yamlProcessor.parse(file, BaselineConfiguration::class.java)
+        val parsedConfiguration = baselineProcessor.parse(file)
         assertThat(parsedConfiguration).isEqualTo(configuration)
     }
 
+    @Test
+    fun `suppression without any module dependency is parsed correctly`() {
+        // given
+        val file = temporaryFolder.newFile("suppressions.yml")
+        file.writeText("""
+            suppressions:
+              module:
+        """.trimIndent())
+
+        // when
+        val parsedConfiguration = baselineProcessor.parse(file)
+
+        // then
+        assertThat(parsedConfiguration.getModuleSuppressions("module")).isEmpty()
+    }
+
+    @Test
+    fun `suppression without any module is parsed correctly`() {
+        // given
+        val file = temporaryFolder.newFile("suppressions.yml")
+        file.writeText("""
+            suppressions:
+        """.trimIndent())
+
+        // when
+        val parsedConfiguration = baselineProcessor.parse(file)
+
+        // then
+        assertThat(parsedConfiguration.suppressions).isEmpty()
+    }
 
 }

@@ -18,21 +18,26 @@ package com.rubensousa.projectguard.plugin.internal
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory
+import com.fasterxml.jackson.module.kotlin.KotlinFeature
 import com.fasterxml.jackson.module.kotlin.KotlinModule
 import java.io.File
 
-internal class YamlProcessor {
+internal class BaselineProcessor {
 
     private val objectMapper = ObjectMapper(YAMLFactory())
         .apply {
-            registerModule(KotlinModule.Builder().build())
+            registerModule(
+                KotlinModule.Builder()
+                    .enable(KotlinFeature.NullToEmptyMap)
+                    .build()
+            )
         }
 
-    fun <T> parse(file: File, clazz: Class<T>): T {
-        return objectMapper.readValue(file, clazz)
+    fun parse(file: File): BaselineConfiguration {
+        return objectMapper.readValue(file, BaselineConfiguration::class.java)
     }
 
-    fun <T> write(file: File, content: T) {
+    fun write(file: File, content: BaselineConfiguration) {
         return objectMapper.writeValue(file, content)
     }
 

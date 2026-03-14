@@ -18,8 +18,8 @@ package com.rubensousa.projectguard.plugin
 
 import com.google.common.truth.Truth.assertThat
 import com.rubensousa.projectguard.plugin.internal.BaselineConfiguration
+import com.rubensousa.projectguard.plugin.internal.BaselineProcessor
 import com.rubensousa.projectguard.plugin.internal.DependencySuppression
-import com.rubensousa.projectguard.plugin.internal.YamlProcessor
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
@@ -58,8 +58,8 @@ class TaskBaselineTest {
         val outputFile = plugin.generateBaseline()
 
         // then
-        val yamlProcessor = YamlProcessor()
-        val baseline = yamlProcessor.parse(outputFile, BaselineConfiguration::class.java)
+        val baselineProcessor = BaselineProcessor()
+        val baseline = baselineProcessor.parse(outputFile)
         assertThat(baseline.suppressions).isEqualTo(
             mapOf(
                 moduleId to listOf(
@@ -81,7 +81,7 @@ class TaskBaselineTest {
     @Test
     fun `baseline generation keeps the previous suppresion reasons`() {
         // given
-        val yamlProcessor = YamlProcessor()
+        val baselineProcessor = BaselineProcessor()
         val moduleId = ":domain"
         val secondModuleId = ":data"
         val fatalModuleId = ":legacy"
@@ -104,7 +104,7 @@ class TaskBaselineTest {
                 )
             )
         )
-        yamlProcessor.write(baselineFile, currentBaseline)
+        baselineProcessor.write(baselineFile, currentBaseline)
         plugin.dumpDependencies(moduleId) {
             addInternalDependency(moduleId, fatalModuleId)
         }
@@ -121,7 +121,7 @@ class TaskBaselineTest {
         val outputFile = plugin.generateBaseline()
 
         // then
-        val baseline = yamlProcessor.parse(outputFile, BaselineConfiguration::class.java)
+        val baseline = baselineProcessor.parse(outputFile)
         assertThat(baseline.suppressions).isEqualTo(
             mapOf(
                 moduleId to listOf(

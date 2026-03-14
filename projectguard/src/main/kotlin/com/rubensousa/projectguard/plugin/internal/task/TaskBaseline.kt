@@ -16,9 +16,8 @@
 
 package com.rubensousa.projectguard.plugin.internal.task
 
-import com.rubensousa.projectguard.plugin.internal.BaselineConfiguration
+import com.rubensousa.projectguard.plugin.internal.BaselineProcessor
 import com.rubensousa.projectguard.plugin.internal.SuppressionMap
-import com.rubensousa.projectguard.plugin.internal.YamlProcessor
 import com.rubensousa.projectguard.plugin.internal.report.RestrictionDump
 import kotlinx.serialization.json.Json
 import org.gradle.api.DefaultTask
@@ -58,14 +57,14 @@ internal class BaselineExecutor(
 
     fun execute() {
         val restrictionDump = Json.decodeFromString<RestrictionDump>(inputFile.readText())
-        val yamlProcessor = YamlProcessor()
+        val baselineProcessor = BaselineProcessor()
         val currentReasons = mutableMapOf<String, MutableMap<String, String>>()
         runCatching {
-            val currentConfiguration = yamlProcessor.parse(outputFile, BaselineConfiguration::class.java)
-            currentConfiguration.suppressions.forEach { (module, dependencies) ->
-                dependencies.forEach { (dependency, reason) ->
+            val currentConfiguration = baselineProcessor.parse(outputFile)
+            currentConfiguration.suppressions.keys.forEach { module ->
+                currentConfiguration.getModuleSuppressions(module).forEach { suppression ->
                     val dependencyReasons = currentReasons.getOrPut(module) { mutableMapOf() }
-                    dependencyReasons[dependency] = reason
+                    dependencyReasons[suppression.dependency] = suppression.reason
                 }
             }
         }
@@ -81,7 +80,7 @@ internal class BaselineExecutor(
                 )
             }
         }
-        yamlProcessor.write(outputFile, suppressionMap.getBaseline())
+        baselineProcessor.write(outputFile, suppressionMap.getBaseline())
     }
 
 }
