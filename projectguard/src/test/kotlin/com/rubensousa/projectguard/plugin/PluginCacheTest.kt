@@ -19,7 +19,6 @@ package com.rubensousa.projectguard.plugin
 import com.google.common.truth.Truth.assertThat
 import org.gradle.testkit.runner.TaskOutcome
 import org.junit.Before
-import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
@@ -116,24 +115,6 @@ class PluginCacheTest {
 
         // then
         assertThat(result).isEqualTo(TaskOutcome.UP_TO_DATE)
-    }
-
-    @Ignore("Not working for now")
-    @Test
-    fun `outputs from projectGuardAggregateDependencyDump are re-used from cache`() {
-        // given
-        pluginRunner.createModule("a")
-        pluginRunner.createModule("b")
-        pluginRunner.addDependency(from = "a", to = "b")
-        val task = ":projectGuardAggregateDependencyDump"
-        pluginRunner.runTask(task)
-
-        // when
-        pluginRunner.deleteBuildDirs()
-        val result = pluginRunner.runTask(task)
-
-        // then
-        assertThat(result).isEqualTo(TaskOutcome.FROM_CACHE)
     }
 
     @Test

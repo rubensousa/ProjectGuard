@@ -18,6 +18,7 @@ package com.rubensousa.projectguard.plugin.internal
 
 import com.google.common.truth.Truth.assertThat
 import org.gradle.api.Project
+import org.gradle.api.artifacts.result.ResolvedComponentResult
 import org.gradle.testfixtures.ProjectBuilder
 import org.junit.Before
 import kotlin.test.Test
@@ -53,7 +54,7 @@ class DependencyGraphBuilderTest {
         val legacyProjectB = consumerProject.addLegacyDependency("b")
 
         // when
-        val graph = graphBuilder.buildFromProject(consumerProject)
+        val graph = graphBuilder.buildFromComponents(consumerProject.getResolvedConfigurations())
 
         // then
         val compileConfiguration = graph.getConfigurations().find { it.id == DependencyConfiguration.COMPILE }!!
@@ -68,12 +69,22 @@ class DependencyGraphBuilderTest {
         val legacyProjectC = consumerProject.addLegacyTestDependency("c")
 
         // when
-        val graph = graphBuilder.buildFromProject(consumerProject)
+        val graph = graphBuilder.buildFromComponents(consumerProject.getResolvedConfigurations())
 
         // then
         val testConfiguration = graph.getConfigurations().find { it.id == DependencyConfiguration.TEST }!!
         assertThat(testConfiguration.getDependencies(consumerProject.path).map { it.id })
             .containsExactly(legacyProjectA.path, legacyProjectC.path)
+    }
+
+    private fun Project.getResolvedConfigurations(): Map<String, ResolvedComponentResult> {
+        val output = mutableMapOf<String, ResolvedComponentResult>()
+        project.configurations.forEach { config ->
+            if(config.isCanBeResolved) {
+                output[config.name] = config.incoming.resolutionResult.rootComponent.get()
+            }
+        }
+        return output
     }
 
     private fun Project.addLegacyDependency(dependency: String): Project {

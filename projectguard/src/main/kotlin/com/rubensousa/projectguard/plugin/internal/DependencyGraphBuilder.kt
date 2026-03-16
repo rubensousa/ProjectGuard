@@ -17,9 +17,10 @@
 package com.rubensousa.projectguard.plugin.internal
 
 import com.rubensousa.projectguard.plugin.internal.report.DependencyGraphDump
-import org.gradle.api.Project
-import org.gradle.api.artifacts.ExternalModuleDependency
-import org.gradle.api.artifacts.ProjectDependency
+import org.gradle.api.artifacts.component.ModuleComponentIdentifier
+import org.gradle.api.artifacts.component.ProjectComponentIdentifier
+import org.gradle.api.artifacts.result.ResolvedComponentResult
+import org.gradle.api.artifacts.result.ResolvedDependencyResult
 
 internal class DependencyGraphBuilder {
 
@@ -42,35 +43,43 @@ internal class DependencyGraphBuilder {
         return graph
     }
 
-    fun buildFromProject(project: Project): DependencyGraph {
+    fun buildFromComponents(results: Map<String, ResolvedComponentResult>): DependencyGraph {
         val graph = DependencyGraph()
-        project.configurations
-            .filter { config -> config.isCanBeResolved && DependencyConfiguration.isConfigurationSupported(config.name) }
-            .forEach { config ->
-                val moduleId = project.path
-                config.incoming.dependencies
-                    .forEach { dependency ->
-                        when (dependency) {
-                            is ProjectDependency -> {
-                                if (dependency.path != moduleId) {
-                                    graph.addInternalDependency(
-                                        module = moduleId,
-                                        dependency = dependency.path,
-                                        configurationId = config.name
-                                    )
-                                }
-                            }
+        results.forEach { (configurationId, result) ->
+            if (DependencyConfiguration.isConfigurationSupported(configurationId)) {
+                val resultId = result.id
+                if (resultId is ProjectComponentIdentifier) {
+                    val moduleId = resultId.projectPath
+                    result.dependencies.forEach { dependencyResult ->
+                        when (dependencyResult) {
+                            is ResolvedDependencyResult -> {
+                                val selected = dependencyResult.selected
+                                when (val projectId = selected.id) {
+                                    is ProjectComponentIdentifier -> {
+                                        if (projectId.projectPath != moduleId) {
+                                            graph.addInternalDependency(
+                                                module = moduleId,
+                                                dependency = projectId.projectPath,
+                                                configurationId = configurationId,
+                                            )
+                                        }
+                                    }
 
-                            is ExternalModuleDependency -> {
-                                graph.addLibraryDependency(
-                                    module = moduleId,
-                                    dependency = "${dependency.group}:${dependency.name}",
-                                    configurationId = config.name
-                                )
+                                    is ModuleComponentIdentifier -> {
+                                        graph.addLibraryDependency(
+                                            module = moduleId,
+                                            dependency = "${projectId.group}:${projectId.module}",
+                                            configurationId = configurationId,
+                                        )
+                                    }
+                                }
                             }
                         }
                     }
+                }
             }
+        }
         return graph
     }
+
 }

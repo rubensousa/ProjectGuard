@@ -340,7 +340,14 @@ class ProjectGuardPlugin : Plugin<Project> {
             group = "other"
             description = "Generates a JSON containing the dependencies of this module."
             projectPath.set(project.path)
-            dependencyGraph.set(project.provider { graphBuilder.buildFromProject(project) })
+            project.configurations.forEach { config ->
+                if (config.isCanBeResolved) {
+                    components.put(
+                        config.name,
+                        config.incoming.resolutionResult.rootComponent
+                    )
+                }
+            }
             outputFile.set(
                 project.layout.buildDirectory.file(dependenciesFilePath)
             )
