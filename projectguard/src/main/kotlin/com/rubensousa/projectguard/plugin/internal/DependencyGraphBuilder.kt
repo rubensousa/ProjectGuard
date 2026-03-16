@@ -23,6 +23,7 @@ import org.gradle.api.artifacts.component.ProjectComponentIdentifier
 import org.gradle.api.artifacts.result.ResolvedComponentResult
 import org.gradle.api.artifacts.result.ResolvedDependencyResult
 import org.gradle.api.internal.artifacts.result.DefaultUnresolvedDependencyResult
+import org.gradle.api.provider.Provider
 
 internal class DependencyGraphBuilder {
 
@@ -45,10 +46,11 @@ internal class DependencyGraphBuilder {
         return graph
     }
 
-    fun buildFromComponents(results: Map<String, ResolvedComponentResult>): DependencyGraph {
+    fun buildFromComponents(results: Map<String, Provider<ResolvedComponentResult>>): DependencyGraph {
         val graph = DependencyGraph()
-        results.forEach { (configurationId, result) ->
+        results.forEach { (configurationId, resultProvider) ->
             if (DependencyConfiguration.isConfigurationSupported(configurationId)) {
+                val result = resultProvider.get()
                 val resultId = result.id
                 if (resultId is ProjectComponentIdentifier) {
                     val moduleId = resultId.projectPath

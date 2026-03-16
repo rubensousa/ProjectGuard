@@ -28,18 +28,21 @@ import org.gradle.api.artifacts.result.ResolvedComponentResult
 import org.gradle.api.file.RegularFileProperty
 import org.gradle.api.provider.MapProperty
 import org.gradle.api.provider.Property
+import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.OutputFile
 import org.gradle.api.tasks.TaskAction
+import org.gradle.work.DisableCachingByDefault
 import java.io.File
 
+@DisableCachingByDefault(because = "Component result is not serializable")
 internal abstract class TaskDependencyDump : DefaultTask() {
 
     @get:Input
     internal abstract val projectPath: Property<String>
 
     @get:Input
-    internal abstract val components: MapProperty<String, ResolvedComponentResult>
+    internal abstract val components: MapProperty<String, Provider<ResolvedComponentResult>>
 
     @get:OutputFile
     internal abstract val outputFile: RegularFileProperty

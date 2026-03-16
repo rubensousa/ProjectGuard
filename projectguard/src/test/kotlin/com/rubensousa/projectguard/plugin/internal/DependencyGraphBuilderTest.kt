@@ -19,6 +19,7 @@ package com.rubensousa.projectguard.plugin.internal
 import com.google.common.truth.Truth.assertThat
 import org.gradle.api.Project
 import org.gradle.api.artifacts.result.ResolvedComponentResult
+import org.gradle.api.provider.Provider
 import org.gradle.kotlin.dsl.repositories
 import org.gradle.testfixtures.ProjectBuilder
 import org.junit.Before
@@ -111,11 +112,11 @@ class DependencyGraphBuilderTest {
             .containsExactly(legacyProjectA.path, legacyProjectC.path)
     }
 
-    private fun Project.getResolvedConfigurations(): Map<String, ResolvedComponentResult> {
-        val output = mutableMapOf<String, ResolvedComponentResult>()
+    private fun Project.getResolvedConfigurations(): Map<String, Provider<ResolvedComponentResult>> {
+        val output = mutableMapOf<String, Provider<ResolvedComponentResult>>()
         project.configurations.forEach { config ->
-            if(config.isCanBeResolved) {
-                output[config.name] = config.incoming.resolutionResult.rootComponent.get()
+            if (config.isCanBeResolved) {
+                output[config.name] = config.incoming.resolutionResult.rootComponent
             }
         }
         return output
