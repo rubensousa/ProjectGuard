@@ -68,7 +68,7 @@ class PluginCacheTest {
     }
 
     @Test
-    fun `outputs from projectGuardDependencyDump are re-used from cache`() {
+    fun `outputs from projectGuardDependencyDump are not re-used from cache`() {
         // given
         pluginRunner.createModule("a")
         pluginRunner.createModule("b")
@@ -81,7 +81,7 @@ class PluginCacheTest {
         val result = pluginRunner.runTask(libraryDependencyTask)
 
         // then
-        assertThat(result).isEqualTo(TaskOutcome.FROM_CACHE)
+        assertThat(result).isEqualTo(TaskOutcome.SUCCESS)
     }
 
     @Test
