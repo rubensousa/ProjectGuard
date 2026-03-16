@@ -339,12 +339,12 @@ class ProjectGuardPlugin : Plugin<Project> {
         ) {
             group = "other"
             description = "Generates a JSON containing the dependencies of this module."
-            projectPath.set(project.path)
-            project.configurations.forEach { config ->
-                if (config.isCanBeResolved) {
+            projectPath.set(targetProject.path)
+            targetProject.configurations.all {
+                if (isCanBeResolved) {
                     components.put(
-                        config.name,
-                        config.incoming.resolutionResult.rootComponent
+                        this.name,
+                        this.incoming.resolutionResult.rootComponent
                     )
                 }
             }
