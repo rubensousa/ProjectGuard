@@ -17,7 +17,7 @@
 package com.rubensousa.projectguard.plugin
 
 import com.android.build.api.variant.AndroidComponentsExtension
-import com.rubensousa.projectguard.plugin.internal.DependencyGraphBuilder
+import com.rubensousa.projectguard.plugin.internal.DependencyConfiguration
 import com.rubensousa.projectguard.plugin.internal.task.TaskAggregateDependencyDump
 import com.rubensousa.projectguard.plugin.internal.task.TaskAggregateRestrictionDump
 import com.rubensousa.projectguard.plugin.internal.task.TaskBaseline
@@ -338,9 +338,9 @@ class ProjectGuardPlugin : Plugin<Project> {
         ) {
             group = "other"
             description = "Generates a JSON containing the dependencies of this module."
-            projectPath.set(targetProject.path)
-            targetProject.configurations.forEach { config ->
-                if (config.isCanBeResolved) {
+            projectPath.set(project.path)
+            project.configurations.forEach { config ->
+                if (config.isCanBeResolved && DependencyConfiguration.isConfigurationSupported(config.name)) {
                     components.put(
                         config.name,
                         config.incoming.resolutionResult.rootComponent
