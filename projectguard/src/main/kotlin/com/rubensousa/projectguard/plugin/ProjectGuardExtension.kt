@@ -30,6 +30,7 @@ import com.rubensousa.projectguard.plugin.internal.ReportSpec
 import com.rubensousa.projectguard.plugin.internal.getDependencyPath
 import org.gradle.api.Action
 import org.gradle.api.artifacts.MinimalExternalModuleDependency
+import org.gradle.api.internal.provider.DefaultProvider
 import org.gradle.api.model.ObjectFactory
 import org.gradle.api.provider.Provider
 import org.gradle.kotlin.dsl.listProperty
@@ -45,6 +46,7 @@ abstract class ProjectGuardExtension @Inject constructor(
     private val dependencyRestrictionSpecs = objects.listProperty<DependencyRestrictionSpec>()
     private val reportSpec = objects.property<ReportSpec>().convention(ReportSpec(showLibrariesInGraph = false))
     private val options = objects.property<PluginOptions>().convention(PluginOptions(lifecycleTask = null))
+    private val provider = DefaultProvider { getSpec() }
 
     override fun restrictModule(modulePath: String, action: Action<ModuleRestrictionScope>) {
         val scope = ModuleRestrictionScopeImpl()
@@ -126,13 +128,25 @@ abstract class ProjectGuardExtension @Inject constructor(
     override fun report(action: Action<ReportScope>) {
         val scope = ReportScopeImpl()
         action.execute(scope)
-        reportSpec.set(ReportSpec(showLibrariesInGraph = scope.showLibrariesInGraph))
+        reportSpec.set(
+            reportSpec.get().copy(
+                showLibrariesInGraph = scope.showLibrariesInGraph
+            )
+        )
     }
 
     override fun options(action: Action<OptionScope>) {
         val scope = OptionScopeImpl()
         action.execute(scope)
-        options.set(PluginOptions(lifecycleTask = scope.lifecycleTask))
+        options.set(
+            options.get().copy(
+                lifecycleTask = scope.lifecycleTask,
+            )
+        )
+    }
+
+    internal fun getSpecProvider(): Provider<ProjectGuardSpec> {
+        return provider
     }
 
     internal fun getSpec(): ProjectGuardSpec {
