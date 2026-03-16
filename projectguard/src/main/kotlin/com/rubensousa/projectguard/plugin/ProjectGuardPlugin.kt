@@ -53,7 +53,6 @@ class ProjectGuardPlugin : Plugin<Project> {
     private val htmlAggregateReportFilePath = "reports/$pluginId"
     private val dependenciesFilePath = "reports/$pluginId/dependencies.json"
     private val jsonReportFilePath = "reports/$pluginId/report.json"
-    private val graphBuilder = DependencyGraphBuilder()
     private val androidPluginIds = listOf(
         "com.android.test",
         "com.android.application",
@@ -340,11 +339,11 @@ class ProjectGuardPlugin : Plugin<Project> {
             group = "other"
             description = "Generates a JSON containing the dependencies of this module."
             projectPath.set(targetProject.path)
-            targetProject.configurations.all {
-                if (isCanBeResolved) {
+            targetProject.configurations.forEach { config ->
+                if (config.isCanBeResolved) {
                     components.put(
-                        this.name,
-                        this.incoming.resolutionResult.rootComponent
+                        config.name,
+                        config.incoming.resolutionResult.rootComponent
                     )
                 }
             }
