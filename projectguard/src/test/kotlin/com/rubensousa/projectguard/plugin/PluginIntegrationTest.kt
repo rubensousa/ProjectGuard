@@ -32,6 +32,8 @@ class PluginIntegrationTest {
 
     @Before
     fun setup() {
+        val propertiesFile = temporaryFolder.newFile("gradle.properties")
+        propertiesFile.writeText("org.gradle.configuration-cache=true")
         rootBuildFile = temporaryFolder.newFile("build.gradle.kts")
         rootBuildFile.writeText(
             """

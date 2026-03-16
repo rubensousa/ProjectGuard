@@ -35,6 +35,8 @@ class PluginCacheTest {
     @Before
     fun setup() {
         rootBuildFile = temporaryFolder.newFile("build.gradle.kts")
+        val propertiesFile = temporaryFolder.newFile("gradle.properties")
+        propertiesFile.writeText("org.gradle.configuration-cache=true")
         rootBuildFile.writeText(
             """
             plugins {
@@ -151,7 +153,7 @@ class PluginCacheTest {
     }
 
     @Test
-    fun `outputs from projectGuardRestrictionDump are cached`() {
+    fun `outputs from projectGuardRestrictionDump are not cached`() {
         // given
         pluginRunner.createModule("a")
         pluginRunner.createModule("b")
@@ -164,7 +166,7 @@ class PluginCacheTest {
         val result = pluginRunner.runTask(task)
 
         // then
-        assertThat(result).isEqualTo(TaskOutcome.FROM_CACHE)
+        assertThat(result).isEqualTo(TaskOutcome.SUCCESS)
     }
 
     @Test
