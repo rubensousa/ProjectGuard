@@ -19,6 +19,7 @@ package com.rubensousa.projectguard.plugin.internal
 import com.google.common.truth.Truth.assertThat
 import org.gradle.api.Project
 import org.gradle.api.artifacts.result.ResolvedComponentResult
+import org.gradle.kotlin.dsl.repositories
 import org.gradle.testfixtures.ProjectBuilder
 import org.junit.Before
 import kotlin.test.Test
@@ -60,6 +61,39 @@ class DependencyGraphBuilderTest {
         val compileConfiguration = graph.getConfigurations().find { it.id == DependencyConfiguration.COMPILE }!!
         assertThat(compileConfiguration.getDependencies(consumerProject.path).map { it.id })
             .containsExactly(legacyProjectA.path, legacyProjectB.path)
+    }
+
+    @Test
+    fun `graph is built correctly when library is included but not resolved`() {
+        // given
+        val library = "com.google.truth:truth:1.4.5"
+        consumerProject.dependencies.add("implementation", library)
+
+        // when
+        val graph = graphBuilder.buildFromComponents(consumerProject.getResolvedConfigurations())
+
+        // then
+        val compileConfiguration = graph.getConfigurations().find { it.id == DependencyConfiguration.COMPILE }!!
+        assertThat(compileConfiguration.getDependencies(consumerProject.path).map { it.id })
+            .containsExactly("com.google.truth:truth")
+    }
+
+    @Test
+    fun `graph is built correctly when library is included and resolved`() {
+        // given
+        val library = "com.google.truth:truth:1.4.5"
+        consumerProject.repositories {
+            mavenCentral()
+        }
+        consumerProject.dependencies.add("implementation", library)
+
+        // when
+        val graph = graphBuilder.buildFromComponents(consumerProject.getResolvedConfigurations())
+
+        // then
+        val compileConfiguration = graph.getConfigurations().find { it.id == DependencyConfiguration.COMPILE }!!
+        assertThat(compileConfiguration.getDependencies(consumerProject.path).map { it.id })
+            .containsExactly("com.google.truth:truth")
     }
 
     @Test

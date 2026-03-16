@@ -18,9 +18,11 @@ package com.rubensousa.projectguard.plugin.internal
 
 import com.rubensousa.projectguard.plugin.internal.report.DependencyGraphDump
 import org.gradle.api.artifacts.component.ModuleComponentIdentifier
+import org.gradle.api.artifacts.component.ModuleComponentSelector
 import org.gradle.api.artifacts.component.ProjectComponentIdentifier
 import org.gradle.api.artifacts.result.ResolvedComponentResult
 import org.gradle.api.artifacts.result.ResolvedDependencyResult
+import org.gradle.api.internal.artifacts.result.DefaultUnresolvedDependencyResult
 
 internal class DependencyGraphBuilder {
 
@@ -52,6 +54,17 @@ internal class DependencyGraphBuilder {
                     val moduleId = resultId.projectPath
                     result.dependencies.forEach { dependencyResult ->
                         when (dependencyResult) {
+                            is DefaultUnresolvedDependencyResult -> {
+                                val requested = dependencyResult.requested
+                                if (requested is ModuleComponentSelector) {
+                                    graph.addLibraryDependency(
+                                        module = moduleId,
+                                        dependency = "${requested.group}:${requested.module}",
+                                        configurationId = configurationId,
+                                    )
+                                }
+                            }
+
                             is ResolvedDependencyResult -> {
                                 val selected = dependencyResult.selected
                                 when (val projectId = selected.id) {
