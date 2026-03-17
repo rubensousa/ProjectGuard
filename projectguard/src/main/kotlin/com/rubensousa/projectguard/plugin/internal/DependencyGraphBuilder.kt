@@ -17,9 +17,13 @@
 package com.rubensousa.projectguard.plugin.internal
 
 import com.rubensousa.projectguard.plugin.internal.report.DependencyGraphDump
-import org.gradle.api.Project
-import org.gradle.api.artifacts.ExternalModuleDependency
-import org.gradle.api.artifacts.ProjectDependency
+import org.gradle.api.artifacts.component.ModuleComponentIdentifier
+import org.gradle.api.artifacts.component.ModuleComponentSelector
+import org.gradle.api.artifacts.component.ProjectComponentIdentifier
+import org.gradle.api.artifacts.result.ResolvedComponentResult
+import org.gradle.api.artifacts.result.ResolvedDependencyResult
+import org.gradle.api.internal.artifacts.result.DefaultUnresolvedDependencyResult
+import org.gradle.api.provider.Provider
 
 internal class DependencyGraphBuilder {
 
@@ -42,35 +46,53 @@ internal class DependencyGraphBuilder {
         return graph
     }
 
-    fun buildFromProject(project: Project): DependencyGraph {
+    fun buildFromComponents(results: Map<String, Provider<ResolvedComponentResult>>): DependencyGraph {
         val graph = DependencyGraph()
-        project.configurations
-            .filter { config -> config.isCanBeResolved && DependencyConfiguration.isConfigurationSupported(config.name) }
-            .forEach { config ->
-                val moduleId = project.path
-                config.incoming.dependencies
-                    .forEach { dependency ->
-                        when (dependency) {
-                            is ProjectDependency -> {
-                                if (dependency.path != moduleId) {
-                                    graph.addInternalDependency(
-                                        module = moduleId,
-                                        dependency = dependency.path,
-                                        configurationId = config.name
-                                    )
-                                }
-                            }
-
-                            is ExternalModuleDependency -> {
+        results.forEach { (configurationId, resultProvider) ->
+            val result = resultProvider.get()
+            val resultId = result.id
+            if (resultId is ProjectComponentIdentifier) {
+                val moduleId = resultId.projectPath
+                result.dependencies.forEach { dependencyResult ->
+                    when (dependencyResult) {
+                        is DefaultUnresolvedDependencyResult -> {
+                            val requested = dependencyResult.requested
+                            if (requested is ModuleComponentSelector) {
                                 graph.addLibraryDependency(
                                     module = moduleId,
-                                    dependency = "${dependency.group}:${dependency.name}",
-                                    configurationId = config.name
+                                    dependency = "${requested.group}:${requested.module}",
+                                    configurationId = configurationId,
                                 )
                             }
                         }
+
+                        is ResolvedDependencyResult -> {
+                            val selected = dependencyResult.selected
+                            when (val projectId = selected.id) {
+                                is ProjectComponentIdentifier -> {
+                                    if (projectId.projectPath != moduleId) {
+                                        graph.addInternalDependency(
+                                            module = moduleId,
+                                            dependency = projectId.projectPath,
+                                            configurationId = configurationId,
+                                        )
+                                    }
+                                }
+
+                                is ModuleComponentIdentifier -> {
+                                    graph.addLibraryDependency(
+                                        module = moduleId,
+                                        dependency = "${projectId.group}:${projectId.module}",
+                                        configurationId = configurationId,
+                                    )
+                                }
+                            }
+                        }
                     }
+                }
             }
+        }
         return graph
     }
+
 }

@@ -17,7 +17,7 @@
 package com.rubensousa.projectguard.plugin
 
 import com.android.build.api.variant.AndroidComponentsExtension
-import com.rubensousa.projectguard.plugin.internal.DependencyGraphBuilder
+import com.rubensousa.projectguard.plugin.internal.DependencyConfiguration
 import com.rubensousa.projectguard.plugin.internal.task.TaskAggregateDependencyDump
 import com.rubensousa.projectguard.plugin.internal.task.TaskAggregateRestrictionDump
 import com.rubensousa.projectguard.plugin.internal.task.TaskBaseline
@@ -53,7 +53,6 @@ class ProjectGuardPlugin : Plugin<Project> {
     private val htmlAggregateReportFilePath = "reports/$pluginId"
     private val dependenciesFilePath = "reports/$pluginId/dependencies.json"
     private val jsonReportFilePath = "reports/$pluginId/report.json"
-    private val graphBuilder = DependencyGraphBuilder()
     private val androidPluginIds = listOf(
         "com.android.test",
         "com.android.application",
@@ -292,7 +291,7 @@ class ProjectGuardPlugin : Plugin<Project> {
         ) {
             group = "verification"
             description = "Verifies if there are any dependency restrictions"
-            pluginSpec.set(project.provider { extension.getSpec() })
+            pluginSpec.set(extension.getSpecProvider())
             outputs.upToDateWhen { false }
         }
     }
@@ -307,7 +306,7 @@ class ProjectGuardPlugin : Plugin<Project> {
         ) {
             group = "verification"
             description = "Verifies if there are any dependency restrictions"
-            pluginSpec.set(project.provider { extension.getSpec() })
+            pluginSpec.set(extension.getSpecProvider())
             outputs.upToDateWhen { false }
         }
     }
@@ -323,7 +322,7 @@ class ProjectGuardPlugin : Plugin<Project> {
             group = "other"
             description = "Generates a JSON report of all dependency restrictions for this module."
             projectPath.set(project.path)
-            specProperty.set(project.provider { extension.getSpec() })
+            specProperty.set(extension.getSpecProvider())
             outputFile.set(
                 project.layout.buildDirectory.file(jsonReportFilePath)
             )
@@ -340,7 +339,14 @@ class ProjectGuardPlugin : Plugin<Project> {
             group = "other"
             description = "Generates a JSON containing the dependencies of this module."
             projectPath.set(project.path)
-            dependencyGraph.set(project.provider { graphBuilder.buildFromProject(project) })
+            project.configurations.forEach { config ->
+                if (config.isCanBeResolved && DependencyConfiguration.isConfigurationSupported(config.name)) {
+                    components.put(
+                        config.name,
+                        config.incoming.resolutionResult.rootComponent
+                    )
+                }
+            }
             outputFile.set(
                 project.layout.buildDirectory.file(dependenciesFilePath)
             )

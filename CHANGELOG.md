@@ -1,6 +1,10 @@
 
 # CHANGELOG
 
+## 1.0.0-rc02 (2026-03-16)
+
+- Fixed issue during dependency resolution when configuration cache is enabled
+
 ## 1.0.0-rc01 (2026-03-14)
 
 - Fixed NPE caused by empty module suppressions when the baseline is manually edited 

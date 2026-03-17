@@ -17,42 +17,46 @@
 package com.rubensousa.projectguard.plugin.internal.task
 
 import com.rubensousa.projectguard.plugin.internal.DependencyGraph
+import com.rubensousa.projectguard.plugin.internal.DependencyGraphBuilder
 import com.rubensousa.projectguard.plugin.internal.report.ConfigurationDependencies
 import com.rubensousa.projectguard.plugin.internal.report.DependencyGraphDump
 import com.rubensousa.projectguard.plugin.internal.report.DependencyGraphModuleDump
 import com.rubensousa.projectguard.plugin.internal.report.DependencyReferenceDump
 import com.rubensousa.projectguard.plugin.internal.report.JsonFileWriter
 import org.gradle.api.DefaultTask
+import org.gradle.api.artifacts.result.ResolvedComponentResult
 import org.gradle.api.file.RegularFileProperty
+import org.gradle.api.provider.MapProperty
 import org.gradle.api.provider.Property
-import org.gradle.api.tasks.CacheableTask
+import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.OutputFile
 import org.gradle.api.tasks.TaskAction
+import org.gradle.work.DisableCachingByDefault
 import java.io.File
 
-@CacheableTask
+@DisableCachingByDefault(because = "Component result is not serializable")
 internal abstract class TaskDependencyDump : DefaultTask() {
 
     @get:Input
     internal abstract val projectPath: Property<String>
 
     @get:Input
-    internal abstract val dependencyGraph: Property<DependencyGraph>
+    internal abstract val components: MapProperty<String, Provider<ResolvedComponentResult>>
 
     @get:OutputFile
     internal abstract val outputFile: RegularFileProperty
 
     @TaskAction
     fun projectGuardDependencyDump() {
+        val graph = DependencyGraphBuilder().buildFromComponents(components.get())
         val executor = DependencyDumpExecutor(
             moduleId = projectPath.get(),
             outputFile = outputFile.get().asFile,
-            dependencyGraph = dependencyGraph.get()
+            dependencyGraph = graph,
         )
         executor.execute()
     }
-
 }
 
 internal class DependencyDumpExecutor(

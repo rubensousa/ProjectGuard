@@ -18,6 +18,9 @@ package com.rubensousa.projectguard.plugin.internal
 
 import com.google.common.truth.Truth.assertThat
 import org.gradle.api.Project
+import org.gradle.api.artifacts.result.ResolvedComponentResult
+import org.gradle.api.provider.Provider
+import org.gradle.kotlin.dsl.repositories
 import org.gradle.testfixtures.ProjectBuilder
 import org.junit.Before
 import kotlin.test.Test
@@ -53,12 +56,45 @@ class DependencyGraphBuilderTest {
         val legacyProjectB = consumerProject.addLegacyDependency("b")
 
         // when
-        val graph = graphBuilder.buildFromProject(consumerProject)
+        val graph = graphBuilder.buildFromComponents(consumerProject.getResolvedConfigurations())
 
         // then
         val compileConfiguration = graph.getConfigurations().find { it.id == DependencyConfiguration.COMPILE }!!
         assertThat(compileConfiguration.getDependencies(consumerProject.path).map { it.id })
             .containsExactly(legacyProjectA.path, legacyProjectB.path)
+    }
+
+    @Test
+    fun `graph is built correctly when library is included but not resolved`() {
+        // given
+        val library = "com.google.truth:truth:1.4.5"
+        consumerProject.dependencies.add("implementation", library)
+
+        // when
+        val graph = graphBuilder.buildFromComponents(consumerProject.getResolvedConfigurations())
+
+        // then
+        val compileConfiguration = graph.getConfigurations().find { it.id == DependencyConfiguration.COMPILE }!!
+        assertThat(compileConfiguration.getDependencies(consumerProject.path).map { it.id })
+            .containsExactly("com.google.truth:truth")
+    }
+
+    @Test
+    fun `graph is built correctly when library is included and resolved`() {
+        // given
+        val library = "com.google.truth:truth:1.4.5"
+        consumerProject.repositories {
+            mavenCentral()
+        }
+        consumerProject.dependencies.add("implementation", library)
+
+        // when
+        val graph = graphBuilder.buildFromComponents(consumerProject.getResolvedConfigurations())
+
+        // then
+        val compileConfiguration = graph.getConfigurations().find { it.id == DependencyConfiguration.COMPILE }!!
+        assertThat(compileConfiguration.getDependencies(consumerProject.path).map { it.id })
+            .containsExactly("com.google.truth:truth")
     }
 
     @Test
@@ -68,12 +104,22 @@ class DependencyGraphBuilderTest {
         val legacyProjectC = consumerProject.addLegacyTestDependency("c")
 
         // when
-        val graph = graphBuilder.buildFromProject(consumerProject)
+        val graph = graphBuilder.buildFromComponents(consumerProject.getResolvedConfigurations())
 
         // then
         val testConfiguration = graph.getConfigurations().find { it.id == DependencyConfiguration.TEST }!!
         assertThat(testConfiguration.getDependencies(consumerProject.path).map { it.id })
             .containsExactly(legacyProjectA.path, legacyProjectC.path)
+    }
+
+    private fun Project.getResolvedConfigurations(): Map<String, Provider<ResolvedComponentResult>> {
+        val output = mutableMapOf<String, Provider<ResolvedComponentResult>>()
+        project.configurations.forEach { config ->
+            if (config.isCanBeResolved) {
+                output[config.name] = config.incoming.resolutionResult.rootComponent
+            }
+        }
+        return output
     }
 
     private fun Project.addLegacyDependency(dependency: String): Project {

@@ -43,6 +43,18 @@ class ProjectGuardExtensionTest {
     }
 
     @Test
+    fun `extension provider returns spec`() {
+        // given
+        val extension = createExtension()
+
+        // when
+        val spec = extension.getSpec()
+
+        // then
+        assertThat(extension.getSpecProvider().get()).isEqualTo(spec)
+    }
+
+    @Test
     fun `extension correctly configures module restriction`() {
         // given
         val extension = createExtension()
