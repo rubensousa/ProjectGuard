@@ -1,6 +1,11 @@
 
 # CHANGELOG
 
+## 1.0.0-rc03 (2026-03-19)
+
+- Fixed transitive library dependencies being included in the dependency graph verifications after `1.0.0-rc02`. 
+In the future, there will be an option to enable this behavior, but for now, there is backwards compatibility with the existing baselines.
+
 ## 1.0.0-rc02 (2026-03-16)
 
 - Fixed issue during dependency resolution when configuration cache is enabled
