@@ -59,8 +59,8 @@ class DependencyGraphBuilderAndroidTest {
         val graph = graphBuilder.buildFromComponents(consumerProject.getResolvedConfigurations())
 
         // then
-        assertThat(graph.getConfigurations().find { it.id == "debugUnitTestCompileClasspath" }
-            ?.getDependencies(consumerProject.path).toIds()).containsExactly("io.mockk:mockk")
+        val testConfiguration = graph.getConfigurations().find { it.id == DependencyConfiguration.TEST_COMPILE }
+        assertThat(testConfiguration?.getDependencies(consumerProject.path).toIds()).containsExactly("io.mockk:mockk")
     }
 
 }
