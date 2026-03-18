@@ -18,8 +18,6 @@ package com.rubensousa.projectguard.plugin.internal
 
 import com.google.common.truth.Truth.assertThat
 import org.gradle.api.Project
-import org.gradle.api.artifacts.result.ResolvedComponentResult
-import org.gradle.api.provider.Provider
 import org.gradle.kotlin.dsl.repositories
 import org.gradle.testfixtures.ProjectBuilder
 import org.junit.Before
@@ -60,7 +58,7 @@ class DependencyGraphBuilderTest {
 
         // then
         val compileConfiguration = graph.getConfigurations().find { it.id == DependencyConfiguration.COMPILE }!!
-        assertThat(compileConfiguration.getDependencies(consumerProject.path).map { it.id })
+        assertThat(compileConfiguration.getDependencies(consumerProject.path).toIds())
             .containsExactly(legacyProjectA.path, legacyProjectB.path)
     }
 
@@ -75,7 +73,7 @@ class DependencyGraphBuilderTest {
 
         // then
         val compileConfiguration = graph.getConfigurations().find { it.id == DependencyConfiguration.COMPILE }!!
-        assertThat(compileConfiguration.getDependencies(consumerProject.path).map { it.id })
+        assertThat(compileConfiguration.getDependencies(consumerProject.path).toIds())
             .containsExactly("com.google.truth:truth")
     }
 
@@ -93,7 +91,7 @@ class DependencyGraphBuilderTest {
 
         // then
         val compileConfiguration = graph.getConfigurations().find { it.id == DependencyConfiguration.COMPILE }!!
-        assertThat(compileConfiguration.getDependencies(consumerProject.path).map { it.id })
+        assertThat(compileConfiguration.getDependencies(consumerProject.path).toIds())
             .containsExactly("com.google.truth:truth")
     }
 
@@ -107,19 +105,9 @@ class DependencyGraphBuilderTest {
         val graph = graphBuilder.buildFromComponents(consumerProject.getResolvedConfigurations())
 
         // then
-        val testConfiguration = graph.getConfigurations().find { it.id == DependencyConfiguration.TEST }!!
-        assertThat(testConfiguration.getDependencies(consumerProject.path).map { it.id })
+        val testConfiguration = graph.getConfigurations().find { it.id == DependencyConfiguration.TEST_COMPILE }!!
+        assertThat(testConfiguration.getDependencies(consumerProject.path).toIds())
             .containsExactly(legacyProjectA.path, legacyProjectC.path)
-    }
-
-    private fun Project.getResolvedConfigurations(): Map<String, Provider<ResolvedComponentResult>> {
-        val output = mutableMapOf<String, Provider<ResolvedComponentResult>>()
-        project.configurations.forEach { config ->
-            if (config.isCanBeResolved) {
-                output[config.name] = config.incoming.resolutionResult.rootComponent
-            }
-        }
-        return output
     }
 
     private fun Project.addLegacyDependency(dependency: String): Project {

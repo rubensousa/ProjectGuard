@@ -64,7 +64,7 @@ class TaskDependencyDumpTest {
         graph.addInternalDependency(
             module = inputModule,
             dependency = secondDependency,
-            configurationId = DependencyConfiguration.TEST
+            configurationId = DependencyConfiguration.TEST_COMPILE
         )
 
         // when
@@ -82,7 +82,7 @@ class TaskDependencyDumpTest {
                             dependencies = listOf(DependencyReferenceDump(firstDependency, false))
                         ),
                         ConfigurationDependencies(
-                            id = DependencyConfiguration.TEST,
+                            id = DependencyConfiguration.TEST_COMPILE,
                             dependencies = listOf(DependencyReferenceDump(secondDependency, false))
                         )
                     )

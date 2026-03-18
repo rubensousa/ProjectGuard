@@ -21,5 +21,6 @@ android {
 dependencies {
     implementation(project(":domain:a"))
     testImplementation(libs.junit)
+    testImplementation(libs.mockk)
     androidTestImplementation(project(":legacy:a"))
 }
