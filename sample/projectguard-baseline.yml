@@ -9,6 +9,8 @@ suppressions:
     reason: "Suppressed from baseline"
   - dependency: ":legacy:b"
     reason: "Suppressed from baseline"
+  - dependency: "io.mockk:mockk"
+    reason: "Suppressed from baseline"
   :data:a:
   - dependency: ":legacy:a"
     reason: "Suppressed from baseline"

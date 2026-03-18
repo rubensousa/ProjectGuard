@@ -20,6 +20,7 @@ import com.rubensousa.projectguard.plugin.internal.report.DependencyGraphDump
 import org.gradle.api.artifacts.component.ModuleComponentIdentifier
 import org.gradle.api.artifacts.component.ModuleComponentSelector
 import org.gradle.api.artifacts.component.ProjectComponentIdentifier
+import org.gradle.api.artifacts.result.ComponentSelectionCause
 import org.gradle.api.artifacts.result.ResolvedComponentResult
 import org.gradle.api.artifacts.result.ResolvedDependencyResult
 import org.gradle.api.internal.artifacts.result.DefaultUnresolvedDependencyResult
@@ -80,11 +81,18 @@ internal class DependencyGraphBuilder {
                                 }
 
                                 is ModuleComponentIdentifier -> {
-                                    graph.addLibraryDependency(
-                                        module = moduleId,
-                                        dependency = "${projectId.group}:${projectId.module}",
-                                        configurationId = configurationId,
-                                    )
+                                    // Only include library dependencies that are not transitive
+                                    val isDirect = selected.selectionReason.descriptions.any {
+                                        it.cause == ComponentSelectionCause.REQUESTED
+                                    }
+                                    if (isDirect) {
+                                        val dependency = "${projectId.group}:${projectId.module}"
+                                        graph.addLibraryDependency(
+                                            module = moduleId,
+                                            dependency = dependency,
+                                            configurationId = configurationId,
+                                        )
+                                    }
                                 }
                             }
                         }

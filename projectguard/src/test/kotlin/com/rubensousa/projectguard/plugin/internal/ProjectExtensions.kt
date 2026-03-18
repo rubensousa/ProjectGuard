@@ -20,7 +20,7 @@ import org.gradle.api.Project
 import org.gradle.api.artifacts.result.ResolvedComponentResult
 import org.gradle.api.provider.Provider
 
-fun Project.getResolvedConfigurations(): Map<String, Provider<ResolvedComponentResult>> {
+internal fun Project.getResolvedConfigurations(): Map<String, Provider<ResolvedComponentResult>> {
     val output = mutableMapOf<String, Provider<ResolvedComponentResult>>()
     project.configurations.forEach { config ->
         if (config.isCanBeResolved) {
@@ -28,4 +28,8 @@ fun Project.getResolvedConfigurations(): Map<String, Provider<ResolvedComponentR
         }
     }
     return output
+}
+
+internal fun Set<DirectDependency>?.toIds(): List<String> {
+    return this?.map { it.id } ?: emptyList()
 }

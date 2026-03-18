@@ -58,7 +58,7 @@ class DependencyGraphBuilderTest {
 
         // then
         val compileConfiguration = graph.getConfigurations().find { it.id == DependencyConfiguration.COMPILE }!!
-        assertThat(compileConfiguration.getDependencies(consumerProject.path).map { it.id })
+        assertThat(compileConfiguration.getDependencies(consumerProject.path).toIds())
             .containsExactly(legacyProjectA.path, legacyProjectB.path)
     }
 
@@ -73,7 +73,7 @@ class DependencyGraphBuilderTest {
 
         // then
         val compileConfiguration = graph.getConfigurations().find { it.id == DependencyConfiguration.COMPILE }!!
-        assertThat(compileConfiguration.getDependencies(consumerProject.path).map { it.id })
+        assertThat(compileConfiguration.getDependencies(consumerProject.path).toIds())
             .containsExactly("com.google.truth:truth")
     }
 
@@ -91,7 +91,7 @@ class DependencyGraphBuilderTest {
 
         // then
         val compileConfiguration = graph.getConfigurations().find { it.id == DependencyConfiguration.COMPILE }!!
-        assertThat(compileConfiguration.getDependencies(consumerProject.path).map { it.id })
+        assertThat(compileConfiguration.getDependencies(consumerProject.path).toIds())
             .containsExactly("com.google.truth:truth")
     }
 
@@ -106,7 +106,7 @@ class DependencyGraphBuilderTest {
 
         // then
         val testConfiguration = graph.getConfigurations().find { it.id == DependencyConfiguration.TEST_COMPILE }!!
-        assertThat(testConfiguration.getDependencies(consumerProject.path).map { it.id })
+        assertThat(testConfiguration.getDependencies(consumerProject.path).toIds())
             .containsExactly(legacyProjectA.path, legacyProjectC.path)
     }
 
