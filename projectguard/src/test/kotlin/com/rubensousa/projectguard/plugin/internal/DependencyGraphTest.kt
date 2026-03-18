@@ -118,7 +118,7 @@ class DependencyGraphTest {
         val consumerDependency = "dependencyA"
         val dependencyOfConsumerDependency = "dependencyB"
         graph.addInternalDependency(
-            configurationId = DependencyConfiguration.TEST,
+            configurationId = DependencyConfiguration.TEST_COMPILE,
             module = consumer,
             dependency = consumerDependency
         )
@@ -151,12 +151,12 @@ class DependencyGraphTest {
         val consumerDependency = "dependencyA"
         val dependencyOfConsumerDependency = "dependencyB"
         graph.addInternalDependency(
-            configurationId = DependencyConfiguration.TEST,
+            configurationId = DependencyConfiguration.TEST_COMPILE,
             module = consumer,
             dependency = consumerDependency
         )
         graph.addInternalDependency(
-            configurationId = DependencyConfiguration.TEST,
+            configurationId = DependencyConfiguration.TEST_COMPILE,
             module = consumerDependency,
             dependency = dependencyOfConsumerDependency
         )
@@ -184,7 +184,7 @@ class DependencyGraphTest {
             dependency = consumerDependency
         )
         graph.addInternalDependency(
-            configurationId = DependencyConfiguration.TEST,
+            configurationId = DependencyConfiguration.TEST_COMPILE,
             module = consumerDependency,
             dependency = dependencyOfConsumerDependency
         )
@@ -225,7 +225,7 @@ class DependencyGraphTest {
         val consumer = "consumer"
         val consumerDependency = "dependencyA"
         graph.addLibraryDependency(
-            configurationId = DependencyConfiguration.TEST,
+            configurationId = DependencyConfiguration.TEST_COMPILE,
             module = consumer,
             dependency = consumerDependency
         )

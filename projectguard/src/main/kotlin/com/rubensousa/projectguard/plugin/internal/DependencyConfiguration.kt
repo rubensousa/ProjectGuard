@@ -19,13 +19,13 @@ package com.rubensousa.projectguard.plugin.internal
 internal object DependencyConfiguration {
 
     const val COMPILE = "compileClasspath"
-    const val TEST = "testCompileClasspath"
+    const val TEST_COMPILE = "testCompileClasspath"
     const val TEST_FIXTURE = "testFixturesCompileClasspath"
 
     private val supportedConfigurations = mutableSetOf(
         "androidTestUtil",
         COMPILE,
-        TEST,
+        TEST_COMPILE,
         TEST_FIXTURE,
     )
 

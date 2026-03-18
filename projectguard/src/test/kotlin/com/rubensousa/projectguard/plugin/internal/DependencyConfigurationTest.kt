@@ -56,4 +56,14 @@ class DependencyConfigurationTest {
         assertThat(DependencyConfiguration.isReleaseConfiguration("testFixturesCompileClasspath")).isFalse()
     }
 
+    @Test
+    fun `debug unit test compile is supported`() {
+        assertThat(DependencyConfiguration.isConfigurationSupported("debugUnitTestCompileClasspath")).isTrue()
+    }
+
+    @Test
+    fun `debug unit test runtime is not supported`() {
+        assertThat(DependencyConfiguration.isConfigurationSupported("debugUnitTestRuntimeClasspath")).isFalse()
+    }
+
 }
